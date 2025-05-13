@@ -38,11 +38,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux' // 비동기 WebFlux 지원
 
     // ===== [데이터베이스] =====
-	//implementation 'org.springframework.boot:spring-boot-starter-jdbc' // 순수 JDBC 설정
-	//implementation 'org.springframework.boot:spring-boot-starter-data-jdbc' // Spring Data JDBC (간단 ORM)
-	//implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // MyBatis 프레임워크 연동
-	//runtimeOnly 'com.mysql:mysql-connector-j' // MySQL JDBC 드라이버
-	//runtimeOnly 'com.oracle.database.jdbc:ojdbc11' // Oracle JDBC 드라이버
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // 순수 JDBC 설정
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc' // Spring Data JDBC (간단 ORM)
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // MyBatis 프레임워크 연동
+	runtimeOnly 'com.mysql:mysql-connector-j' // MySQL JDBC 드라이버
+	runtimeOnly 'com.oracle.database.jdbc:ojdbc11' // Oracle JDBC 드라이버
 
 	// ===== [Lombok] =====
 	compileOnly 'org.projectlombok:lombok' // 롬복 (컴파일 시만 필요)
