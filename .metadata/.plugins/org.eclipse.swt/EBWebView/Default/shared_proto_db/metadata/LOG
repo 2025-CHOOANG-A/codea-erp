@@ -1,3 +1,2 @@
-2025/05/13-00:42:42.092 5ebc Reusing MANIFEST D:\codea-erp\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\shared_proto_db\metadata/MANIFEST-000001
-2025/05/13-00:42:42.092 5ebc Recovering log #3
-2025/05/13-00:42:42.093 5ebc Reusing old log D:\codea-erp\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\shared_proto_db\metadata/000003.log 
+2025/05/13-20:13:09.813 5f38 Creating DB D:\codea-erp\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\shared_proto_db\metadata since it was missing.
+2025/05/13-20:13:09.817 5f38 Reusing MANIFEST D:\codea-erp\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\shared_proto_db\metadata/MANIFEST-000001

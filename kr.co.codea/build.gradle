@@ -1,53 +1,62 @@
 plugins {
-    id 'org.springframework.boot' version '3.4.5'
-    id 'io.spring.dependency-management' version '1.1.4'
-    id 'java'
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'kr.co.apink'
+group = 'kr.co.codea'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '17'
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
 }
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
+
 	// ===== [템플릿 엔진] =====
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' // Thymeleaf 템플릿 엔진
-	
+
 	// ===== [JSON 처리] =====
 	implementation 'org.json:json:20240303' // JSON 파싱/생성 라이브러리
 	implementation 'com.googlecode.json-simple:json-simple:1.1.1' // 간단한 JSON 파싱 라이브러리 (중복 가능성 있음)
-	
-    // ===== [Spring Web / REST / SOAP / WebFlux] =====
+
+	// ===== [Spring Web / REST / SOAP / WebFlux] =====
 	implementation 'org.springframework.boot:spring-boot-starter-web' // Spring MVC (REST API 포함)
 	implementation 'org.springframework.boot:spring-boot-starter-web-services' // SOAP Web Service 지원
 	implementation 'org.springframework.boot:spring-boot-starter-webflux' // 비동기 WebFlux 지원
-    
+
     // ===== [데이터베이스] =====
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // 순수 JDBC 설정
-	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc' // Spring Data JDBC (간단 ORM)
-	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // MyBatis 프레임워크 연동
-	runtimeOnly 'com.mysql:mysql-connector-j' // MySQL JDBC 드라이버
-	runtimeOnly 'com.oracle.database.jdbc:ojdbc11' // Oracle JDBC 드라이버
-    
-    // ===== [세션 관리] =====
-	// implementation 'org.springframework.session:spring-session-core' // Spring 세션 기본 추상화
-	// implementation 'org.springframework.session:spring-session-jdbc' // 세션을 DB에 저장
-    
-    // ===== [이메일] =====
-	implementation 'org.springframework.boot:spring-boot-starter-mail' // 이메일 전송 기능
-	
-	// ===== [개발 편의 기능] =====
-	developmentOnly 'org.springframework.boot:spring-boot-devtools' // 코드 변경 시 자동 리스타트
+	//implementation 'org.springframework.boot:spring-boot-starter-jdbc' // 순수 JDBC 설정
+	//implementation 'org.springframework.boot:spring-boot-starter-data-jdbc' // Spring Data JDBC (간단 ORM)
+	//implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // MyBatis 프레임워크 연동
+	//runtimeOnly 'com.mysql:mysql-connector-j' // MySQL JDBC 드라이버
+	//runtimeOnly 'com.oracle.database.jdbc:ojdbc11' // Oracle JDBC 드라이버
 
 	// ===== [Lombok] =====
 	compileOnly 'org.projectlombok:lombok' // 롬복 (컴파일 시만 필요)
 	annotationProcessor 'org.projectlombok:lombok' // 롬복 어노테이션 처리기
+
+    // ===== [이메일] =====
+	implementation 'org.springframework.boot:spring-boot-starter-mail' // 이메일 전송 기능
+
+	// ===== [개발 편의 기능] =====
+	developmentOnly 'org.springframework.boot:spring-boot-devtools' // 코드 변경 시 자동 리스타트
+
+    // ===== [세션 관리] =====
+	// implementation 'org.springframework.session:spring-session-core' // Spring 세션 기본 추상화
+
 
     // ===== [테스트 관련] =====
 	testImplementation 'org.springframework.boot:spring-boot-starter-test' // JUnit, Mockito 등 포함
@@ -57,5 +66,5 @@ dependencies {
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
+	useJUnitPlatform()
 }

@@ -1,8 +1,0 @@
-# MySQL 설정 (기본 DB)
-spring.mysql.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-spring.mysql.datasource.url=jdbc:mysql://localhost:3306/mrp
-spring.mysql.datasource.username=project
-spring.mysql.datasource.password=p402402
-
-# MyBatis 설정
-mybatis.mapper-locations=classpath:mapper/**/*.xml

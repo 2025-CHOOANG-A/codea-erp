@@ -1,3 +1,2 @@
-2025/05/13-01:01:35.518 453c Reusing MANIFEST D:\codea-erp\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\Session Storage/MANIFEST-000001
-2025/05/13-01:01:35.519 453c Recovering log #3
-2025/05/13-01:01:35.520 453c Reusing old log D:\codea-erp\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\Session Storage/000003.log 
+2025/05/13-20:13:12.508 5454 Creating DB D:\codea-erp\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\Session Storage since it was missing.
+2025/05/13-20:13:12.517 5454 Reusing MANIFEST D:\codea-erp\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\Session Storage/MANIFEST-000001

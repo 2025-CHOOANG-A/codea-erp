@@ -1,5 +1,0 @@
-package kr.co.codea.config;
-
-public class MySQLDataSourceConfig {
-
-}
