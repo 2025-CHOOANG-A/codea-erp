@@ -1,0 +1,11 @@
+package kr.co.codea;
+
+import org.springframework.web.bind.annotation.GetMapping;
+
+@org.springframework.stereotype.Controller
+public class Controller {
+	@GetMapping("/test")
+    public String test() {
+        return "test"; // templates/test.html을 호출합니다.
+    }
+}

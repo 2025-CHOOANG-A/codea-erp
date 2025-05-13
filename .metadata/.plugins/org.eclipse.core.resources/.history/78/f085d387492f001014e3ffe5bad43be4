@@ -1,0 +1,45 @@
+plugins {
+    id 'org.springframework.boot' version '3.4.5'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'java'
+}
+
+group = 'kr.co.apink'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	// ===== [템플릿 엔진] =====
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' // Thymeleaf 템플릿 엔진
+	
+	// ===== [JSON 처리] =====
+	implementation 'org.json:json:20240303' // JSON 파싱/생성 라이브러리
+	implementation 'com.googlecode.json-simple:json-simple:1.1.1' // 간단한 JSON 파싱 라이브러리 (중복 가능성 있음)
+	
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // ===== [테스트 관련] =====
+	testImplementation 'org.springframework.boot:spring-boot-starter-test' // JUnit, Mockito 등 포함
+	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4' // MyBatis 테스트 지원
+	testImplementation 'io.projectreactor:reactor-test' // WebFlux 관련 테스트 도구
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // JUnit Platform 실행기
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
