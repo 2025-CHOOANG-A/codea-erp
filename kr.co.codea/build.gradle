@@ -2,6 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'war'
+	
 }
 
 group = 'kr.co.codea'
@@ -57,6 +59,7 @@ dependencies {
     // ===== [세션 관리] =====
 	// implementation 'org.springframework.session:spring-session-core' // Spring 세션 기본 추상화
 
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
     // ===== [테스트 관련] =====
 	testImplementation 'org.springframework.boot:spring-boot-starter-test' // JUnit, Mockito 등 포함
