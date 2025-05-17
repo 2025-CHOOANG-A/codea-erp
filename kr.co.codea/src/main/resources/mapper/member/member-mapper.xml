@@ -4,6 +4,6 @@
 
 <mapper namespace="kr.co.codea.member.MemberMapper">
     <select id="findAllMembers" resultType="kr.co.codea.member.Member">
-        SELECT id, name, email FROM member
+        SELECT id, name, email FROM users
     </select>
 </mapper>
