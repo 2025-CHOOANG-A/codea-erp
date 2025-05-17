@@ -11,7 +11,7 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @GetMapping("/members")
+    @GetMapping("/")
     public String listMembers(Model model) {
         model.addAttribute("members", memberService.getAllMembers());
         return "member/list"; // templates/member/list.html
