@@ -1,7 +1,7 @@
 ---
 name: "\U0001F41EBug"
 about: Bug 발생 시 작성해 주세요.
-title: ''
+title: "[\U0001F41EBug][Domain] 제목"
 labels: bug
 assignees: ''
 
