@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>BOM 상세 | CodeA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: #f8f9fa;
+        min-height: 100vh;
+      }
+      .header {
+        height: 56px;
+        background: #fff;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: sticky;
+        top: 0;
+        z-index: 1050;
+      }
+      .header .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        color: #343a40;
+        flex: 1;
+        text-align: center;
+      }
+      .sidebar-toggle-btn {
+        background: #23272b;
+        border: none;
+        color: #fff;
+        padding: 0.5rem 0.8rem;
+        border-radius: 0 0.5rem 0.5rem 0;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        position: absolute;
+        left: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: background 0.2s;
+        z-index: 1100;
+      }
+      .sidebar-toggle-btn:hover {
+        background: #495057;
+      }
+      .sidebar {
+        width: 250px;
+        min-height: 100vh;
+        background: #23272b;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1040;
+        transition: transform 0.3s;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar.collapsed {
+        transform: translateX(-100%);
+      }
+      .sidebar .sidebar-header {
+        padding: 1rem;
+        font-weight: bold;
+        font-size: 1.2rem;
+        background: #1a1d20;
+        text-align: center;
+        letter-spacing: 1px;
+      }
+      .sidebar .menu-title {
+        padding: 0.75rem 1.5rem 0.25rem 1.5rem;
+        font-size: 0.95rem;
+        color: #ced4da;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      .sidebar .nav-link {
+        color: #adb5bd;
+        padding: 0.7rem 1.5rem;
+        transition: background 0.2s, color 0.2s;
+        border-radius: 0;
+        font-size: 1rem;
+      }
+      .sidebar .nav-link.active,
+      .sidebar .nav-link:hover {
+        background: #495057;
+        color: #fff;
+        text-decoration: none;
+      }
+      @media (max-width: 991.98px) {
+        .sidebar {
+          width: 200px;
+        }
+      }
+      @media (max-width: 767.98px) {
+        .sidebar {
+          width: 100vw;
+        }
+      }
+      .content {
+        margin-left: 250px;
+        padding: 2rem 1rem;
+        transition: margin-left 0.3s;
+      }
+      .sidebar.collapsed ~ .content {
+        margin-left: 0;
+      }
+      @media (max-width: 991.98px) {
+        .content {
+          margin-left: 200px;
+        }
+        .sidebar.collapsed ~ .content {
+          margin-left: 0;
+        }
+      }
+      @media (max-width: 767.98px) {
+        .content {
+          margin-left: 0;
+        }
+      }
+      .section-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+      .table-responsive {
+        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+      }
+      .table th,
+      .table td {
+        vertical-align: middle;
+      }
+      .btn-add-material {
+        min-width: 90px;
+      }
+      .btn-delete-material {
+        min-width: 90px;
+        margin-left: 0.5rem;
+      }
+      .footer-btns {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+      .modal-content {
+        border-radius: 0.6rem;
+      }
+      .modal-backdrop-custom {
+        background: rgba(0, 0, 0, 0.2);
+      }
+      @media (max-width: 767.98px) {
+        .footer-btns {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar collapsed">
+      <div class="sidebar-header">메뉴</div>
+      <div class="menu-title">기준정보관리</div>
+      <a class="nav-link" href="#">사업장관리</a>
+      <a class="nav-link" href="#">거래처관리</a>
+      <a class="nav-link" href="#">창고관리</a>
+      <a class="nav-link" href="#">제품관리</a>
+      <a class="nav-link" href="#">품목관리</a>
+      <a class="nav-link" href="#">사원관리</a>
+      <a class="nav-link" href="#">공지사항</a>
+      <div class="menu-title">구매영업관리</div>
+      <a class="nav-link" href="#">발주관리</a>
+      <a class="nav-link" href="#">주문관리</a>
+      <a class="nav-link" href="#">출고관리</a>
+      <a class="nav-link" href="#">자재소요량계산</a>
+      <div class="menu-title">자재관리</div>
+      <a class="nav-link" href="#">입고관리</a>
+      <a class="nav-link" href="#">재고관리</a>
+      <div class="menu-title">생산관리</div>
+      <a class="nav-link" href="#">생산계획</a>
+    </nav>
+
+    <!-- Header -->
+    <header class="header">
+      <button
+        class="sidebar-toggle-btn"
+        id="sidebarToggle"
+        aria-label="사이드바 열기/닫기"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <rect width="16" height="2" y="2" rx="1" />
+          <rect width="16" height="2" y="7" rx="1" />
+          <rect width="16" height="2" y="12" rx="1" />
+        </svg>
+      </button>
+      <div class="logo">CodeA</div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="content">
+      <div class="container">
+        <div class="section-title mb-4">BOM 상세</div>
+        <!-- BOM Info Table -->
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>BOM 코드</th>
+                <th>제품 코드</th>
+                <th>제품 명</th>
+                <th>규격</th>
+                <th>단위(EA)</th>
+                <th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="bomCodeCell">BOM001</td>
+                <td id="productCodeCell">P001</td>
+                <td id="productNameCell">제품A</td>
+                <td id="specCell">100x200</td>
+                <td id="unitCell">EA</td>
+                <td id="noteCell"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Material List Table -->
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold">자재 목록</span>
+            <div>
+              <button
+                type="button"
+                class="btn btn-danger btn-delete-material btn-sm"
+              >
+                선택 삭제
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary btn-add-material btn-sm ms-1"
+              >
+                자재 추가
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table
+              class="table table-hover align-middle mb-0"
+              id="materialTable"
+            >
+              <thead class="table-light">
+                <tr>
+                  <th><input type="checkbox" id="selectAllMaterial" /></th>
+                  <th>BOM 코드</th>
+                  <th>자재 코드</th>
+                  <th>자재 명</th>
+                  <th>규격</th>
+                  <th>단위(EA)</th>
+                  <th>단가</th>
+                  <th>자재소요량</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- JS로 자재 목록 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="footer-btns">
+          <button type="button" class="btn btn-dark" id="btnList">목록</button>
+          <button type="button" class="btn btn-secondary" id="btnEdit">
+            수정
+          </button>
+          <button type="button" class="btn btn-danger" id="btnDelete">
+            삭제
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Material Add Modal -->
+    <div
+      class="modal fade"
+      id="materialAddModal"
+      tabindex="-1"
+      aria-labelledby="materialAddModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <form id="materialAddForm" autocomplete="off">
+            <div class="modal-header">
+              <h5 class="modal-title" id="materialAddModalLabel">자재 추가</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="닫기"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-2">
+                <label class="form-label">BOM 코드</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="bomCode"
+                  id="modalBomCode"
+                  readonly
+                />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">자재 코드</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="materialCode"
+                  maxlength="20"
+                  required
+                />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">자재 명</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="materialName"
+                  maxlength="20"
+                  required
+                />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">규격</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="spec"
+                  maxlength="20"
+                  required
+                />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">단위(EA)</label>
+                <select class="form-select" name="unit" required>
+                  <option value="EA">EA</option>
+                  <option value="SET">SET</option>
+                  <option value="BOX">BOX</option>
+                </select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">단가</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  name="price"
+                  min="0"
+                  required
+                />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">자재소요량</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  name="qty"
+                  min="1"
+                  required
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                취소
+              </button>
+              <button type="submit" class="btn btn-primary">추가</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Sidebar toggle
+      const sidebar = document.getElementById("sidebar");
+      const sidebarToggle = document.getElementById("sidebarToggle");
+      sidebarToggle.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+      });
+      function handleResize() {
+        if (window.innerWidth < 992) {
+          sidebar.classList.add("collapsed");
+        } else {
+          sidebar.classList.remove("collapsed");
+        }
+      }
+      window.addEventListener("resize", handleResize);
+      handleResize();
+
+      // 샘플 BOM 상세 데이터
+      let bomDetail = {
+        bomCode: "BOM001",
+        productCode: "P001",
+        productName: "제품A",
+        spec: "100x200",
+        unit: "EA",
+        note: "",
+        materials: [
+          {
+            bomCode: "BOM001-01",
+            materialCode: "M001",
+            materialName: "자재X",
+            spec: "100x200",
+            unit: "EA",
+            price: 1000,
+            qty: 10,
+          },
+          {
+            bomCode: "BOM001-02",
+            materialCode: "M002",
+            materialName: "자재Y",
+            spec: "50x100",
+            unit: "EA",
+            price: 500,
+            qty: 5,
+          },
+        ],
+      };
+
+      // BOM 상세 정보 렌더링
+      function renderBomDetail() {
+        document.getElementById("bomCodeCell").textContent = bomDetail.bomCode;
+        document.getElementById("productCodeCell").textContent =
+          bomDetail.productCode;
+        document.getElementById("productNameCell").textContent =
+          bomDetail.productName;
+        document.getElementById("specCell").textContent = bomDetail.spec;
+        document.getElementById("unitCell").textContent = bomDetail.unit;
+        document.getElementById("noteCell").textContent = bomDetail.note || "";
+      }
+
+      // 자재 목록 렌더링
+      function renderMaterialTable() {
+        const tbody = document.querySelector("#materialTable tbody");
+        tbody.innerHTML = "";
+        bomDetail.materials.forEach((mat, idx) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+                        <td><input type="checkbox" data-idx="${idx}" /></td>
+                        <td>${mat.bomCode}</td>
+                        <td>${mat.materialCode}</td>
+                        <td>${mat.materialName}</td>
+                        <td>${mat.spec}</td>
+                        <td>${mat.unit}</td>
+                        <td>${mat.price.toLocaleString()}</td>
+                        <td>${mat.qty}</td>
+                    `;
+          tbody.appendChild(tr);
+        });
+        document.getElementById("selectAllMaterial").checked = false;
+      }
+
+      // 자재 추가 모달 열기
+      function openMaterialAddModal() {
+        const modal = new bootstrap.Modal(
+          document.getElementById("materialAddModal")
+        );
+        // BOM 코드 자동 생성 (BOM001-0X)
+        let nextIdx = bomDetail.materials.length + 1;
+        let bomCode =
+          bomDetail.bomCode + "-" + String(nextIdx).padStart(2, "0");
+        document.getElementById("modalBomCode").value = bomCode;
+        document.getElementById("materialAddForm").reset();
+        modal.show();
+      }
+
+      // 자재 추가 폼 제출
+      document
+        .getElementById("materialAddForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const form = e.target;
+          const newMat = {
+            bomCode: form.bomCode.value,
+            materialCode: form.materialCode.value.trim(),
+            materialName: form.materialName.value.trim(),
+            spec: form.spec.value.trim(),
+            unit: form.unit.value,
+            price: Number(form.price.value),
+            qty: Number(form.qty.value),
+          };
+          if (!newMat.materialCode || !newMat.materialName || !newMat.spec) {
+            alert("필수 항목을 입력하세요.");
+            return;
+          }
+          bomDetail.materials.push(newMat);
+          renderMaterialTable();
+          bootstrap.Modal.getInstance(
+            document.getElementById("materialAddModal")
+          ).hide();
+        });
+
+      // 자재 선택 삭제
+      document
+        .querySelector(".btn-delete-material")
+        .addEventListener("click", function () {
+          const checked = Array.from(
+            document.querySelectorAll(
+              '#materialTable tbody input[type="checkbox"]:checked'
+            )
+          );
+          if (checked.length === 0) {
+            alert("삭제할 자재를 선택하세요.");
+            return;
+          }
+          if (!confirm("정말 삭제하시겠습니까?")) return;
+          // 인덱스 내림차순으로 삭제
+          const idxs = checked
+            .map((cb) => Number(cb.dataset.idx))
+            .sort((a, b) => b - a);
+          for (let idx of idxs) {
+            bomDetail.materials.splice(idx, 1);
+          }
+          renderMaterialTable();
+        });
+
+      // 자재 전체 선택
+      document
+        .getElementById("selectAllMaterial")
+        .addEventListener("change", function (e) {
+          const checkboxes = document.querySelectorAll(
+            '#materialTable tbody input[type="checkbox"]'
+          );
+          checkboxes.forEach((cb) => (cb.checked = e.target.checked));
+        });
+
+      // 자재 추가 버튼
+      document
+        .querySelector(".btn-add-material")
+        .addEventListener("click", openMaterialAddModal);
+
+      // 하단 버튼 이벤트 (샘플)
+      document.getElementById("btnList").addEventListener("click", function () {
+        alert("목록 페이지로 이동");
+      });
+      document.getElementById("btnEdit").addEventListener("click", function () {
+        alert("수정 페이지로 이동");
+      });
+      document
+        .getElementById("btnDelete")
+        .addEventListener("click", function () {
+          if (confirm("정말 삭제하시겠습니까?")) {
+            alert("삭제되었습니다.");
+          }
+        });
+
+      // 초기 렌더링
+      document.addEventListener("DOMContentLoaded", () => {
+        renderBomDetail();
+        renderMaterialTable();
+      });
+    </script>
+  </body>
+</html>
