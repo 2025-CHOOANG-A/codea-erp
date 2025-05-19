@@ -1,0 +1,50 @@
+<div th:fragment="view">
+  <div class="main-content" id="mainContent">
+    <h4 class="fw-bold mb-3">주문목록</h4>
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th><input type="checkbox" id="order_all"></th>
+            <th>발주코드</th>
+            <th>자재명</th>
+            <th>자재코드</th>
+            <th>규격</th>
+            <th>단가</th>
+            <th>수량</th>
+            <th>단위</th>
+            <th>총액</th>
+            <th>발주일</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240601-01</td><td>알루미늄 판</td><td>M001</td><td>100x200x2T</td><td>5,000</td><td>20</td><td>EA</td><td>100,000</td><td>2024-06-01</td><td></td></tr>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240601-02</td><td>스테인리스 볼트</td><td>M002</td><td>M8x30</td><td>300</td><td>100</td><td>EA</td><td>30,000</td><td>2024-06-01</td><td></td></tr>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240602-01</td><td>구리선</td><td>M003</td><td>Ø2mm</td><td>1,200</td><td>50</td><td>EA</td><td>60,000</td><td>2024-06-02</td><td></td></tr>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240602-02</td><td>플라스틱 커버</td><td>M004</td><td>50x50</td><td>800</td><td>40</td><td>EA</td><td>32,000</td><td>2024-06-02</td><td></td></tr>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240603-01</td><td>고무 패킹</td><td>M005</td><td>Ø10mm</td><td>150</td><td>200</td><td>EA</td><td>30,000</td><td>2024-06-03</td><td></td></tr>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240603-02</td><td>철판</td><td>M006</td><td>200x300x3T</td><td>7,500</td><td>10</td><td>EA</td><td>75,000</td><td>2024-06-03</td><td></td></tr>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240604-01</td><td>아연 도금 볼트</td><td>M007</td><td>M10x40</td><td>400</td><td>80</td><td>EA</td><td>32,000</td><td>2024-06-04</td><td></td></tr>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240604-02</td><td>플라스틱 와셔</td><td>M008</td><td>Ø15mm</td><td>100</td><td>300</td><td>EA</td><td>30,000</td><td>2024-06-04</td><td></td></tr>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240605-01</td><td>스프링</td><td>M009</td><td>Ø5x50mm</td><td>600</td><td>60</td><td>EA</td><td>36,000</td><td>2024-06-05</td><td></td></tr>
+          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240605-02</td><td>실리콘 튜브</td><td>M010</td><td>Ø8x1000mm</td><td>2,000</td><td>15</td><td>EA</td><td>30,000</td><td>2024-06-05</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between mt-3">
+      <nav>
+        <ul class="pagination">
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
+        </ul>
+      </nav>
+      <div>
+        <button class="btn btn-dark" onclick="go_add()">추가</button>
+        <button class="btn btn-light border" onclick="go_delete()">삭제</button>
+      </div>
+    </div>
+  </div>
+</div>
