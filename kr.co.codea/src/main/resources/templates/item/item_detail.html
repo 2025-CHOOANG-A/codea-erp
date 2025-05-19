@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>제품 상세 정보 - CodeA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap v5.3 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        min-height: 100vh;
+        background-color: #f8f9fa;
+      }
+      .sidebar {
+        width: 260px;
+        min-width: 200px;
+        max-width: 300px;
+        background: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1040;
+        transition: transform 0.3s ease;
+        transform: translateX(-100%);
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .sidebar .sidebar-header {
+        padding: 1.2rem 1.5rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        background: #23272b;
+        border-bottom: 1px solid #495057;
+      }
+      .sidebar .nav-link {
+        color: #adb5bd;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.3rem;
+        transition: background 0.2s;
+      }
+      .sidebar .nav-link.active,
+      .sidebar .nav-link:hover {
+        background: #495057;
+        color: #fff;
+      }
+      .sidebar .menu-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #ced4da;
+        margin: 1.2rem 1.5rem 0.5rem 1.5rem;
+        letter-spacing: 0.02em;
+      }
+      .sidebar-toggle {
+        background: #343a40;
+        border: none;
+        color: #fff;
+        padding: 0.5rem 0.7rem;
+        border-radius: 0.4rem;
+        margin-right: 1rem;
+        display: flex;
+        align-items: center;
+        font-size: 1.3rem;
+        transition: background 0.2s;
+      }
+      .sidebar-toggle:hover {
+        background: #23272b;
+      }
+      .main-content {
+        margin-left: 0;
+        transition: margin-left 0.3s;
+        padding: 2rem 1rem 1rem 1rem;
+      }
+      @media (min-width: 992px) {
+        .sidebar.show {
+          transform: translateX(0);
+        }
+        .main-content.with-sidebar {
+          margin-left: 260px;
+        }
+      }
+      .detail-section {
+        background: #fff;
+        border-radius: 0.7rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .detail-table {
+        min-width: 100%;
+        margin-bottom: 1.5rem;
+      }
+      .detail-table th {
+        width: 160px;
+        background: #f1f3f5;
+        font-weight: 600;
+        color: #495057;
+        vertical-align: middle;
+      }
+      .detail-table td {
+        background: #fff;
+        color: #212529;
+        vertical-align: middle;
+      }
+      .scroll-area {
+        max-height: 220px;
+        overflow-y: auto;
+      }
+      .btn-group-bottom {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.7rem;
+        margin-top: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar-header">메뉴</div>
+      <div>
+        <div class="menu-title">기준정보관리</div>
+        <a href="#" class="nav-link">사업장관리</a>
+        <a href="#" class="nav-link">거래처관리</a>
+        <a href="#" class="nav-link">창고관리</a>
+        <a href="#" class="nav-link">제품관리</a>
+        <a href="#" class="nav-link">품목관리</a>
+        <a href="#" class="nav-link">사원관리</a>
+        <a href="#" class="nav-link">공지사항</a>
+        <div class="menu-title">구매영업관리</div>
+        <a href="#" class="nav-link">발주관리</a>
+        <a href="#" class="nav-link">주문관리</a>
+        <a href="#" class="nav-link">출고관리</a>
+        <a href="#" class="nav-link">자재소요량계산</a>
+        <div class="menu-title">자재관리</div>
+        <a href="#" class="nav-link">입고관리</a>
+        <a href="#" class="nav-link">재고관리</a>
+        <div class="menu-title">생산관리</div>
+        <a href="#" class="nav-link">생산계획</a>
+      </div>
+    </nav>
+
+    <!-- Header -->
+    <header
+      class="d-flex align-items-center justify-content-between px-3 py-2 shadow-sm bg-white"
+      style="position: sticky; top: 0; z-index: 1050"
+    >
+      <button
+        id="sidebarToggle"
+        class="sidebar-toggle"
+        aria-label="사이드바 열기/닫기"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <rect width="4" height="16" rx="1" fill="#adb5bd" />
+          <rect x="6" width="10" height="2" rx="1" />
+          <rect x="6" y="7" width="10" height="2" rx="1" />
+          <rect x="6" y="14" width="10" height="2" rx="1" />
+        </svg>
+      </button>
+      <div
+        class="mx-auto"
+        style="
+          font-size: 1.6rem;
+          font-weight: 700;
+          letter-spacing: 0.03em;
+          color: #343a40;
+        "
+      >
+        CodeA
+      </div>
+      <div style="width: 40px"></div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="main-content">
+      <section class="detail-section">
+        <h4 class="mb-4 fw-bold">제품 상세 정보</h4>
+        <!-- 제품 정보 (세로 배치, 스크롤 없음) -->
+        <div class="mb-4">
+          <div class="mb-3 fw-semibold">제품 정보</div>
+          <table class="table table-bordered detail-table align-middle mb-0">
+            <tbody>
+              <tr>
+                <th>품번</th>
+                <td>PRD-00123</td>
+              </tr>
+              <tr>
+                <th>제품구분</th>
+                <td>제품</td>
+              </tr>
+              <tr>
+                <th>제품코드</th>
+                <td>CA-2024-001</td>
+              </tr>
+              <tr>
+                <th>대분류</th>
+                <td>전자부품</td>
+              </tr>
+              <tr>
+                <th>소분류</th>
+                <td>센서</td>
+              </tr>
+              <tr>
+                <th>제품명</th>
+                <td>온도센서</td>
+              </tr>
+              <tr>
+                <th>규격</th>
+                <td>TS-1000</td>
+              </tr>
+              <tr>
+                <th>단위</th>
+                <td>EA</td>
+              </tr>
+              <tr>
+                <th>단가</th>
+                <td>25,000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- 거래처 정보 (세로 배치) -->
+        <div class="mb-4">
+          <div class="mb-3 fw-semibold">거래처 정보</div>
+          <div class="scroll-area">
+            <table class="table table-bordered detail-table align-middle mb-0">
+              <tbody>
+                <tr>
+                  <th>거래처</th>
+                  <td>코드에이상사</td>
+                </tr>
+                <tr>
+                  <th>거래처 코드</th>
+                  <td>VND-1002</td>
+                </tr>
+                <tr>
+                  <th>거래처 전화번호</th>
+                  <td>02-1234-5678</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- 비고 -->
+        <div class="mt-4">
+          <div class="mb-2 fw-semibold">비고</div>
+          <div class="scroll-area">
+            <table class="table table-bordered detail-table align-middle mb-0">
+              <tbody>
+                <tr>
+                  <td style="height: 80px">
+                    특이사항 없음. <br />추가 요청 시 담당자에게 문의 바랍니다.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- 하단 버튼 -->
+        <div class="btn-group-bottom">
+          <a href="./item_list.html" class="btn btn-outline-secondary">목록</a>
+          <a href="#" class="btn btn-outline-primary">수정</a>
+          <a href="#" class="btn btn-outline-danger">삭제</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bootstrap JS & Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const sidebar = document.getElementById("sidebar");
+      const sidebarToggle = document.getElementById("sidebarToggle");
+      const mainContent = document.getElementById("mainContent");
+
+      function setSidebar(show) {
+        if (show) {
+          sidebar.classList.add("show");
+          mainContent.classList.add("with-sidebar");
+        } else {
+          sidebar.classList.remove("show");
+          mainContent.classList.remove("with-sidebar");
+        }
+      }
+
+      // 초기 상태: 데스크탑은 열림, 모바일은 닫힘
+      function handleResize() {
+        if (window.innerWidth >= 992) {
+          setSidebar(true);
+        } else {
+          setSidebar(false);
+        }
+      }
+      window.addEventListener("resize", handleResize);
+      handleResize();
+
+      sidebarToggle.addEventListener("click", () => {
+        const isShown = sidebar.classList.contains("show");
+        setSidebar(!isShown);
+      });
+
+      // 사이드바 바깥 클릭 시 닫기 (모바일)
+      document.addEventListener("click", (e) => {
+        if (window.innerWidth < 992 && sidebar.classList.contains("show")) {
+          if (
+            !sidebar.contains(e.target) &&
+            !sidebarToggle.contains(e.target)
+          ) {
+            setSidebar(false);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
