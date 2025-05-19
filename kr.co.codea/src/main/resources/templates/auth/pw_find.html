@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>비밀번호 찾기 | CodeA</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <!-- 페이지 헤더 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="#">CodeA</a>
+        <span class="navbar-text text-white ms-2"
+          >물류 · 생산 관리 ERP 시스템</span
+        >
+      </div>
+    </nav>
+
+    <!-- 비밀번호 찾기 폼 -->
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h4 class="card-title mb-4 text-center">비밀번호 찾기</h4>
+              <form id="pwFindForm" novalidate>
+                <div
+                  id="notFoundMsg"
+                  class="alert alert-danger d-none py-2 mb-3"
+                  role="alert"
+                >
+                  해당 사원은 존재하지 않습니다.
+                </div>
+                <div class="mb-3">
+                  <label for="name" class="form-label">이름</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    name="name"
+                    required
+                  />
+                  <div class="invalid-feedback text-danger"></div>
+                </div>
+                <div class="mb-3">
+                  <label for="empNo" class="form-label">사번</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="empNo"
+                    name="empNo"
+                    required
+                  />
+                  <div class="invalid-feedback text-danger"></div>
+                </div>
+                <div class="mb-3">
+                  <label for="userId" class="form-label">아이디</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="userId"
+                    name="userId"
+                    required
+                  />
+                  <div class="invalid-feedback text-danger"></div>
+                </div>
+                <div class="mb-3">
+                  <label for="email" class="form-label">이메일</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    name="email"
+                    required
+                  />
+                  <div class="invalid-feedback text-danger"></div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                  비밀번호 찾기
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("pwFindForm");
+      const notFoundMsg = document.getElementById("notFoundMsg");
+
+      // 예시: 실제로는 서버에서 확인해야 함
+      const dummyUser = {
+        name: "홍길동",
+        empNo: "1234",
+        userId: "hong",
+        email: "hong@example.com",
+      };
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        let valid = true;
+        notFoundMsg.classList.add("d-none");
+
+        // 입력값 검사
+        ["name", "empNo", "userId", "email"].forEach((id) => {
+          const input = document.getElementById(id);
+          const feedback = input.nextElementSibling;
+          if (!input.value.trim()) {
+            feedback.textContent = "이 필드를 입력해 주세요.";
+            input.classList.add("is-invalid");
+            valid = false;
+          } else {
+            feedback.textContent = "";
+            input.classList.remove("is-invalid");
+          }
+        });
+
+        if (!valid) return;
+
+        // 정보 일치 여부 확인 (프론트 예시)
+        const name = document.getElementById("name").value.trim();
+        const empNo = document.getElementById("empNo").value.trim();
+        const userId = document.getElementById("userId").value.trim();
+        const email = document.getElementById("email").value.trim();
+
+        if (
+          name === dummyUser.name &&
+          empNo === dummyUser.empNo &&
+          userId === dummyUser.userId &&
+          email === dummyUser.email
+        ) {
+          window.location.href = "pw_change.html";
+        } else {
+          notFoundMsg.classList.remove("d-none");
+        }
+      });
+    </script>
+  </body>
+</html>
