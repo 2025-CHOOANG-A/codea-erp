@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>공지사항 리스트 | CodeA</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        min-height: 100vh;
+        background-color: #f8f9fa;
+      }
+      .sidebar {
+        width: 240px;
+        min-height: 100vh;
+        background: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1040;
+        transition: transform 0.2s;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar.collapsed {
+        transform: translateX(-100%);
+      }
+      .sidebar .sidebar-header {
+        font-size: 1.25rem;
+        font-weight: 600;
+        padding: 1rem;
+        border-bottom: 1px solid #495057;
+        background: #23272b;
+      }
+      .sidebar .nav-link {
+        color: #adb5bd;
+        padding: 0.75rem 1.5rem;
+      }
+      .sidebar .nav-link.active,
+      .sidebar .nav-link:hover {
+        color: #fff;
+        background: #495057;
+      }
+      .sidebar .nav-group-title {
+        font-size: 0.95rem;
+        font-weight: 500;
+        padding: 1rem 1.5rem 0.25rem 1.5rem;
+        color: #ced4da;
+        letter-spacing: 0.02em;
+      }
+      .sidebar-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.2);
+        z-index: 1039;
+        display: none;
+      }
+      .sidebar-open .sidebar-backdrop {
+        display: block;
+      }
+      .sidebar-toggle-btn {
+        background: #343a40;
+        border: none;
+        color: #fff;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+        margin-right: 1rem;
+        display: flex;
+        align-items: center;
+        font-size: 1.25rem;
+        transition: background 0.2s;
+      }
+      .sidebar-toggle-btn:hover {
+        background: #495057;
+      }
+      @media (max-width: 991.98px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+        .sidebar.show {
+          transform: translateX(0);
+        }
+        .sidebar-backdrop {
+          display: block;
+        }
+        .main-content {
+          margin-left: 0 !important;
+        }
+      }
+      @media (min-width: 992px) {
+        .sidebar.collapsed {
+          transform: translateX(-100%);
+        }
+        .sidebar {
+          transform: translateX(0);
+        }
+        .sidebar-backdrop {
+          display: none !important;
+        }
+        .main-content {
+          margin-left: 240px;
+        }
+      }
+      /* 하단 네비/버튼 배치 */
+      .notice-bottom-bar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        position: relative;
+      }
+      .notice-bottom-bar .pagination {
+        margin: 0 auto;
+      }
+      .notice-bottom-bar .add-notice-btn-wrap {
+        position: absolute;
+        right: 0;
+      }
+      @media (max-width: 767.98px) {
+        .notice-bottom-bar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .notice-bottom-bar .add-notice-btn-wrap {
+          position: static;
+          margin-top: 0.75rem;
+          text-align: right;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar collapsed">
+      <div
+        class="sidebar-header d-flex align-items-center justify-content-between"
+      >
+        <span>메뉴</span>
+        <button
+          class="btn btn-sm btn-close btn-close-white d-lg-none"
+          id="sidebarCloseBtn"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="flex-grow-1">
+        <div class="nav-group-title">기준정보관리</div>
+        <a href="#" class="nav-link">사업장관리</a>
+        <a href="#" class="nav-link">거래처관리</a>
+        <a href="#" class="nav-link">창고관리</a>
+        <a href="#" class="nav-link">제품관리</a>
+        <a href="#" class="nav-link">품목관리</a>
+        <a href="#" class="nav-link">사원관리</a>
+        <a href="#" class="nav-link active">공지사항</a>
+        <div class="nav-group-title">구매영업관리</div>
+        <a href="#" class="nav-link">발주관리</a>
+        <a href="#" class="nav-link">주문관리</a>
+        <a href="#" class="nav-link">출고관리</a>
+        <a href="#" class="nav-link">자재소요량계산</a>
+        <div class="nav-group-title">자재관리</div>
+        <a href="#" class="nav-link">입고관리</a>
+        <a href="#" class="nav-link">재고관리</a>
+        <div class="nav-group-title">생산관리</div>
+        <a href="#" class="nav-link">생산계획</a>
+      </div>
+    </nav>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- Header -->
+    <header
+      class="bg-white shadow-sm py-2 px-3 d-flex align-items-center justify-content-between"
+      style="position: sticky; top: 0; z-index: 1050"
+    >
+      <div class="d-flex align-items-center">
+        <button
+          class="sidebar-toggle-btn me-2"
+          id="sidebarToggleBtn"
+          aria-label="메뉴 열기"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="me-1"
+            viewBox="0 0 24 24"
+          >
+            <rect x="3" y="4" width="18" height="4" rx="2" fill="#495057" />
+            <rect x="3" y="10" width="18" height="4" rx="2" fill="#495057" />
+            <rect x="3" y="16" width="18" height="4" rx="2" fill="#495057" />
+          </svg>
+        </button>
+        <span class="mx-auto fw-bold fs-4" style="letter-spacing: 0.02em"
+          >CodeA</span
+        >
+      </div>
+      <div></div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content p-4">
+      <div class="container-fluid">
+        <div class="row mb-4 align-items-center">
+          <div class="col-12 d-flex justify-content-center">
+            <h2 class="h4 mb-0">공지사항</h2>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table
+            class="table table-hover align-middle bg-white rounded shadow-sm"
+          >
+            <thead class="table-light">
+              <tr>
+                <th scope="col" style="width: 60px">번호</th>
+                <th scope="col">제목</th>
+                <th scope="col" style="width: 120px">작성자</th>
+                <th scope="col" style="width: 140px">작성일</th>
+                <th scope="col" style="width: 80px">조회수</th>
+              </tr>
+            </thead>
+            <tbody id="noticeTableBody">
+              <!-- JS로 데이터 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+        <!-- 하단 네비게이션 바 & 추가 버튼 -->
+        <div class="notice-bottom-bar">
+          <nav>
+            <ul class="pagination mb-0" id="noticePagination">
+              <!-- JS로 페이지네이션 렌더링 -->
+            </ul>
+          </nav>
+          <div class="add-notice-btn-wrap">
+            <!-- 관리자만 보임: 아래 버튼을 조건부로 렌더링 -->
+            <button class="btn btn-primary d-none" id="addNoticeBtn">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-plus-lg"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+                />
+              </svg>
+              공지사항 추가
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // 관리자 여부 예시 (실제 구현시 서버에서 처리)
+      const isAdmin = true; // false로 바꾸면 버튼 안보임
+      if (isAdmin) {
+        document.getElementById("addNoticeBtn").classList.remove("d-none");
+      }
+
+      // 더미 데이터 35개
+      const notices = [
+        {
+          id: 35,
+          title: "6월 정기점검 안내",
+          author: "관리자",
+          date: "2024-06-20",
+          views: 12,
+        },
+        {
+          id: 34,
+          title: "시스템 업데이트 공지",
+          author: "관리자",
+          date: "2024-06-18",
+          views: 21,
+        },
+        {
+          id: 33,
+          title: "휴가 신청 안내",
+          author: "관리자",
+          date: "2024-06-15",
+          views: 33,
+        },
+        {
+          id: 32,
+          title: "근무시간 변경 안내",
+          author: "관리자",
+          date: "2024-06-12",
+          views: 41,
+        },
+        {
+          id: 31,
+          title: "보안 점검 실시",
+          author: "관리자",
+          date: "2024-06-10",
+          views: 27,
+        },
+        {
+          id: 30,
+          title: "5월 우수사원 발표",
+          author: "관리자",
+          date: "2024-06-05",
+          views: 56,
+        },
+        {
+          id: 29,
+          title: "2024년 6월 시스템 점검 안내",
+          author: "관리자",
+          date: "2024-06-01",
+          views: 123,
+        },
+        {
+          id: 28,
+          title: "신규 기능 업데이트 안내",
+          author: "관리자",
+          date: "2024-05-20",
+          views: 98,
+        },
+        {
+          id: 27,
+          title: "근로자의 날 휴무 안내",
+          author: "관리자",
+          date: "2024-05-01",
+          views: 76,
+        },
+        {
+          id: 26,
+          title: "4월 정기점검 안내",
+          author: "관리자",
+          date: "2024-04-25",
+          views: 65,
+        },
+        {
+          id: 25,
+          title: "시스템 장애 복구 안내",
+          author: "관리자",
+          date: "2024-04-20",
+          views: 88,
+        },
+        {
+          id: 24,
+          title: "사내 교육 일정 안내",
+          author: "관리자",
+          date: "2024-04-15",
+          views: 42,
+        },
+        {
+          id: 23,
+          title: "업무 매뉴얼 배포",
+          author: "관리자",
+          date: "2024-04-10",
+          views: 51,
+        },
+        {
+          id: 22,
+          title: "3월 우수사원 발표",
+          author: "관리자",
+          date: "2024-04-05",
+          views: 37,
+        },
+        {
+          id: 21,
+          title: "시스템 점검 안내",
+          author: "관리자",
+          date: "2024-03-30",
+          views: 60,
+        },
+        {
+          id: 20,
+          title: "신규 입사자 안내",
+          author: "관리자",
+          date: "2024-03-25",
+          views: 29,
+        },
+        {
+          id: 19,
+          title: "사내 이벤트 안내",
+          author: "관리자",
+          date: "2024-03-20",
+          views: 44,
+        },
+        {
+          id: 18,
+          title: "2월 정기점검 안내",
+          author: "관리자",
+          date: "2024-02-28",
+          views: 32,
+        },
+        {
+          id: 17,
+          title: "설 연휴 휴무 안내",
+          author: "관리자",
+          date: "2024-02-10",
+          views: 70,
+        },
+        {
+          id: 16,
+          title: "시스템 장애 안내",
+          author: "관리자",
+          date: "2024-02-05",
+          views: 55,
+        },
+        {
+          id: 15,
+          title: "1월 우수사원 발표",
+          author: "관리자",
+          date: "2024-01-31",
+          views: 39,
+        },
+        {
+          id: 14,
+          title: "신년 인사",
+          author: "관리자",
+          date: "2024-01-01",
+          views: 100,
+        },
+        {
+          id: 13,
+          title: "12월 정기점검 안내",
+          author: "관리자",
+          date: "2023-12-20",
+          views: 24,
+        },
+        {
+          id: 12,
+          title: "연말 휴무 안내",
+          author: "관리자",
+          date: "2023-12-15",
+          views: 47,
+        },
+        {
+          id: 11,
+          title: "시스템 업데이트 안내",
+          author: "관리자",
+          date: "2023-12-10",
+          views: 53,
+        },
+        {
+          id: 10,
+          title: "11월 우수사원 발표",
+          author: "관리자",
+          date: "2023-11-30",
+          views: 36,
+        },
+        {
+          id: 9,
+          title: "사내 복지 안내",
+          author: "관리자",
+          date: "2023-11-20",
+          views: 28,
+        },
+        {
+          id: 8,
+          title: "10월 정기점검 안내",
+          author: "관리자",
+          date: "2023-10-25",
+          views: 19,
+        },
+        {
+          id: 7,
+          title: "추석 연휴 휴무 안내",
+          author: "관리자",
+          date: "2023-09-28",
+          views: 61,
+        },
+        {
+          id: 6,
+          title: "시스템 장애 복구 안내",
+          author: "관리자",
+          date: "2023-09-20",
+          views: 45,
+        },
+        {
+          id: 5,
+          title: "9월 우수사원 발표",
+          author: "관리자",
+          date: "2023-09-10",
+          views: 30,
+        },
+        {
+          id: 4,
+          title: "사내 동호회 모집",
+          author: "관리자",
+          date: "2023-08-30",
+          views: 22,
+        },
+        {
+          id: 3,
+          title: "여름휴가 안내",
+          author: "관리자",
+          date: "2023-08-10",
+          views: 48,
+        },
+        {
+          id: 2,
+          title: "8월 정기점검 안내",
+          author: "관리자",
+          date: "2023-08-01",
+          views: 17,
+        },
+        {
+          id: 1,
+          title: "시스템 오픈 안내",
+          author: "관리자",
+          date: "2023-07-01",
+          views: 200,
+        },
+      ];
+
+      // 페이지네이션 변수
+      const noticesPerPage = 10;
+      let currentPage = 1;
+      const totalPages = Math.ceil(notices.length / noticesPerPage);
+
+      function renderTable(page) {
+        const tbody = document.getElementById("noticeTableBody");
+        tbody.innerHTML = "";
+        const start = (page - 1) * noticesPerPage;
+        const end = Math.min(start + noticesPerPage, notices.length);
+        for (let i = start; i < end; i++) {
+          const notice = notices[i];
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${notice.id}</td>
+            <td>
+              <a href="#" class="text-decoration-none text-dark">${notice.title}</a>
+            </td>
+            <td>${notice.author}</td>
+            <td>${notice.date}</td>
+            <td>${notice.views}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      }
+
+      function renderPagination(page) {
+        const pagination = document.getElementById("noticePagination");
+        pagination.innerHTML = "";
+
+        // 이전 버튼
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item" + (page === 1 ? " disabled" : "");
+        prevLi.innerHTML = `<a class="page-link" href="#" aria-label="이전"><span aria-hidden="true">&laquo;</span></a>`;
+        prevLi.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (currentPage > 1) {
+            currentPage--;
+            renderTable(currentPage);
+            renderPagination(currentPage);
+          }
+        });
+        pagination.appendChild(prevLi);
+
+        // 페이지 번호 (최대 5개만 표시)
+        let startPage = Math.max(1, page - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+          startPage = Math.max(1, endPage - 4);
+        }
+        for (let i = startPage; i <= endPage; i++) {
+          const li = document.createElement("li");
+          li.className = "page-item" + (i === page ? " active" : "");
+          li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+          li.addEventListener("click", function (e) {
+            e.preventDefault();
+            currentPage = i;
+            renderTable(currentPage);
+            renderPagination(currentPage);
+          });
+          pagination.appendChild(li);
+        }
+
+        // 다음 버튼
+        const nextLi = document.createElement("li");
+        nextLi.className =
+          "page-item" + (page === totalPages ? " disabled" : "");
+        nextLi.innerHTML = `<a class="page-link" href="#" aria-label="다음"><span aria-hidden="true">&raquo;</span></a>`;
+        nextLi.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (currentPage < totalPages) {
+            currentPage++;
+            renderTable(currentPage);
+            renderPagination(currentPage);
+          }
+        });
+        pagination.appendChild(nextLi);
+      }
+
+      // 초기 렌더링
+      renderTable(currentPage);
+      renderPagination(currentPage);
+
+      // 사이드바 토글
+      const sidebar = document.getElementById("sidebar");
+      const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+      const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+      const sidebarCloseBtn = document.getElementById("sidebarCloseBtn");
+
+      function openSidebar() {
+        sidebar.classList.remove("collapsed");
+        sidebar.classList.add("show");
+        document.body.classList.add("sidebar-open");
+      }
+      function closeSidebar() {
+        sidebar.classList.add("collapsed");
+        sidebar.classList.remove("show");
+        document.body.classList.remove("sidebar-open");
+      }
+
+      sidebarToggleBtn.addEventListener("click", openSidebar);
+      sidebarBackdrop.addEventListener("click", closeSidebar);
+      if (sidebarCloseBtn)
+        sidebarCloseBtn.addEventListener("click", closeSidebar);
+
+      // PC에서 항상 열려있게
+      function handleResize() {
+        if (window.innerWidth >= 992) {
+          sidebar.classList.remove("collapsed", "show");
+          document.body.classList.remove("sidebar-open");
+        } else {
+          sidebar.classList.add("collapsed");
+        }
+      }
+      window.addEventListener("resize", handleResize);
+      handleResize();
+    </script>
+  </body>
+</html>
