@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>생산계획 상세 | CodeA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        min-height: 100vh;
+        background: #f8f9fa;
+      }
+      .sidebar {
+        width: 260px;
+        min-width: 200px;
+        max-width: 300px;
+        background: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1040;
+        transition: transform 0.3s;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar.collapsed {
+        transform: translateX(-100%);
+      }
+      .sidebar .sidebar-header {
+        font-size: 1.3rem;
+        font-weight: 600;
+        padding: 1.2rem 1.5rem 1rem 1.5rem;
+        border-bottom: 1px solid #495057;
+        background: #23272b;
+        letter-spacing: 1px;
+      }
+      .sidebar .nav-link {
+        color: #dee2e6;
+        padding: 0.7rem 1.5rem;
+        border-radius: 0.3rem;
+        transition: background 0.2s;
+        font-size: 1rem;
+      }
+      .sidebar .nav-link:hover,
+      .sidebar .nav-link.active {
+        background: #495057;
+        color: #fff;
+      }
+      .sidebar .menu-group {
+        margin-top: 1.2rem;
+      }
+      .sidebar .menu-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #adb5bd;
+        padding: 0.5rem 1.5rem 0.2rem 1.5rem;
+        letter-spacing: 0.5px;
+      }
+      .sidebar-toggle-btn {
+        background: #343a40;
+        border: none;
+        color: #fff;
+        padding: 0.6rem 0.8rem;
+        border-radius: 0 0.5rem 0.5rem 0;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        transition: background 0.2s;
+      }
+      .sidebar-toggle-btn:hover {
+        background: #495057;
+      }
+      .sidebar-toggle-btn .sidebar-toggle-icon {
+        width: 1.5em;
+        height: 1.5em;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .header {
+        height: 64px;
+        background: #fff;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        padding: 0 1rem;
+      }
+      .header .logo {
+        font-size: 1.7rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        color: #343a40;
+        text-align: center;
+        flex: 1;
+      }
+      .header .sidebar-toggle-container {
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+      .main-content {
+        margin-left: 260px;
+        padding: 2rem 2.5vw 2rem 2.5vw;
+        transition: margin-left 0.3s;
+        min-width: 340px;
+        max-width: 500px;
+      }
+      .sidebar.collapsed ~ .main-content {
+        margin-left: 0;
+      }
+      @media (max-width: 991.98px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+        .sidebar.show {
+          transform: translateX(0);
+        }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+      .table th,
+      .table td {
+        vertical-align: middle;
+        text-align: center;
+      }
+      .input-group-text {
+        width: 120px;
+        justify-content: flex-end;
+      }
+      .table-mrp .btn {
+        width: 70px;
+      }
+      .bg-short {
+        background: #fff7f6 !important;
+      }
+      .text-short {
+        color: #ff5c00;
+        font-weight: bold;
+      }
+      /* 생산계획 form 스타일 */
+      .form-label {
+        font-weight: 500;
+      }
+      .form-control[readonly] {
+        background: #f8f9fa;
+      }
+      .mrp-alert {
+        color: #ff5c00;
+        font-size: 0.97rem;
+        margin-top: 7px;
+      }
+      .btn-order {
+        background: #ff9e40;
+        color: #fff;
+        border: none;
+      }
+      .btn-order:hover,
+      .btn-order:active {
+        background: #ff7a00;
+        color: #fff;
+      }
+      .btn-order[disabled] {
+        background: #f5e5d6;
+        color: #bbb;
+      }
+      .btn-group-bottom {
+        margin-top: 20px;
+      }
+      .btn-bottom {
+        width: 60px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+      <div
+        class="sidebar-header d-flex align-items-center justify-content-between"
+      >
+        <span>메뉴</span>
+        <button
+          class="sidebar-toggle-btn d-lg-none"
+          id="sidebarCloseBtn"
+          aria-label="사이드바 닫기"
+        >
+          <span class="sidebar-toggle-icon">
+            <svg width="20" height="20" fill="currentColor">
+              <path d="M5.5 4.5l9 5.5-9 5.5V4.5z" />
+            </svg>
+          </span>
+        </button>
+      </div>
+      <div class="menu-group">
+        <div class="menu-title">기준정보관리</div>
+        <a class="nav-link" href="#">사업장관리</a>
+        <a class="nav-link" href="#">거래처관리</a>
+        <a class="nav-link" href="#">창고관리</a>
+        <a class="nav-link" href="#">제품관리</a>
+        <a class="nav-link" href="#">품목관리</a>
+        <a class="nav-link" href="#">사원관리</a>
+        <a class="nav-link" href="#">공지사항</a>
+      </div>
+      <div class="menu-group">
+        <div class="menu-title">구매영업관리</div>
+        <a class="nav-link" href="#">발주관리</a>
+        <a class="nav-link" href="#">주문관리</a>
+        <a class="nav-link" href="#">출고관리</a>
+        <a class="nav-link" href="#">자재소요량계산</a>
+      </div>
+      <div class="menu-group">
+        <div class="menu-title">자재관리</div>
+        <a class="nav-link" href="#">입고관리</a>
+        <a class="nav-link" href="#">재고관리</a>
+      </div>
+      <div class="menu-group">
+        <div class="menu-title">생산관리</div>
+        <a class="nav-link active" href="#">생산계획</a>
+      </div>
+    </nav>
+    <!-- Header -->
+    <header class="header">
+      <div class="sidebar-toggle-container">
+        <button
+          class="sidebar-toggle-btn"
+          id="sidebarOpenBtn"
+          aria-label="사이드바 열기"
+        >
+          <span class="sidebar-toggle-icon">
+            <svg width="20" height="20" fill="currentColor">
+              <rect x="3" y="5" width="14" height="2" rx="1" />
+              <rect x="3" y="9" width="14" height="2" rx="1" />
+              <rect x="3" y="13" width="14" height="2" rx="1" />
+            </svg>
+          </span>
+        </button>
+      </div>
+      <div class="logo">CodeA</div>
+    </header>
+    <!-- 본문 시작 -->
+    <main class="main-content" id="mainContent">
+      <h5 class="fw-bold mb-3">▣ 생산계획</h5>
+      <div class="border rounded p-3 bg-white mb-3">
+        <form>
+          <div class="row g-2 mb-2">
+            <div class="col-5 col-form-label">계획번호</div>
+            <div class="col-7">
+              <input
+                type="text"
+                class="form-control"
+                value="PLAN-20240601-001"
+                readonly
+              />
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-5 col-form-label">제품코드</div>
+            <div class="col-7">
+              <input type="text" class="form-control" value="P-1001" readonly />
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-5 col-form-label">제품명</div>
+            <div class="col-7">
+              <input
+                type="text"
+                class="form-control"
+                value="샘플제품A"
+                readonly
+              />
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-5 col-form-label">규격</div>
+            <div class="col-7">
+              <input
+                type="text"
+                class="form-control"
+                value="100x200"
+                readonly
+              />
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-5 col-form-label">단위</div>
+            <div class="col-7">
+              <input type="text" class="form-control" value="EA" readonly />
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-5 col-form-label">계획수량</div>
+            <div class="col-7">
+              <input type="text" class="form-control" value="500" readonly />
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-5 col-form-label">생산시작일</div>
+            <div class="col-7">
+              <input
+                type="date"
+                class="form-control"
+                value="2024-06-10"
+                readonly
+              />
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-5 col-form-label">생산종료일</div>
+            <div class="col-7">
+              <input
+                type="date"
+                class="form-control"
+                value="2024-06-12"
+                readonly
+              />
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-5 col-form-label">생산일수</div>
+            <div class="col-7">
+              <input type="text" class="form-control" value="3" readonly />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="mb-3">
+        <table class="table table-bordered align-middle mb-0">
+          <thead>
+            <tr class="bg-light">
+              <th>일자</th>
+              <th>기존 생산량</th>
+              <th>신규 생산량</th>
+              <th>합계</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2024-06-10</td>
+              <td>200</td>
+              <td>200</td>
+              <td>400</td>
+            </tr>
+            <tr>
+              <td>2024-06-11</td>
+              <td>350</td>
+              <td>50</td>
+              <td>400</td>
+            </tr>
+            <tr>
+              <td>2024-06-12</td>
+              <td>100</td>
+              <td>250</td>
+              <td>350</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h6 class="fw-bold mt-4 mb-2">MRP 자재 목록</h6>
+      <table class="table table-bordered align-middle table-mrp">
+        <thead class="bg-light">
+          <tr>
+            <th>자재코드</th>
+            <th>자재명</th>
+            <th>규격</th>
+            <th>단위</th>
+            <th>단가</th>
+            <th>보유수량</th>
+            <th>필요수량</th>
+            <th>부족여부</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>M-1001</td>
+            <td>자재A</td>
+            <td>50x100</td>
+            <td>EA</td>
+            <td>200</td>
+            <td>500</td>
+            <td>1000</td>
+            <td>
+              <span class="text-short">부족</span>
+              <button class="btn btn-order btn-sm ms-2">발주</button>
+            </td>
+          </tr>
+          <tr>
+            <td>M-1002</td>
+            <td>자재B</td>
+            <td>20x50</td>
+            <td>EA</td>
+            <td>100</td>
+            <td>200</td>
+            <td>500</td>
+            <td>
+              <span class="text-short">부족</span>
+              <button class="btn btn-order btn-sm ms-2">발주</button>
+            </td>
+          </tr>
+          <tr class="bg-short">
+            <td>M-1003</td>
+            <td>자재C</td>
+            <td>10x10</td>
+            <td>EA</td>
+            <td>50</td>
+            <td>250</td>
+            <td>-</td>
+            <td>
+              <button class="btn btn-order btn-sm" disabled>발주</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="mrp-alert">자재 수량이 부족합니다. 발주가 필요합니다.</div>
+      <div class="btn-group-bottom">
+        <button class="btn btn-secondary btn-bottom">등록</button>
+        <button class="btn btn-light border btn-bottom ms-2">취소</button>
+      </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Sidebar toggle
+      const sidebar = document.getElementById("sidebar");
+      const sidebarOpenBtn = document.getElementById("sidebarOpenBtn");
+      const sidebarCloseBtn = document.getElementById("sidebarCloseBtn");
+      function openSidebar() {
+        sidebar.classList.remove("collapsed");
+        sidebar.classList.add("show");
+      }
+      function closeSidebar() {
+        sidebar.classList.add("collapsed");
+        sidebar.classList.remove("show");
+      }
+      sidebarOpenBtn.addEventListener("click", openSidebar);
+      if (sidebarCloseBtn)
+        sidebarCloseBtn.addEventListener("click", closeSidebar);
+      function handleSidebarOnResize() {
+        if (window.innerWidth < 992) {
+          closeSidebar();
+        } else {
+          sidebar.classList.remove("collapsed", "show");
+        }
+      }
+      window.addEventListener("resize", handleSidebarOnResize);
+      document.addEventListener("DOMContentLoaded", handleSidebarOnResize);
+    </script>
+  </body>
+</html>

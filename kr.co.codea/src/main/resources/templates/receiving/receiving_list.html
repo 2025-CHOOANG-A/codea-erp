@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>입고 목록</title>
+</head>
+<body>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    body {
+        min-height: 100vh;
+        background: #f8f9fa;
+    }
+    .sidebar {
+        width: 260px;
+        min-height: 100vh;
+        background: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: -260px;
+        transition: left 0.3s;
+        z-index: 1040;
+        padding-top: 56px;
+    }
+    .sidebar.show {
+        left: 0;
+    }
+    .sidebar .nav-link {
+        color: #adb5bd;
+        border-radius: 0.375rem;
+        margin-bottom: 2px;
+    }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover {
+        color: #fff;
+        background: #495057;
+        text-decoration: none;
+    }
+    .sidebar .sidebar-heading {
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        padding: 1rem 1.25rem 0.5rem;
+        color: #ced4da;
+        letter-spacing: 0.05em;
+    }
+    .sidebar-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: none;
+        border: none;
+        color: #adb5bd;
+        font-size: 1.5rem;
+    }
+    .sidebar-close:hover {
+        color: #fff;
+    }
+    .sidebar-toggle {
+        background: #343a40;
+        border: none;
+        color: #fff;
+        border-radius: 0.375rem;
+        padding: 0.5rem 0.7rem;
+        font-size: 1.25rem;
+        margin-right: 1rem;
+        transition: background 0.2s;
+        box-shadow: 0 2px 8px rgba(52,58,64,0.07);
+    }
+    .sidebar-toggle:hover, .sidebar-toggle:focus {
+        background: #495057;
+        color: #fff;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .table thead th, .table tbody td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+    .table .text-link {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        color: inherit;
+    }
+    .table .text-link:hover {
+        color: #0d6efd;
+        text-decoration: underline;
+    }
+    .pagination {
+        margin-bottom: 0;
+    }
+    /* 페이징 네비게이터 중앙 정렬 */
+    .paging-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+    .paging-row nav {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .paging-row .btn {
+        margin-left: auto;
+        margin-right: 0;
+        position: absolute;
+        right: 0;
+    }
+    @media (max-width: 991.98px) {
+        .sidebar {
+            width: 220px;
+            left: -220px;
+        }
+        .sidebar.show {
+            left: 0;
+        }
+    }
+    @media (max-width: 767.98px) {
+        .sidebar {
+            width: 180px;
+            left: -180px;
+        }
+        .sidebar.show {
+            left: 0;
+        }
+    }
+</style>
+
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm" style="height:56px;">
+    <div class="container-fluid">
+        <button class="sidebar-toggle d-flex align-items-center" id="sidebarToggle" aria-label="메뉴 열기">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                <rect width="16" height="2" y="2" rx="1"/>
+                <rect width="16" height="2" y="7" rx="1"/>
+                <rect width="16" height="2" y="12" rx="1"/>
+            </svg>
+        </button>
+        <span class="navbar-brand mx-auto fw-bold fs-4" style="letter-spacing:0.05em;">CodeA</span>
+        <div style="width:40px;"></div>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebarMenu">
+    <button class="sidebar-close" id="sidebarClose" aria-label="메뉴 닫기">&times;</button>
+    <div class="sidebar-heading">기준정보관리</div>
+    <nav class="nav flex-column px-3">
+        <a class="nav-link" href="#">사업장관리</a>
+        <a class="nav-link" href="#">거래처관리</a>
+        <a class="nav-link" href="#">창고관리</a>
+        <a class="nav-link" href="#">제품관리</a>
+        <a class="nav-link" href="#">품목관리</a>
+        <a class="nav-link" href="#">사원관리</a>
+        <a class="nav-link" href="#">공지사항</a>
+    </nav>
+    <div class="sidebar-heading">구매영업관리</div>
+    <nav class="nav flex-column px-3">
+        <a class="nav-link" href="#">발주관리</a>
+        <a class="nav-link" href="#">주문관리</a>
+        <a class="nav-link" href="#">출고관리</a>
+        <a class="nav-link" href="#">자재소요량계산</a>
+    </nav>
+    <div class="sidebar-heading">자재관리</div>
+    <nav class="nav flex-column px-3">
+        <a class="nav-link" href="#">입고관리</a>
+        <a class="nav-link" href="#">재고관리</a>
+    </nav>
+    <div class="sidebar-heading">생산관리</div>
+    <nav class="nav flex-column px-3 mb-4">
+        <a class="nav-link" href="#">생산계획</a>
+    </nav>
+</aside>
+
+<!-- Main Content -->
+<div class="container-fluid" style="padding-top:72px; max-width: 1600px;">
+    <!-- 검색 필터 -->
+    <form class="row g-2 align-items-end justify-content-center mb-4" id="searchForm">
+        <div class="col-auto">
+            <label for="searchField" class="form-label mb-0">검색항목</label>
+            <select class="form-select" id="searchField" style="min-width: 140px;">
+                <option value="입고번호">입고번호</option>
+                <option value="입고일">입고일</option>
+                <option value="제품코드">제품코드</option>
+                <option value="제품명">제품명</option>
+                <option value="발주번호">발주번호</option>
+                <option value="발주일자">발주일자</option>
+                <option value="창고코드">창고코드</option>
+                <option value="창고명">창고명</option>
+                <option value="담당자코드">담당자코드</option>
+                <option value="담당자명">담당자명</option>
+                <option value="담당자전화번호">담당자전화번호</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <label for="searchInput" class="form-label mb-0 visually-hidden">검색어</label>
+            <input type="text" class="form-control" id="searchInput" placeholder="검색어 입력" style="min-width: 220px;">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary px-4">검색</button>
+        </div>
+    </form>
+
+    <!-- 표 + 등록버튼/페이징 -->
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="table-responsive mb-2">
+                <table class="table table-bordered table-hover align-middle bg-white">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th style="width:40px;"><input type="checkbox" /></th>
+                            <th>입고번호</th>
+                            <th>입고일</th>
+                            <th>제품코드</th>
+                            <th>제품명</th>
+                            <th>발주번호</th>
+                            <th>발주일</th>
+                            <th>규격</th>
+                            <th class="text-end">단가</th>
+                            <th class="text-end">입고수량</th>
+                            <th class="text-end">총액</th>
+                            <th>창고명</th>
+                            <th>담당자명</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inListTableBody">
+                        <!-- 샘플 데이터 JS로 렌더링 -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- 페이징 네비게이터와 등록 버튼을 한 줄에, 페이징은 중앙, 등록버튼은 오른쪽 -->
+            <div class="paging-row" style="min-height:40px;">
+                <nav aria-label="입고 목록 페이지">
+                    <ul class="pagination mb-0" id="pagination">
+                        <!-- 페이징 JS로 렌더링 -->
+                    </ul>
+                </nav>
+                <a href="#" class="btn btn-success ms-3" style="min-width:100px;">등록</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS & Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Sidebar toggle
+    const sidebar = document.getElementById('sidebarMenu');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('show'));
+    sidebarClose.addEventListener('click', () => sidebar.classList.remove('show'));
+    document.addEventListener('click', (e) => {
+        if (sidebar.classList.contains('show') && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+            sidebar.classList.remove('show');
+        }
+    });
+
+    // 샘플 데이터
+    const sampleData = [
+        {
+            입고번호: 'IN20240610-001', 입고일: '2024-06-10', 제품코드: 'P1001', 제품명: '고급볼트', 발주번호: 'PO20240601-001', 발주일: '2024-06-01', 규격: 'M10x50', 단가: 1200, 입고수량: 500, 총액: 600000, 창고명: '본사창고', 담당자명: '홍길동', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240609-002', 입고일: '2024-06-09', 제품코드: 'P1002', 제품명: '스테인리스너트', 발주번호: 'PO20240601-002', 발주일: '2024-06-01', 규격: 'M10', 단가: 800, 입고수량: 1000, 총액: 800000, 창고명: '2공장', 담당자명: '김철수', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240608-003', 입고일: '2024-06-08', 제품코드: 'P1003', 제품명: '와셔', 발주번호: 'PO20240602-001', 발주일: '2024-06-02', 규격: 'M10', 단가: 100, 입고수량: 2000, 총액: 200000, 창고명: '본사창고', 담당자명: '이영희', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240607-004', 입고일: '2024-06-07', 제품코드: 'P1004', 제품명: '육각볼트', 발주번호: 'PO20240603-001', 발주일: '2024-06-03', 규격: 'M12x60', 단가: 1500, 입고수량: 300, 총액: 450000, 창고명: '3공장', 담당자명: '박민수', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240606-005', 입고일: '2024-06-06', 제품코드: 'P1005', 제품명: '플랜지너트', 발주번호: 'PO20240604-001', 발주일: '2024-06-04', 규격: 'M12', 단가: 900, 입고수량: 700, 총액: 630000, 창고명: '본사창고', 담당자명: '최지우', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240605-006', 입고일: '2024-06-05', 제품코드: 'P1006', 제품명: '스프링와셔', 발주번호: 'PO20240605-001', 발주일: '2024-06-05', 규격: 'M8', 단가: 110, 입고수량: 1500, 총액: 165000, 창고명: '2공장', 담당자명: '정우성', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240604-007', 입고일: '2024-06-04', 제품코드: 'P1007', 제품명: '육각너트', 발주번호: 'PO20240606-001', 발주일: '2024-06-06', 규격: 'M8', 단가: 700, 입고수량: 800, 총액: 560000, 창고명: '3공장', 담당자명: '한지민', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240603-008', 입고일: '2024-06-03', 제품코드: 'P1008', 제품명: '평와셔', 발주번호: 'PO20240607-001', 발주일: '2024-06-07', 규격: 'M6', 단가: 90, 입고수량: 2500, 총액: 225000, 창고명: '본사창고', 담당자명: '이준호', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240602-009', 입고일: '2024-06-02', 제품코드: 'P1009', 제품명: '육각볼트', 발주번호: 'PO20240608-001', 발주일: '2024-06-08', 규격: 'M16x80', 단가: 2200, 입고수량: 200, 총액: 440000, 창고명: '2공장', 담당자명: '김소연', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240601-010', 입고일: '2024-06-01', 제품코드: 'P1010', 제품명: '스테인리스볼트', 발주번호: 'PO20240609-001', 발주일: '2024-06-09', 규격: 'M8x40', 단가: 1800, 입고수량: 600, 총액: 1080000, 창고명: '3공장', 담당자명: '오세훈', 담당자링크: '#'
+        },
+        {
+            입고번호: 'IN20240531-011', 입고일: '2024-05-31', 제품코드: 'P1011', 제품명: '육각볼트', 발주번호: 'PO20240610-001', 발주일: '2024-06-10', 규격: 'M20x100', 단가: 3000, 입고수량: 100, 총액: 300000, 창고명: '본사창고', 담당자명: '박지성', 담당자링크: '#'
+        }
+    ];
+
+    // 페이징 및 정렬
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let filteredData = [...sampleData];
+
+    function renderTable() {
+        // 최신 입고일 기준 내림차순
+        filteredData.sort((a, b) => b.입고일.localeCompare(a.입고일) || b.입고번호.localeCompare(a.입고번호));
+        const startIdx = (currentPage - 1) * rowsPerPage;
+        const pageData = filteredData.slice(startIdx, startIdx + rowsPerPage);
+
+        const tbody = document.getElementById('inListTableBody');
+        tbody.innerHTML = pageData.map(row => `
+            <tr class="text-center">
+                <td><input type="checkbox" /></td>
+                <td>${row.입고번호}</td>
+                <td>${row.입고일}</td>
+                <td>${row.제품코드}</td>
+                <td><a href="#" class="text-link">${row.제품명}</a></td>
+                <td>${row.발주번호}</td>
+                <td>${row.발주일}</td>
+                <td>${row.규격}</td>
+                <td class="text-end">${row.단가.toLocaleString()}</td>
+                <td class="text-end">${row.입고수량.toLocaleString()}</td>
+                <td class="text-end">${row.총액.toLocaleString()}</td>
+                <td>${row.창고명}</td>
+                <td><a href="${row.담당자링크}" class="text-link">${row.담당자명}</a></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        const pagination = document.getElementById('pagination');
+        let html = '';
+
+        if (totalPages > 5) {
+            if (currentPage > 1) {
+                html += `<li class="page-item"><a class="page-link" href="#" data-page="1">&laquo;</a></li>`;
+                html += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}">&lt;</a></li>`;
+            }
+            let start = Math.max(1, currentPage - 2);
+            let end = Math.min(totalPages, start + 4);
+            if (end - start < 4) start = Math.max(1, end - 4);
+            for (let i = start; i <= end; i++) {
+                html += `<li class="page-item${i === currentPage ? ' active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+            }
+            if (currentPage < totalPages) {
+                html += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}">&gt;</a></li>`;
+                html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">&raquo;</a></li>`;
+            }
+        } else {
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<li class="page-item${i === currentPage ? ' active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+            }
+        }
+        pagination.innerHTML = html;
+    }
+
+    document.getElementById('pagination').addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') {
+            e.preventDefault();
+            const page = Number(e.target.getAttribute('data-page'));
+            if (!isNaN(page)) {
+                currentPage = page;
+                renderTable();
+                renderPagination();
+            }
+        }
+    });
+
+    // 검색 필터
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const field = document.getElementById('searchField').value;
+        const keyword = document.getElementById('searchInput').value.trim();
+        if (!keyword) {
+            filteredData = [...sampleData];
+        } else {
+            filteredData = sampleData.filter(row => {
+                let value = row[field] || '';
+                return value.toString().toLowerCase().includes(keyword.toLowerCase());
+            });
+        }
+        currentPage = 1;
+        renderTable();
+        renderPagination();
+    });
+
+    // 초기 렌더링
+    renderTable();
+    renderPagination();
+</script>
+</body>
+</html>
