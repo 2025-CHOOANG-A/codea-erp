@@ -1,26 +1,542 @@
-<!-- templates/shipment/shipment_list.html -->
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>출고 목록 페이지</title>
-
-	<!-- CSS -->
-	<link rel="stylesheet" th:href="@{/css/sidebar.css}" />
-	<link rel="stylesheet" th:href="@{/css/shipment_list.css}" />
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>출고 목록</title>
 </head>
 <body>
-	<!-- 사이드바 + 헤더 -->
-	<div th:replace="~{fragments/sidebar :: layout}"></div>
-	
-	<!-- 본문 콘텐츠 삽입 -->
-	<div th:replace="~{shipment/shipment_list_view :: view}"></div>
-	
-	<!-- JS -->
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-	<script th:src="@{/js/sidebar.js}"></script>
-	<script th:src="@{/js/shipment_list.js}"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    body {
+        min-height: 100vh;
+        background: #f8f9fa;
+    }
+    .sidebar {
+        width: 260px;
+        background: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: -260px;
+        height: 100vh;
+        z-index: 1040;
+        transition: left 0.3s;
+        overflow-y: auto;
+    }
+    .sidebar.show {
+        left: 0;
+    }
+    .sidebar .nav-link {
+        color: #adb5bd;
+        border-radius: 0;
+        padding-left: 2rem;
+    }
+    .sidebar .nav-link.active, .sidebar .nav-link:focus, .sidebar .nav-link:hover {
+        color: #fff;
+        background: #495057;
+        text-decoration: none;
+    }
+    .sidebar .sidebar-heading {
+        font-size: 0.95rem;
+        padding: 1rem 1.5rem 0.5rem 1.5rem;
+        color: #ced4da;
+        letter-spacing: 0.05em;
+    }
+    .sidebar .nav {
+        margin-bottom: 2rem;
+    }
+    .sidebar .nav-item {
+        margin-bottom: 0.2rem;
+    }
+    .sidebar-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        color: #adb5bd;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+    }
+    .sidebar-close:focus {
+        outline: none;
+    }
+    .sidebar-toggle {
+        background: #343a40;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        padding: 0.5rem 0.8rem;
+        border-radius: 0.3rem;
+        margin-right: 1rem;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+    }
+    .sidebar-toggle:hover, .sidebar-toggle:focus {
+        background: #495057;
+        color: #fff;
+        outline: none;
+    }
+    .header {
+        height: 64px;
+        background: #fff;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        padding: 0 1.5rem;
+    }
+    .header-logo {
+        margin: 0 auto;
+        font-weight: bold;
+        font-size: 1.5rem;
+        letter-spacing: 0.05em;
+        color: #343a40;
+        user-select: none;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .table thead th, .table tbody td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+    .table th, .table td {
+        text-align: center;
+    }
+    .table td.text-end {
+        text-align: right !important;
+    }
+    .table a.name-link {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        color: inherit;
+    }
+    .pagination {
+        margin-bottom: 0;
+    }
+    .search-form .form-select,
+    .search-form .form-control {
+        min-width: 160px;
+        max-width: 220px;
+    }
+    .search-form .form-select {
+        margin-right: 0.5rem;
+    }
+    .search-form .form-control {
+        margin-right: 0.5rem;
+    }
+    .search-form .btn {
+        min-width: 80px;
+    }
+    @media (max-width: 991.98px) {
+        .sidebar {
+            width: 220px;
+            left: -220px;
+        }
+        .sidebar.show {
+            left: 0;
+        }
+    }
+    @media (max-width: 767.98px) {
+        .header-logo {
+            font-size: 1.1rem;
+        }
+        .search-form .form-select,
+        .search-form .form-control {
+            min-width: 110px;
+            max-width: 140px;
+            font-size: 0.95rem;
+        }
+    }
+</style>
+
+<!-- Sidebar -->
+<nav id="sidebar" class="sidebar">
+    <button class="sidebar-close" id="sidebarClose" aria-label="사이드바 닫기">&times;</button>
+    <div class="sidebar-heading">기준정보관리</div>
+    <ul class="nav flex-column mb-2">
+        <li class="nav-item"><a class="nav-link" href="#">사업장관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">거래처관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">창고관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">제품관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">품목관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">사원관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">공지사항</a></li>
+    </ul>
+    <div class="sidebar-heading">구매영업관리</div>
+    <ul class="nav flex-column mb-2">
+        <li class="nav-item"><a class="nav-link" href="#">발주관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">주문관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">출고관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">자재소요량계산</a></li>
+    </ul>
+    <div class="sidebar-heading">자재관리</div>
+    <ul class="nav flex-column mb-2">
+        <li class="nav-item"><a class="nav-link" href="#">입고관리</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">재고관리</a></li>
+    </ul>
+    <div class="sidebar-heading">생산관리</div>
+    <ul class="nav flex-column mb-4">
+        <li class="nav-item"><a class="nav-link" href="#">생산계획</a></li>
+    </ul>
+</nav>
+
+<!-- Header -->
+<header class="header">
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="사이드바 열기">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24">
+            <rect y="4" width="24" height="2" rx="1" fill="currentColor"/>
+            <rect y="11" width="24" height="2" rx="1" fill="currentColor"/>
+            <rect y="18" width="24" height="2" rx="1" fill="currentColor"/>
+        </svg>
+    </button>
+    <div class="header-logo">CodeA</div>
+</header>
+
+<!-- Main Content -->
+<main class="container-fluid" style="padding-top:2rem; max-width: 1600px;">
+    <!-- Filter & Search -->
+    <div class="row mb-3 align-items-end">
+        <div class="col-auto">
+            <div class="btn-group" role="group" aria-label="분류 필터">
+                <input type="radio" class="btn-check" name="category" id="categoryAll" value="전체" checked>
+                <label class="btn btn-outline-secondary" for="categoryAll">전체</label>
+                <input type="radio" class="btn-check" name="category" id="category출고" value="출고">
+                <label class="btn btn-outline-secondary" for="category출고">출고</label>
+                <input type="radio" class="btn-check" name="category" id="category생산" value="생산">
+                <label class="btn btn-outline-secondary" for="category생산">생산</label>
+            </div>
+        </div>
+        <div class="col-auto flex-grow-1">
+            <form class="d-flex search-form" id="searchForm" autocomplete="off" onsubmit="return false;">
+                <select class="form-select" id="searchField" style="max-width:180px;">
+                    <option value="출고번호">출고번호</option>
+                    <option value="출고일">출고일</option>
+                    <option value="제품코드">제품코드</option>
+                    <option value="제품명">제품명</option>
+                    <option value="주문번호">주문번호</option>
+                    <option value="주문일자">주문일자</option>
+                    <option value="고객사코드">고객사코드</option>
+                    <option value="고객사명">고객사명</option>
+                    <option value="창고코드">창고코드</option>
+                    <option value="창고명">창고명</option>
+                    <option value="담당자코드">담당자코드</option>
+                    <option value="담당자명">담당자명</option>
+                    <option value="담당자전화번호">담당자전화번호</option>
+                </select>
+                <input type="text" class="form-control" id="searchInput" placeholder="검색어 입력" style="max-width:220px;">
+                <button class="btn btn-primary" id="searchBtn" type="submit">검색</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="table-responsive" style="background:#fff; border-radius:0.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                <table class="table table-bordered align-middle mb-0" id="outTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:40px;"><input type="checkbox" id="checkAll"></th>
+                            <th>출고번호</th>
+                            <th>출고일</th>
+                            <th>제품코드</th>
+                            <th>제품명</th>
+                            <th>규격</th>
+                            <th>단가</th>
+                            <th>출고수량</th>
+                            <th>단위</th>
+                            <th>총액</th>
+                            <th>분류</th>
+                            <th>주문번호</th>
+                            <th>주문일자</th>
+                            <th>고객사명</th>
+                            <th>창고명</th>
+                            <th>담당자명</th>
+                        </tr>
+                    </thead>
+                    <tbody id="outTableBody">
+                        <!-- JS로 데이터 렌더링 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination & Register Button -->
+    <div class="row align-items-center mt-3">
+        <div class="col">
+            <nav>
+                <ul class="pagination justify-content-center mb-0" id="pagination">
+                    <!-- JS로 페이지네이션 렌더링 -->
+                </ul>
+            </nav>
+        </div>
+        <div class="col-auto">
+            <a href="#" class="btn btn-success" id="registerBtn">등록</a>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    sidebarToggle.addEventListener('click', () => sidebar.classList.add('show'));
+    sidebarClose.addEventListener('click', () => sidebar.classList.remove('show'));
+    document.addEventListener('click', (e) => {
+        if (sidebar.classList.contains('show') && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+            sidebar.classList.remove('show');
+        }
+    });
+
+    // Sample data
+    const outData = [
+        {
+            출고번호: 'O20240601', 출고일: '2024-06-10', 제품코드: 'P1001', 제품명: '고급볼트', 규격: 'M8x30', 단가: 1200, 출고수량: 500, 단위: 'EA', 총액: 600000, 분류: '출고',
+            주문번호: 'ORD20240601', 주문일자: '2024-06-09', 고객사명: '삼성전자', 창고명: '1창고', 담당자명: '홍길동', 담당자코드: 'E001', 고객사코드: 'C001', 창고코드: 'W01', 담당자전화번호: '010-1234-5678'
+        },
+        {
+            출고번호: 'O20240602', 출고일: '2024-06-09', 제품코드: 'P1002', 제품명: '스프링와셔', 규격: 'M10', 단가: 300, 출고수량: 1000, 단위: 'EA', 총액: 300000, 분류: '생산',
+            주문번호: 'ORD20240602', 주문일자: '2024-06-08', 고객사명: 'LG화학', 창고명: '2창고', 담당자명: '김철수', 담당자코드: 'E002', 고객사코드: 'C002', 창고코드: 'W02', 담당자전화번호: '010-2345-6789'
+        },
+        {
+            출고번호: 'O20240603', 출고일: '2024-06-08', 제품코드: 'P1003', 제품명: '육각너트', 규격: 'M12', 단가: 500, 출고수량: 800, 단위: 'EA', 총액: 400000, 분류: '출고',
+            주문번호: 'ORD20240603', 주문일자: '2024-06-07', 고객사명: '현대자동차', 창고명: '1창고', 담당자명: '이영희', 담당자코드: 'E003', 고객사코드: 'C003', 창고코드: 'W01', 담당자전화번호: '010-3456-7890'
+        },
+        {
+            출고번호: 'O20240604', 출고일: '2024-06-07', 제품코드: 'P1004', 제품명: '플랜지', 규격: 'F20', 단가: 2000, 출고수량: 200, 단위: 'EA', 총액: 400000, 분류: '생산',
+            주문번호: 'ORD20240604', 주문일자: '2024-06-06', 고객사명: '포스코', 창고명: '3창고', 담당자명: '박민수', 담당자코드: 'E004', 고객사코드: 'C004', 창고코드: 'W03', 담당자전화번호: '010-4567-8901'
+        },
+        {
+            출고번호: 'O20240605', 출고일: '2024-06-06', 제품코드: 'P1005', 제품명: '와셔', 규격: 'M8', 단가: 150, 출고수량: 1500, 단위: 'EA', 총액: 225000, 분류: '출고',
+            주문번호: 'ORD20240605', 주문일자: '2024-06-05', 고객사명: '한화솔루션', 창고명: '2창고', 담당자명: '최지훈', 담당자코드: 'E005', 고객사코드: 'C005', 창고코드: 'W02', 담당자전화번호: '010-5678-9012'
+        },
+        {
+            출고번호: 'O20240606', 출고일: '2024-06-05', 제품코드: 'P1006', 제품명: '육각볼트', 규격: 'M16x40', 단가: 2500, 출고수량: 300, 단위: 'EA', 총액: 750000, 분류: '생산',
+            주문번호: 'ORD20240606', 주문일자: '2024-06-04', 고객사명: 'SK하이닉스', 창고명: '1창고', 담당자명: '정유진', 담당자코드: 'E006', 고객사코드: 'C006', 창고코드: 'W01', 담당자전화번호: '010-6789-0123'
+        },
+        {
+            출고번호: 'O20240607', 출고일: '2024-06-04', 제품코드: 'P1007', 제품명: '스페이서', 규격: 'S10', 단가: 800, 출고수량: 400, 단위: 'EA', 총액: 320000, 분류: '출고',
+            주문번호: 'ORD20240607', 주문일자: '2024-06-03', 고객사명: '롯데케미칼', 창고명: '3창고', 담당자명: '한지민', 담당자코드: 'E007', 고객사코드: 'C007', 창고코드: 'W03', 담당자전화번호: '010-7890-1234'
+        },
+        {
+            출고번호: 'O20240608', 출고일: '2024-06-03', 제품코드: 'P1008', 제품명: '너트', 규격: 'M10', 단가: 400, 출고수량: 900, 단위: 'EA', 총액: 360000, 분류: '생산',
+            주문번호: 'ORD20240608', 주문일자: '2024-06-02', 고객사명: '기아', 창고명: '2창고', 담당자명: '서지훈', 담당자코드: 'E008', 고객사코드: 'C008', 창고코드: 'W02', 담당자전화번호: '010-8901-2345'
+        },
+        {
+            출고번호: 'O20240609', 출고일: '2024-06-02', 제품코드: 'P1009', 제품명: '플레이트', 규격: 'PL50', 단가: 3500, 출고수량: 100, 단위: 'EA', 총액: 350000, 분류: '출고',
+            주문번호: 'ORD20240609', 주문일자: '2024-06-01', 고객사명: '두산중공업', 창고명: '1창고', 담당자명: '이수진', 담당자코드: 'E009', 고객사코드: 'C009', 창고코드: 'W01', 담당자전화번호: '010-9012-3456'
+        },
+        {
+            출고번호: 'O20240610', 출고일: '2024-06-01', 제품코드: 'P1010', 제품명: '볼트', 규격: 'M6x20', 단가: 1000, 출고수량: 600, 단위: 'EA', 총액: 600000, 분류: '생산',
+            주문번호: 'ORD20240610', 주문일자: '2024-05-31', 고객사명: '현대모비스', 창고명: '3창고', 담당자명: '장민호', 담당자코드: 'E010', 고객사코드: 'C010', 창고코드: 'W03', 담당자전화번호: '010-0123-4567'
+        },
+        {
+            출고번호: 'O20240611', 출고일: '2024-05-31', 제품코드: 'P1011', 제품명: '너트', 규격: 'M8', 단가: 350, 출고수량: 700, 단위: 'EA', 총액: 245000, 분류: '출고',
+            주문번호: 'ORD20240611', 주문일자: '2024-05-30', 고객사명: '삼성SDI', 창고명: '2창고', 담당자명: '오지현', 담당자코드: 'E011', 고객사코드: 'C011', 창고코드: 'W02', 담당자전화번호: '010-2345-6780'
+        }
+    ];
+
+    // Table columns order
+    const columns = [
+        '출고번호', '출고일', '제품코드', '제품명', '규격', '단가', '출고수량', '단위', '총액', '분류',
+        '주문번호', '주문일자', '고객사명', '창고명', '담당자명'
+    ];
+
+    // Paging
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let filteredData = [...outData];
+
+    function renderTable() {
+        const tbody = document.getElementById('outTableBody');
+        tbody.innerHTML = '';
+        // Sort by 출고일 desc
+        filteredData.sort((a, b) => b.출고일.localeCompare(a.출고일));
+        const start = (currentPage - 1) * rowsPerPage;
+        const pageData = filteredData.slice(start, start + rowsPerPage);
+
+        pageData.forEach((row, idx) => {
+            const tr = document.createElement('tr');
+            // Checkbox
+            const tdCheck = document.createElement('td');
+            tdCheck.innerHTML = `<input type="checkbox" class="row-check">`;
+            tr.appendChild(tdCheck);
+
+            columns.forEach(col => {
+                const td = document.createElement('td');
+                // 오른쪽 정렬
+                if (['단가', '출고수량', '총액'].includes(col)) {
+                    td.className = 'text-end';
+                    td.textContent = row[col].toLocaleString();
+                }
+                // 이름 링크
+                else if (col === '제품명') {
+                    td.innerHTML = `<a href="#" class="name-link" tabindex="0">${row[col]}</a>`;
+                }
+                else if (col === '고객사명') {
+                    td.innerHTML = `<a href="#" class="name-link" tabindex="0">${row[col]}</a>`;
+                }
+                else if (col === '창고명') {
+                    td.innerHTML = `<a href="#" class="name-link" tabindex="0">${row[col]}</a>`;
+                }
+                else if (col === '담당자명') {
+                    td.innerHTML = `<a href="#" class="name-link" tabindex="0">${row[col]}</a>`;
+                }
+                // 가운데 정렬
+                else {
+                    td.textContent = row[col];
+                }
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+        // 체크박스 전체선택 해제
+        document.getElementById('checkAll').checked = false;
+    }
+
+    function renderPagination() {
+        const totalPages = Math.max(1, Math.ceil(filteredData.length / rowsPerPage));
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+        // Prev
+        if (currentPage > 1) {
+            const prev = document.createElement('li');
+            prev.className = 'page-item';
+            prev.innerHTML = `<a class="page-link" href="#" aria-label="이전">&laquo;</a>`;
+            prev.onclick = e => { e.preventDefault(); currentPage--; updateTable(); };
+            pagination.appendChild(prev);
+        }
+
+        // First page
+        if (startPage > 1) {
+            const first = document.createElement('li');
+            first.className = 'page-item';
+            first.innerHTML = `<a class="page-link" href="#">1</a>`;
+            first.onclick = e => { e.preventDefault(); currentPage = 1; updateTable(); };
+            pagination.appendChild(first);
+
+            if (startPage > 2) {
+                const dots = document.createElement('li');
+                dots.className = 'page-item disabled';
+                dots.innerHTML = `<span class="page-link">...</span>`;
+                pagination.appendChild(dots);
+            }
+        }
+
+        // Page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            const li = document.createElement('li');
+            li.className = 'page-item' + (i === currentPage ? ' active' : '');
+            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            li.onclick = e => { e.preventDefault(); currentPage = i; updateTable(); };
+            pagination.appendChild(li);
+        }
+
+        // Last page
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const dots = document.createElement('li');
+                dots.className = 'page-item disabled';
+                dots.innerHTML = `<span class="page-link">...</span>`;
+                pagination.appendChild(dots);
+            }
+            const last = document.createElement('li');
+            last.className = 'page-item';
+            last.innerHTML = `<a class="page-link" href="#">${totalPages}</a>`;
+            last.onclick = e => { e.preventDefault(); currentPage = totalPages; updateTable(); };
+            pagination.appendChild(last);
+        }
+
+        // Next
+        if (currentPage < totalPages) {
+            const next = document.createElement('li');
+            next.className = 'page-item';
+            next.innerHTML = `<a class="page-link" href="#" aria-label="다음">&raquo;</a>`;
+            next.onclick = e => { e.preventDefault(); currentPage++; updateTable(); };
+            pagination.appendChild(next);
+        }
+    }
+
+    function updateTable() {
+        renderTable();
+        renderPagination();
+    }
+
+    // 검색 및 필터
+    function filterData() {
+        const category = document.querySelector('input[name="category"]:checked').value;
+        const field = document.getElementById('searchField').value;
+        const keyword = document.getElementById('searchInput').value.trim();
+
+        filteredData = outData.filter(row => {
+            let match = true;
+            if (category !== '전체') match = row.분류 === category;
+            if (match && keyword) {
+                let fieldKey = field;
+                // 필드명 매핑
+                if (field === '고객사코드') fieldKey = '고객사코드';
+                else if (field === '창고코드') fieldKey = '창고코드';
+                else if (field === '담당자코드') fieldKey = '담당자코드';
+                else if (field === '담당자전화번호') fieldKey = '담당자전화번호';
+                else if (field === '출고번호') fieldKey = '출고번호';
+                else if (field === '출고일') fieldKey = '출고일';
+                else if (field === '제품코드') fieldKey = '제품코드';
+                else if (field === '제품명') fieldKey = '제품명';
+                else if (field === '주문번호') fieldKey = '주문번호';
+                else if (field === '주문일자') fieldKey = '주문일자';
+                else if (field === '고객사명') fieldKey = '고객사명';
+                else if (field === '창고명') fieldKey = '창고명';
+                else if (field === '담당자명') fieldKey = '담당자명';
+                match = row[fieldKey] && row[fieldKey].toString().includes(keyword);
+            }
+            return match;
+        });
+        currentPage = 1;
+        updateTable();
+    }
+
+    // 이벤트 바인딩
+    document.getElementById('searchBtn').addEventListener('click', filterData);
+    document.getElementById('searchForm').addEventListener('submit', filterData);
+    document.querySelectorAll('input[name="category"]').forEach(radio => {
+        radio.addEventListener('change', filterData);
+    });
+
+    // 체크박스 전체선택
+    document.getElementById('checkAll').addEventListener('change', function() {
+        document.querySelectorAll('#outTableBody .row-check').forEach(cb => cb.checked = this.checked);
+    });
+
+    // 등록 버튼 이동
+    document.getElementById('registerBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = '/register_out.html';
+    });
+
+    // 이름 링크 이동 (샘플)
+    document.getElementById('outTableBody').addEventListener('click', function(e) {
+        if (e.target.classList.contains('name-link')) {
+            e.preventDefault();
+            // 실제 페이지 이동은 각 항목별로 구현 필요
+            alert(e.target.textContent + ' 상세 페이지로 이동');
+        }
+    });
+
+    // 초기 렌더링
+    updateTable();
+</script>
 </body>
 </html>

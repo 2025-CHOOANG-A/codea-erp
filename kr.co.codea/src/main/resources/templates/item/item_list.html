@@ -441,7 +441,6 @@
       if (window.innerWidth < 992) closeSidebar();
 
       // 샘플 데이터
-      /*
       const sampleData = [
         {
           stockNo: "1001",
@@ -600,7 +599,7 @@
           remark: "",
         },
       ];
-*/
+
       // 페이징/필터 변수
       let currentPage = 1;
       const rowsPerPage = 10;
@@ -736,15 +735,13 @@
             e.preventDefault();
             // 페이지 이동 예시 (실제 이동은 필요에 따라 구현)
             alert(`${e.target.dataset.name} 상세 페이지로 이동`);
-            location.href=""
           }
         });
 
       // 추가 버튼
       document.getElementById("addBtn").addEventListener("click", function (e) {
         e.preventDefault();
-        alert("제품정보 입력페이지로 이동합니다.");
-        location.href="/item/item_write"
+        alert("추가 페이지로 이동");
       });
 
       // 최초 렌더링

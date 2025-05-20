@@ -1,30 +1,308 @@
-<!-- templates/shipment/shipment_detail.html -->
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>사업장 수정페이지</title>
-
-    <!-- CSS -->
-    <link rel="stylesheet" th:href="@{/css/sidebar.css}" />
-    <link rel="stylesheet" th:href="@{/css/company_modify.css}" />
+    <title>회사 정보 작성</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap v5.3 CSS -->
     <link
-      rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
     />
+    <style>
+      body {
+        min-height: 100vh;
+        background-color: #f8f9fa;
+      }
+      .main-content {
+        padding: 2rem 1rem 1rem 1rem;
+      }
+      .company-table th {
+        width: 180px;
+        background: #f1f3f5;
+        vertical-align: middle;
+      }
+      .company-logo,
+      .company-license {
+        max-width: 100px;
+        max-height: 60px;
+        object-fit: contain;
+        border: 1px solid #dee2e6;
+        background: #fff;
+        padding: 2px;
+        border-radius: 0.25rem;
+      }
+    </style>
   </head>
   <body>
-    <!-- 사이드바 + 헤더 -->
-    <div th:replace="fragments/sidebar :: layout"></div>
-
-    <!-- 본문 콘텐츠 삽입 -->
-    <div th:replace="company/company_modifyview :: view"></div>
-
-    <!-- JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:src="@{/js/sidebar.js}"></script>
-    <script th:src="@{/js/company_modify.js}"></script>
+    <main class="main-content">
+      <div class="container">
+        <h2 class="mb-4 fw-semibold">사업장 정보 작성</h2>
+        <form id="companyForm" autocomplete="off">
+          <div class="table-responsive">
+            <table
+              class="table table-bordered align-middle company-table bg-white"
+            >
+              <tbody>
+                <tr>
+                  <th scope="row">회사 로고</th>
+                  <td colspan="3">
+                    <input
+                      type="file"
+                      class="form-control"
+                      name="logo"
+                      accept="image/*"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">회사명 <span class="text-danger">*</span></th>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="company_name"
+                      required
+                    />
+                  </td>
+                  <th scope="row">
+                    대표자명 <span class="text-danger">*</span>
+                  </th>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="ceo_name"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    법인/개인 <span class="text-danger">*</span>
+                  </th>
+                  <td>
+                    <div class="form-check form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="type"
+                        id="corporate"
+                        value="법인"
+                        required
+                      />
+                      <label class="form-check-label" for="corporate"
+                        >법인</label
+                      >
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="type"
+                        id="individual"
+                        value="개인"
+                        required
+                      />
+                      <label class="form-check-label" for="individual"
+                        >개인</label
+                      >
+                    </div>
+                  </td>
+                  <th scope="row">법인등록번호</th>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="corporate_number"
+                      id="corporateNumber"
+                      placeholder="법인 선택 시 입력"
+                      disabled
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    사업자등록번호 <span class="text-danger">*</span>
+                  </th>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="biz_number"
+                      required
+                    />
+                  </td>
+                  <th scope="row">
+                    사업자등록증 <span class="text-danger">*</span>
+                  </th>
+                  <td>
+                    <input
+                      type="file"
+                      class="form-control"
+                      name="biz_license"
+                      accept="image/*,application/pdf"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">업태 <span class="text-danger">*</span></th>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="biz_type"
+                      required
+                    />
+                  </td>
+                  <th scope="row">업종 <span class="text-danger">*</span></th>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="biz_item"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">주소 <span class="text-danger">*</span></th>
+                  <td>
+                    <div class="input-group mb-2">
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="address"
+                        id="address"
+                        placeholder="주소 검색 버튼을 클릭하세요"
+                        readonly
+                        required
+                      />
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="execDaumPostcode()"
+                      >
+                        주소검색
+                      </button>
+                    </div>
+                  </td>
+                  <th scope="row">
+                    상세주소 <span class="text-danger">*</span>
+                  </th>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="address_detail"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    우편번호 <span class="text-danger">*</span>
+                  </th>
+                  <td colspan="3">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="zipcode"
+                      id="zipcode"
+                      readonly
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    대표번호 <span class="text-danger">*</span>
+                  </th>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="tel"
+                      required
+                    />
+                  </td>
+                  <th scope="row">
+                    팩스번호 <span class="text-danger">*</span>
+                  </th>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="fax"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">이메일 <span class="text-danger">*</span></th>
+                  <td colspan="3">
+                    <input
+                      type="email"
+                      class="form-control"
+                      name="email"
+                      required
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-4">
+            <button type="submit" class="btn btn-primary px-4">저장</button>
+            <button
+              type="button"
+              class="btn btn-secondary px-4 ms-2"
+              onclick="window.history.back()"
+            >
+              취소
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+    <!-- Daum 우편번호 서비스 -->
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script>
+      // 법인/개인 선택에 따라 법인등록번호 활성화
+      document.addEventListener("DOMContentLoaded", function () {
+        const corporateRadio = document.getElementById("corporate");
+        const individualRadio = document.getElementById("individual");
+        const corporateNumber = document.getElementById("corporateNumber");
+
+        function toggleCorporateNumber() {
+          if (corporateRadio.checked) {
+            corporateNumber.disabled = false;
+            corporateNumber.required = true;
+          } else {
+            corporateNumber.disabled = true;
+            corporateNumber.required = false;
+            corporateNumber.value = "";
+          }
+        }
+
+        corporateRadio.addEventListener("change", toggleCorporateNumber);
+        individualRadio.addEventListener("change", toggleCorporateNumber);
+      });
+
+      // 주소 검색
+      function execDaumPostcode() {
+        new daum.Postcode({
+          oncomplete: function (data) {
+            document.getElementById("zipcode").value = data.zonecode;
+            document.getElementById("address").value =
+              data.roadAddress || data.jibunAddress;
+          },
+        }).open();
+      }
+    </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
