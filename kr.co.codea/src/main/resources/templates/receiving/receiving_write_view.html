@@ -1,0 +1,282 @@
+<div th:fragment="view">
+
+<!-- Main Content -->
+<main class="container my-4" style="max-width:900px;">
+	<div class="bg-white rounded shadow-sm p-4">
+		<div class="mb-4">
+			<h5 class="fw-bold mb-0">입고 등록</h5>
+		</div>
+		<form autocomplete="off">
+			<!-- 입고 정보 -->
+			<div class="form-section-title">입고 정보</div>
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-md-6">
+					<label class="form-label mb-1">입고 코드</label>
+					<div class="input-group">
+						<input type="text" class="form-control" readonly>
+						<button class="btn btn-outline-secondary" type="button" title="새로고침">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+								<path d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 1 1 .908-.418A4 4 0 1 0 8 4V1.5a.5.5 0 0 1 1 0v3A.5.5 0 0 1 8.5 5h-3a.5.5 0 0 1 0-1H8z"/>
+							</svg>
+						</button>
+						<button class="btn btn-outline-secondary" type="button" title="중복체크">중복체크</button>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<label class="form-label mb-1">입고 일자</label>
+					<input type="date" class="form-control" id="inDate" min="" required>
+				</div>
+			</div>
+
+			<!-- 제품 정보 -->
+			<div class="form-section-title">제품 정보</div>
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-md-6">
+					<label class="form-label mb-1">제품 코드</label>
+					<input type="text" class="form-control" id="productCode" readonly style="background:#f1f3f5;">
+				</div>
+				<div class="col-md-6">
+					<label class="form-label mb-1">제품 명</label>
+					<div class="input-group">
+						<input type="text" class="form-control" id="productName" readonly style="background:#f1f3f5;">
+						<button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#productModal">검색</button>
+					</div>
+				</div>
+			</div>
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-md-4">
+					<label class="form-label mb-1">규격</label>
+					<input type="text" class="form-control" id="productSpec" readonly style="background:#f1f3f5;">
+				</div>
+				<div class="col-md-4">
+					<label class="form-label mb-1">단위</label>
+					<input type="text" class="form-control" id="productUnit" readonly style="background:#f1f3f5;">
+				</div>
+				<div class="col-md-4">
+					<label class="form-label mb-1">단가</label>
+					<input type="number" class="form-control" id="productPrice" readonly style="background:#f1f3f5;">
+				</div>
+			</div>
+
+			<!-- 발주 정보 -->
+			<div class="form-section-title">발주 정보</div>
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-md-6">
+					<label class="form-label mb-1">발주 번호</label>
+					<input type="text" class="form-control" id="orderNo" readonly style="background:#f1f3f5;">
+				</div>
+				<div class="col-md-6">
+					<label class="form-label mb-1">발주 일자</label>
+					<div class="input-group">
+						<input type="text" class="form-control" id="orderDate" readonly style="background:#f1f3f5;">
+						<button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#orderModal">검색</button>
+					</div>
+				</div>
+			</div>
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-md-6">
+					<label class="form-label mb-1">발주 수량</label>
+					<input type="number" class="form-control" id="orderQty" readonly style="background:#f1f3f5;">
+				</div>
+			</div>
+
+			<!-- 입고 내역 -->
+			<div class="form-section-title">입고 내역</div>
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-md-6">
+					<label class="form-label mb-1">입고 수량</label>
+					<input type="number" class="form-control" id="inQty" min="1" required>
+				</div>
+			</div>
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-md-6">
+					<label class="form-label mb-1">총액</label>
+					<input type="number" class="form-control" id="totalAmount" readonly style="background:#f1f3f5;">
+				</div>
+			</div>
+
+			<!-- 창고 정보 -->
+			<div class="form-section-title">창고 정보</div>
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-md-6">
+					<label class="form-label mb-1">창고 코드</label>
+					<input type="text" class="form-control" id="warehouseCode" readonly style="background:#f1f3f5;">
+				</div>
+				<div class="col-md-6">
+					<label class="form-label mb-1">창고명</label>
+					<div class="input-group">
+						<input type="text" class="form-control" id="warehouseName" readonly style="background:#f1f3f5;">
+						<button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#warehouseModal">검색</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- 담당자 정보 -->
+			<div class="form-section-title">담당자 정보</div>
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-md-6">
+					<label class="form-label mb-1">담당자명</label>
+					<div class="input-group">
+						<input type="text" class="form-control" id="managerName" readonly style="background:#f1f3f5;">
+						<button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#managerModal">검색</button>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<label class="form-label mb-1">담당자 전화번호</label>
+					<input type="text" class="form-control" id="managerPhone" readonly style="background:#f1f3f5;">
+				</div>
+			</div>
+
+			<!-- 비고 -->
+			<div class="form-section-title">비고</div>
+			<div class="mb-4">
+				<textarea class="form-control" rows="2" placeholder="비고를 입력하세요"></textarea>
+			</div>
+
+			<!-- 버튼 -->
+			<div class="d-flex justify-content-end gap-2">
+				<a href="#" class="btn btn-primary">등록</a>
+				<a href="#" class="btn btn-outline-secondary">취소</a>
+			</div>
+		</form>
+	</div>
+</main>
+
+<!-- 제품 검색 Modal -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" style="min-width:700px;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="productModalLabel">제품 검색</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+			</div>
+			<div class="modal-body">
+				<div class="input-group mb-3" style="max-width:400px;">
+					<input type="text" class="form-control" id="productSearchInput" placeholder="제품명을 입력하세요">
+					<button class="btn btn-outline-secondary" type="button" id="productSearchBtn">검색</button>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-sm table-hover align-middle mb-0" id="productSearchTable">
+						<thead class="table-light">
+							<tr>
+								<th>제품 코드</th>
+								<th>제품명</th>
+								<th>규격</th>
+								<th>단위</th>
+								<th>단가</th>
+								<th style="width:70px;">선택</th>
+							</tr>
+						</thead>
+						<tbody>
+							<!-- 검색 결과 -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 발주 검색 Modal -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" style="min-width:900px;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="orderModalLabel">발주 검색</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+			</div>
+			<div class="modal-body">
+				<div class="input-group mb-3" style="max-width:400px;">
+					<input type="text" class="form-control" id="orderSearchInput" placeholder="제품명을 입력하세요">
+					<button class="btn btn-outline-secondary" type="button" id="orderSearchBtn">검색</button>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-sm table-hover align-middle mb-0" id="orderSearchTable">
+						<thead class="table-light">
+							<tr>
+								<th>발주 번호</th>
+								<th>발주일자</th>
+								<th>제품 코드</th>
+								<th>제품명</th>
+								<th>발주 수량</th>
+								<th>총액</th>
+								<th style="width:70px;">선택</th>
+							</tr>
+						</thead>
+						<tbody>
+							<!-- 검색 결과 -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 창고 검색 Modal -->
+<div class="modal fade" id="warehouseModal" tabindex="-1" aria-labelledby="warehouseModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" style="min-width:700px;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="warehouseModalLabel">창고 검색</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+			</div>
+			<div class="modal-body">
+				<div class="input-group mb-3" style="max-width:400px;">
+					<input type="text" class="form-control" id="warehouseSearchInput" placeholder="창고명을 입력하세요">
+					<button class="btn btn-outline-secondary" type="button" id="warehouseSearchBtn">검색</button>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-sm table-hover align-middle mb-0" id="warehouseSearchTable">
+						<thead class="table-light">
+							<tr>
+								<th>창고 코드</th>
+								<th>창고명</th>
+								<th>창고 주소</th>
+								<th style="width:70px;">선택</th>
+							</tr>
+						</thead>
+						<tbody>
+							<!-- 검색 결과 -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 담당자 검색 Modal -->
+<div class="modal fade" id="managerModal" tabindex="-1" aria-labelledby="managerModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" style="min-width:700px;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="managerModalLabel">담당자 검색</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+			</div>
+			<div class="modal-body">
+				<div class="input-group mb-3" style="max-width:400px;">
+					<input type="text" class="form-control" id="managerSearchInput" placeholder="담당자명을 입력하세요">
+					<button class="btn btn-outline-secondary" type="button" id="managerSearchBtn">검색</button>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-sm table-hover align-middle mb-0" id="managerSearchTable">
+						<thead class="table-light">
+							<tr>
+								<th>담당자명</th>
+								<th>담당자 코드</th>
+								<th>담당자 전화번호</th>
+								<th style="width:70px;">선택</th>
+							</tr>
+						</thead>
+						<tbody>
+							<!-- 검색 결과 -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</div>
