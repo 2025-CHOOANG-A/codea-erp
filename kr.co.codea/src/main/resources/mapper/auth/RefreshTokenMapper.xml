@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.mapper.auth.RefreshTokenMapper">
+   <!-- 토큰 저장 -->
+    <insert id="insertRefreshToken" parameterType="kr.co.codea.auth.dto.RefreshToken">
+        INSERT INTO REFRESH_TOKEN (EMP_ID, TOKEN, EXPIRATION, CREATED_AT)
+        VALUES (#{empId}, #{token}, #{expiration}, SYSDATE)
+    </insert>
+
+    <!-- 토큰 조회 -->
+    <select id="findByUserId" resultType="kr.co.codea.auth.dto.RefreshToken">
+        SELECT RT_ID, EMP_ID, TOKEN, EXPIRATION, CREATED_AT, UPDATED_AT
+        FROM REFRESH_TOKEN
+        WHERE EMP_ID = (
+            SELECT EMP_ID FROM EMPLOYEE WHERE EMP_USER_ID = #{empUserId}
+        )
+    </select>
+
+    <!-- 토큰 삭제 -->
+    <delete id="deleteByUserId">
+        DELETE FROM REFRESH_TOKEN
+        WHERE EMP_ID = (
+            SELECT EMP_ID FROM EMPLOYEE WHERE EMP_USER_ID = #{empUserId}
+        )
+    </delete>
+
+    <!-- 토큰 갱신 -->
+    <update id="updateRefreshToken" parameterType="kr.co.codea.auth.dto.RefreshToken">
+        UPDATE REFRESH_TOKEN
+        SET TOKEN = #{token},
+            EXPIRATION = #{expiration},
+            UPDATED_AT = SYSDATE
+        WHERE EMP_ID = #{empId}
+    </update>
+</mapper>

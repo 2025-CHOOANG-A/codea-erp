@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- <mapper namespace="mapper.company.CompanyMapper"> -->
+<mapper namespace="kr.co.codea.company.CompanyMapper">
+<select id="alldata" resultType="kr.co.codea.company.CompanyDTO">
+select * from company
+</select>
+</mapper>
+<!-- <mapper namespace="kr.co.codea.company.CompanyMapper">
+ -->
