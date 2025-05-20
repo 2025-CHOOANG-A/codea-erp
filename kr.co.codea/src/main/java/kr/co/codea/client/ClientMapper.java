@@ -7,6 +7,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ClientMapper {
     List<ClientDTO> selectAllPartners();
-    ClientDTO selectPartnerWithContacts(int bpId);
+    ClientDTO selectPartnerWithContacts(int BP_ID);
 
 }

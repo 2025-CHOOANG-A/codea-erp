@@ -17,7 +17,7 @@ public class ClientController {
         this.service = service;
     }
 
-    @GetMapping("/clients")
+    @GetMapping("/client")
     public String list(Model m) {
         List<ClientDTO> list = service.getAllPartners();
         m.addAttribute("clients", list);
@@ -25,10 +25,10 @@ public class ClientController {
         return "client/client_list";
     }
 
-    @GetMapping("/clients/{id}")
+    @GetMapping("/client/{id}")
     public String detail(@PathVariable("id") int id, Model m) {
         ClientDTO client = service.getPartnerDetails(id);
         m.addAttribute("client", client);
-        return "clients/detail";
+        return "client/detail";
     } 
 }
