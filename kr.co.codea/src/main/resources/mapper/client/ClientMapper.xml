@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.client.ClientMapper">
+
+  <resultMap id="ClientWithContacts" type="kr.co.codea.client.ClientDTO">
+    <id property="bpId" column="BP_ID" />
+    <result property="bpCode" column="BP_CODE" />
+    <result property="bpType" column="BP_TYPE" />
+    <result property="bpName" column="BP_NAME" />
+    <!-- 생략: 다른 필드 매핑 -->
+    <collection property="contacts" ofType="kr.co.codea.client.ContactDTO">
+      <id property="bcId" column="BC_ID" />
+      <result property="bpId" column="BP_ID" />
+      <result property="bcName" column="BC_NAME" />
+      <result property="bcPosition" column="BC_POSITION" />
+      <result property="tel" column="TEL" />
+      <result property="hp" column="HP" />
+      <result property="email" column="EMAIL" />
+      <!-- 생략: 다른 필드 -->
+    </collection>
+  </resultMap>
+
+  <select id="selectAllPartners" resultType="kr.co.codea.client.ClientDTO">
+    SELECT BP_ID,BP_CODE,BP_TYPE,BP_NAME,BIZ_NO,TEL,ADDRESS FROM BUSINESS_PARTNER ORDER BY BP_ID
+  </select>
+
+  <select id="selectPartnerWithContacts" resultMap="ClientWithContacts" parameterType="long">
+    SELECT p.*, c.BC_ID, c.BC_NAME, c.BC_POSITION, c.TEL, c.HP, c.EMAIL
+      FROM BUSINESS_PARTNER p
+      LEFT JOIN BUSINESS_CONTACT c ON p.BP_ID = c.BP_ID
+      WHERE p.BP_ID = #{bpId}
+  </select>
+
+</mapper>

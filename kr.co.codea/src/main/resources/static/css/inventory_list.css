@@ -1,0 +1,48 @@
+.main-content {
+	margin-left: 0;
+	transition: margin-left 0.3s;
+	padding-top: 56px;
+	min-height: 100vh;
+}
+
+.table-responsive {
+	overflow-x: auto;
+}
+
+.table th, .table td {
+	vertical-align: middle;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.table td.text-end {
+	text-align: right !important;
+}
+
+.table a.name-link {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: inherit;
+}
+
+.table a.name-link:hover {
+	color: #0d6efd;
+}
+
+.pagination {
+	margin-bottom: 0;
+}
+
+.search-form .form-select,
+.search-form .form-control {
+	min-width: 130px;
+	max-width: 200px;
+}
+
+.search-form .btn {
+	min-width: 80px;
+}
+
+.filter-group .btn {
+	min-width: 70px;
+}

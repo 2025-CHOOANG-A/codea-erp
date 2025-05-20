@@ -32,7 +32,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // 순수 JDBC 설정
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc' // Spring Data JDBC (간단 ORM)
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // MyBatis 프레임워크 연동
-	//implementation 'org.springframework.boot:spring-boot-starter-data-mongodb' // MongoDB
+	// implementation 'org.springframework.boot:spring-boot-starter-data-mongodb' // MongoDB
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11' // Oracle JDBC 드라이버
     
     // ===== [세션 관리] =====
@@ -54,6 +54,17 @@ dependencies {
 	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4' // MyBatis 테스트 지원
 	testImplementation 'io.projectreactor:reactor-test' // WebFlux 관련 테스트 도구
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // JUnit Platform 실행기
+	
+	// Spring Security
+	implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Security 프레임워크를 사용하기 위한 기본 의존성
+	
+	// JWT (0.11.x 기준)
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5' //  JWT 생성/파싱/검증 기능을 정의한 API
+	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5' // 위 API의 실제 구현체
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JWT 내부 클레임을 JSON으로 직렬화/역직렬화 하기 위한 Jackson 연동
+	
+	// 페이징 처리용
+	implementation 'org.springframework.data:spring-data-commons'
 }
 
 tasks.named('test') {

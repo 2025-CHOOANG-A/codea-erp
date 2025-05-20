@@ -1,0 +1,19 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.auth.mapper.EmployeeMapper">
+
+    <select id="findByLoginId" parameterType="string" resultType="kr.co.codea.auth.dto.UserDetailsDto">
+        SELECT
+            TO_CHAR(EMP_ID) as username,  EMP_PW as password,
+            1 as enabled,                 'ROLE_USER' as rawAuthoritiesString FROM EMPLOYEE
+        WHERE EMP_USER_ID = #{loginId}    </select>
+
+    <select id="findByEmpId" parameterType="long" resultType="kr.co.codea.auth.dto.UserDetailsDto">
+        SELECT
+            TO_CHAR(EMP_ID) as username,
+            EMP_PW as password,
+            1 as enabled,
+            'ROLE_USER' as rawAuthoritiesString
+        FROM EMPLOYEE
+        WHERE EMP_ID = #{empId}
+    </select>
+</mapper>
