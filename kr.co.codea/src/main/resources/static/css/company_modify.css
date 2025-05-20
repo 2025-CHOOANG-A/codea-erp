@@ -1,0 +1,22 @@
+      body {
+        min-height: 100vh;
+        background-color: #f8f9fa;
+      }
+      .main-content {
+        padding: 2rem 1rem 1rem 1rem;
+      }
+      .company-table th {
+        width: 180px;
+        background: #f1f3f5;
+        vertical-align: middle;
+      }
+      .company-logo,
+      .company-license {
+        max-width: 100px;
+        max-height: 60px;
+        object-fit: contain;
+        border: 1px solid #dee2e6;
+        background: #fff;
+        padding: 2px;
+        border-radius: 0.25rem;
+      }
