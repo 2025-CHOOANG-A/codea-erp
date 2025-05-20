@@ -32,7 +32,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // 순수 JDBC 설정
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc' // Spring Data JDBC (간단 ORM)
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // MyBatis 프레임워크 연동
-	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb' // MongoDB
+	//implementation 'org.springframework.boot:spring-boot-starter-data-mongodb' // MongoDB
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11' // Oracle JDBC 드라이버
     
     // ===== [세션 관리] =====
