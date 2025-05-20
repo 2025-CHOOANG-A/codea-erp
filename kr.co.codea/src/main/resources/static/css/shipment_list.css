@@ -1,0 +1,53 @@
+.table-responsive {
+	overflow-x: auto;
+}
+
+.table thead th, .table tbody td {
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.table th, .table td {
+	text-align: center;
+}
+
+.table td.text-end {
+	text-align: right !important;
+}
+
+.table a.name-link {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: inherit;
+}
+
+.pagination {
+	margin-bottom: 0;
+}
+
+.search-form .form-select,
+.search-form .form-control {
+	min-width: 160px;
+	max-width: 220px;
+}
+
+.search-form .form-select {
+	margin-right: 0.5rem;
+}
+
+.search-form .form-control {
+	margin-right: 0.5rem;
+}
+
+.search-form .btn {
+	min-width: 80px;
+}
+
+@media (max-width: 767.98px) {
+	.search-form .form-select,
+	.search-form .form-control {
+		min-width: 110px;
+		max-width: 140px;
+		font-size: 0.95rem;
+	}
+}
