@@ -1,461 +1,403 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>거래처 수정</title>
+  <meta charset="UTF-8">
+  <title>거래처 등록</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      width: 250px;
+      height: 100%;
+      background-color: #343a40;
+      color: white;
+      overflow-y: scroll;
+      overflow-y: auto;
+      padding: 1rem 1rem 2rem;
+      z-index: 1050;
+      transition: left 0.3s ease;
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .sidebar h5, .sidebar .section-title {
+      font-size: 14px;
+      color: #adb5bd;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 4px 0;
+      font-size: 15px;
+    }
+
+    .sidebar a:hover {
+      text-decoration: underline;
+    }
+
+    .menu-header {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 1rem;
+    }
+
+    .top-bar {
+      height: 60px;
+      background-color: white;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: black;
+    }
+
+    .menu-icon {
+      font-size: 24px;
+      cursor: pointer;
+      color: black;
+      background: none;
+      border: none;
+    }
+
+    .close-icon {
+      font-size: 20px;
+      color: white;
+      background: none;
+      border: none;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+    }
+
+    .main-content {
+      padding: 2rem;
+      transition: margin-left 0.3s ease;
+    }
+
+    .main-content.shifted {
+      margin-left: 250px;
+    }
+
+    .table th, .table td {
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .btn-group-bottom {
+      margin-top: 1rem;
+      text-align: right;
+    }
+    
+     .input[readonly].form-control {
+    background-color: #fff !important;
+    color: #212529 !important;
+  }
+  </style>
 </head>
 <body>
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<style>
-    body {
-        background: #f8f9fa;
-    }
-    .sidebar {
-        width: 260px;
-        background: #343a40;
-        color: #fff;
-        position: fixed;
-        top: 0;
-        left: -260px;
-        height: 100vh;
-        z-index: 1040;
-        transition: left 0.3s;
-        overflow-y: auto;
-    }
-    .sidebar.show {
-        left: 0;
-    }
-    .sidebar .nav-link {
-        color: #adb5bd;
-    }
-    .sidebar .nav-link.active, .sidebar .nav-link:hover {
-        color: #fff;
-        background: #495057;
-    }
-    .sidebar .sidebar-header {
-        font-size: 1.2rem;
-        font-weight: 600;
-        padding: 1rem 1.5rem 0.5rem 1.5rem;
-        color: #fff;
-    }
-    .sidebar .nav {
-        margin-bottom: 1rem;
-    }
-    .sidebar-toggler {
-        background: #343a40;
-        border: none;
-        color: #fff;
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.375rem;
-        margin-right: 1rem;
-        display: flex;
-        align-items: center;
-        font-size: 1.25rem;
-        transition: background 0.2s;
-    }
-    .sidebar-toggler:hover {
-        background: #495057;
-    }
-    .sidebar-backdrop {
-        display: none;
-        position: fixed;
-        z-index: 1039;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.3);
-    }
-    .sidebar.show ~ .sidebar-backdrop {
-        display: block;
-    }
-    .form-section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: #343a40;
-    }
-    .form-control[readonly], .form-control[disabled] {
-        background-color: #e9ecef !important;
-        color: #6c757d;
-    }
-    .input-group-text {
-        background: #f1f3f5;
-    }
-    .modal-backdrop.show {
-        opacity: 0.3;
-    }
-</style>
-
-<!-- Sidebar -->
-<nav id="sidebar" class="sidebar">
-    <div class="sidebar-header">메뉴</div>
-    <ul class="nav flex-column mb-2">
-        <li class="nav-item">
-            <div class="sidebar-header">기준정보관리</div>
-            <a class="nav-link" href="#">사업장관리</a>
-            <a class="nav-link" href="#">거래처관리</a>
-            <a class="nav-link" href="#">창고관리</a>
-            <a class="nav-link" href="#">제품관리</a>
-            <a class="nav-link" href="#">품목관리</a>
-            <a class="nav-link" href="#">사원관리</a>
-            <a class="nav-link" href="#">공지사항</a>
-        </li>
-        <li class="nav-item">
-            <div class="sidebar-header">구매영업관리</div>
-            <a class="nav-link" href="#">발주관리</a>
-            <a class="nav-link" href="#">주문관리</a>
-            <a class="nav-link" href="#">출고관리</a>
-            <a class="nav-link" href="#">자재소요량계산</a>
-        </li>
-        <li class="nav-item">
-            <div class="sidebar-header">자재관리</div>
-            <a class="nav-link" href="#">입고관리</a>
-            <a class="nav-link" href="#">재고관리</a>
-        </li>
-        <li class="nav-item">
-            <div class="sidebar-header">생산관리</div>
-            <a class="nav-link" href="#">생산계획</a>
-        </li>
-    </ul>
-</nav>
-<div class="sidebar-backdrop"></div>
-
-<!-- Header -->
-<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top" style="z-index:1050;">
-    <div class="container-fluid">
-        <button class="sidebar-toggler me-2" id="sidebarToggle" aria-label="메뉴 열기">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
-                <rect width="16" height="2" y="2" rx="1"/>
-                <rect width="16" height="2" y="7" rx="1"/>
-                <rect width="16" height="2" y="12" rx="1"/>
-            </svg>
-        </button>
-        <span class="mx-auto fw-bold fs-4" style="letter-spacing:2px;">CodeA</span>
-        <span></span>
-    </div>
-</header>
-
-<!-- Main Content -->
-<main class="container py-4" style="max-width: 800px;">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form autocomplete="off">
-                <div class="form-section-title mb-3">거래처 정보</div>
-                <div class="row g-3 align-items-center mb-2">
-                    <div class="col-md-6">
-                        <label class="form-label">거래처 코드</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" readonly>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">거래처명</label>
-                        <input type="text" class="form-control" placeholder="거래처명을 입력하세요">
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center mb-2">
-                    <div class="col-md-6">
-                        <label class="form-label">업종</label>
-                        <input type="text" class="form-control" placeholder="업종을 입력하세요">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">업태</label>
-                        <input type="text" class="form-control" placeholder="업태를 입력하세요">
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center mb-2">
-                    <div class="col-md-8">
-                        <label class="form-label">사업자 등록 번호</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="bizNum" readonly>
-                            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#bizModal">검색</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center mb-2">
-                    <div class="col-md-6">
-                        <label class="form-label">사업장 전화번호</label>
-                        <input type="text" class="form-control" id="bizTel" readonly>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">사업장 팩스번호</label>
-                        <input type="text" class="form-control" id="bizFax" readonly>
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center mb-2">
-                    <div class="col-md-8">
-                        <label class="form-label">매입/매출 구분</label>
-                        <select class="form-select">
-                            <option value="">선택</option>
-                            <option value="매입">매입</option>
-                            <option value="매출">매출</option>
+  <div class="sidebar" id="sidebar">
+    <button class="close-icon" onclick="toggleSidebar()">&times;</button>
+    <div class="menu-header">메뉴</div>
+    <div class="section-title">기준정보관리</div>
+    <a href="#">사업장관리</a>
+    <a href="#">거래처관리</a>
+    <a href="#">창고관리</a>
+    <a href="#">제품관리</a>
+    <a href="#">품목관리</a>
+    <a href="#">사원관리</a>
+    <a href="#">공지사항</a>
+    <div class="section-title">구매영업관리</div>
+    <a href="#">발주관리</a>
+    <a href="#">주문관리</a>
+    <a href="#">출고관리</a>
+    <a href="#">자재소요량계산</a>
+    <div class="section-title">자재관리</div>
+    <a href="#">입고관리</a>
+    <a href="#">재고관리</a>
+    <div class="section-title">생산관리</div>
+    <a href="#">생산계획</a>
+  </div>
+  <div class="top-bar">
+    <button class="menu-icon" onclick="toggleSidebar()">&#9776;</button>
+    <h3 class="fw-bold m-0">CodeA</h3>
+    <div></div>
+  </div>
+<div class="main-content" id="mainContent" style="max-width: 900px; margin: 40px auto 0 auto;">
+    <h5 class="fw-bold mb-3">거래처 등록</h5>
+    <form id="frm" method="post" action="./client_register">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle mb-0" style="background: #fafbfc;">
+            <tbody>
+                <tr>
+                    <th class="bg-light text-end" style="width:180px;">거래처 코드</th>
+                    <td><input type="text" name="bpCode" class="form-control" placeholder="거래처 코드 (자동발급 또는 사용자 입력)"></td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">거래처 유형</th>
+                    <td>
+                        <select name="bpType" class="form-select">
+                            <option value="고객사">고객사</option>
+                            <option value="구매처">구매처</option>
                         </select>
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center mb-2">
-                    <div class="col-md-4">
-                        <label class="form-label">우편번호</label>
-                        <input type="text" class="form-control" id="zipCode" readonly>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">주소</label>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">거래처명</th>
+                    <td><input type="text" name="bpName" class="form-control" placeholder="거래처명" required></td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">대표명</th>
+                    <td><input type="text" name="ceoName" class="form-control" placeholder="대표명"></td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">사업자번호</th>
+                    <td><input type="text" name="bizNo" class="form-control" placeholder="사업자번호 (예: 123-45-67890)" required></td>
+                </tr>
+<tr>
+    <th class="bg-light text-end">업태</th>
+    <td>
+        <div class="input-group">
+            <input type="text" name="bizCondName" id="bizCondInput" class="form-control" placeholder="업태 검색 (예: 제조업, 도소매업)" onkeyup="searchBizCond(this.value)">
+            <button type="button" class="btn btn-outline-secondary" id="clearBizCondBtn" style="display: none;" onclick="clearBizCondSelection()">&times;</button>
+        </div>
+        <input type="hidden" name="bizCond" id="bizCondCode">
+        <div id="autocompleteResults" class="list-group" style="position: absolute; z-index: 1000; width: calc(100% - 200px); background-color: white; border: 1px solid #ddd; max-height: 200px; overflow-y: auto; display: none;">
+            </div>
+    </td>
+</tr>
+                <tr>
+                    <th class="bg-light text-end">업종</th>
+                    <td><input type="text" name="bizType" class="form-control" placeholder="업종 (예: 의류, 소프트웨어)"></td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">전화번호</th>
+                    <td><input type="text" name="tel" class="form-control" placeholder="전화번호 (예: 02-1234-5678)" required></td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">팩스번호</th>
+                    <td><input type="text" name="fax" class="form-control" placeholder="팩스번호"></td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">우편번호</th>
+                    <td>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="address" readonly>
-                            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#addrModal">검색</button>
+                            <input type="text" name="postCode" class="form-control" placeholder="우편번호" readonly>
+                            <button class="btn btn-primary" type="button" onclick="searchPostcode()">검색</button>
                         </div>
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center mb-2">
-                    <div class="col-md-12">
-                        <label class="form-label">상세주소</label>
-                        <input type="text" class="form-control" placeholder="상세주소를 입력하세요">
-                    </div>
-                </div>
-
-                <hr class="my-4">
-
-                <div class="form-section-title mb-3">담당자 정보</div>
-                <div class="row g-3 align-items-center mb-2">
-                    <div class="col-md-8">
-                        <label class="form-label">담당자명</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="managerName" readonly>
-                            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#managerModal">검색</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center mb-2">
-                    <div class="col-md-6">
-                        <label class="form-label">담당자 전화번호</label>
-                        <input type="text" class="form-control" id="managerTel" readonly>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">담당자 이메일</label>
-                        <input type="email" class="form-control" id="managerEmail" readonly>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a href="#" class="btn btn-primary">수정</a>
-                    <a href="#" class="btn btn-outline-secondary">취소</a>
-                </div>
-            </form>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">주소</th>
+                    <td><input type="text" name="address" class="form-control" placeholder="주소" readonly></td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">상세주소</th>
+                    <td><input type="text" name="addressDetail" class="form-control" placeholder="상세주소"></td>
+                </tr>
+                <tr>
+                    <th class="bg-light text-end">비고</th>
+                    <td><input type="text" name="remark" class="form-control" placeholder="비고"></td>
+                </tr>
+            </tbody>
+            </table>
         </div>
-    </div>
-</main>
-
-<!-- 사업자 등록 번호 검색 모달 -->
-<div class="modal fade" id="bizModal" tabindex="-1" aria-labelledby="bizModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bizModalLabel">사업자 등록 번호 검색</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="bizSearchInput" placeholder="사업자 등록 번호 입력">
-                    <button class="btn btn-primary" type="button" id="bizSearchBtn">검색</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>사업자 등록 번호</th>
-                                <th>사업장명</th>
-                                <th>사업장 전화번호</th>
-                                <th>사업장 팩스번호</th>
-                                <th>선택</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bizSearchResult">
-                            <!-- 검색 결과 -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="btn-group-bottom">
+            <button type="submit" class="btn btn-dark" onclick="registerBp()">등록</button>
+            <button type="button"  class="btn btn-light border" onclick="go_cancel()">취소</button>
         </div>
-    </div>
+    </form>
 </div>
 
-<!-- 주소 검색 모달 -->
-<div class="modal fade" id="addrModal" tabindex="-1" aria-labelledby="addrModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addrModalLabel">주소 검색</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="addrSearchInput" placeholder="주소 입력">
-                    <button class="btn btn-primary" type="button" id="addrSearchBtn">검색</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>우편번호</th>
-                                <th>주소</th>
-                                <th>선택</th>
-                            </tr>
-                        </thead>
-                        <tbody id="addrSearchResult">
-                            <!-- 검색 결과 -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script>
 
-<!-- 담당자 검색 모달 -->
-<div class="modal fade" id="managerModal" tabindex="-1" aria-labelledby="managerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="managerModalLabel">담당자 검색</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="managerSearchInput" placeholder="담당자명 입력">
-                    <button class="btn btn-primary" type="button" id="managerSearchBtn">검색</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>담당자명</th>
-                                <th>담당자 코드</th>
-                                <th>담당자 전화번호</th>
-                                <th>선택</th>
-                            </tr>
-                        </thead>
-                        <tbody id="managerSearchResult">
-                            <!-- 검색 결과 -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+  let debounceTimer;
 
-<!-- Bootstrap JS & Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // Sidebar toggle
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
-    function closeSidebar() {
-        sidebar.classList.remove('show');
-        sidebarBackdrop.style.display = 'none';
+
+
+  // 선택된 업태 초기화 함수
+  function clearBizCondSelection() {
+      const bizCondInput = document.getElementById('bizCondInput');
+      const bizCondCode = document.getElementById('bizCondCode');
+      const clearBtn = document.getElementById('clearBizCondBtn');
+      const resultsDiv = document.getElementById('autocompleteResults');
+
+      bizCondInput.value = ''; // 입력 필드 초기화
+      bizCondCode.value = ''; // 숨겨진 CODE_ID 초기화
+      bizCondInput.readOnly = false; // 수정 가능하게 변경
+      clearBtn.style.display = 'none'; // X 버튼 숨기기
+      resultsDiv.style.display = 'none'; // 자동 완성 결과 숨기기
+      bizCondInput.focus(); // 입력 필드에 포커스
+  }
+
+  // 인풋 필드 외 다른 곳 클릭 시 자동 완성 결과 숨기기 (기존 코드 유지)
+  document.addEventListener('click', function(event) {
+      const bizCondInput = document.getElementById('bizCondInput');
+      const autocompleteResults = document.getElementById('autocompleteResults');
+      const clearBtn = document.getElementById('clearBizCondBtn'); // X 버튼도 고려
+
+      // 클릭된 요소가 입력 필드, 자동 완성 결과, 또는 X 버튼이 아닐 경우
+      if (event.target !== bizCondInput && !autocompleteResults.contains(event.target) && event.target !== clearBtn) {
+          autocompleteResults.style.display = 'none';
+      }
+  });
+
+
+  function searchBizCond(query) {
+      const resultsDiv = document.getElementById('autocompleteResults');
+      const bizCondInput = document.getElementById('bizCondInput');
+      const clearBtn = document.getElementById('clearBizCondBtn');
+
+      // 이미 선택된 상태라면 검색 비활성화
+      if (bizCondInput.readOnly) {
+          resultsDiv.style.display = 'none';
+          return;
+      }
+
+      if (query.length < 2) {
+          resultsDiv.style.display = 'none';
+          return;
+      }
+
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+          fetch(`/api/common-codes/biz-cond?query=${encodeURIComponent(query)}`)
+              .then(response => {
+                  if (!response.ok) {
+                      throw new Error('Network response was not ok');
+                  }
+                  return response.json();
+              })
+              .then(data => {
+                  resultsDiv.innerHTML = '';
+                  if (data.length > 0) {
+                      data.forEach(item => {
+                          const resultItem = document.createElement('a');
+                          resultItem.href = '#';
+                          resultItem.classList.add('list-group-item', 'list-group-item-action');
+                          resultItem.textContent = item.code;
+                          resultItem.onclick = function() {
+                              bizCondInput.value = item.code; // 화면에 표시
+                              
+                              console.log("API에서 넘어온 item.code:", item.code);
+                              console.log("API에서 넘어온 item.codeId:", item.codeId);
+                              
+                              document.getElementById('bizCondCode').value = item.codeId; // 실제 전송할 CODE_ID
+
+                              bizCondInput.readOnly = true; // 선택 후 수정 방지
+                              clearBtn.style.display = 'block'; // X 버튼 보이기
+                              resultsDiv.style.display = 'none';
+                              return false;
+                          };
+                          resultsDiv.appendChild(resultItem);
+                      });
+                      resultsDiv.style.display = 'block';
+                  } else {
+                      resultsDiv.style.display = 'none';
+                  }
+              })
+              .catch(error => {
+                  console.error('Error fetching common codes:', error);
+                  resultsDiv.style.display = 'none';
+              });
+      }, 300);
+  }
+
+  /*
+  // 인풋 필드 외 다른 곳 클릭 시 자동 완성 결과 숨기기
+  document.addEventListener('click', function(event) {
+      const bizCondInput = document.getElementById('bizCondInput');
+      const autocompleteResults = document.getElementById('autocompleteResults');
+      if (event.target !== bizCondInput && !autocompleteResults.contains(event.target)) {
+          autocompleteResults.style.display = 'none';
+      }
+  });
+*/
+  
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('mainContent');
+      sidebar.classList.toggle('active');
+      content.classList.toggle('shifted');
     }
-    function openSidebar() {
-        sidebar.classList.add('show');
-        sidebarBackdrop.style.display = 'block';
+
+    function registerBp() {
+	  if (confirm("거래처를 등록하시겠습니까?")) {
+		  alert("거래처가 등록되었습니다.");
+          // 실제 서버 전송 로직은 action 속성에 지정된 URL로 이루어집니다.
+	  } else {
+          event.preventDefault(); // 폼 제출 취소
+      }
+	}
+
+    function go_cancel() {
+	  if (confirm("등록을 취소하시겠습니까?")) {
+		  location.href = './bp_list.html'; // 취소 시 이동할 페이지
+	  }
+	}
+
+    function searchPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+                // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                var addr = ''; // 주소 변수
+                var extraAddr = ''; // 참고항목 변수
+
+                //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+                if (data.userSelectedType === 'R') { // 도로명 주소를 선택 했을경우
+                    addr = data.roadAddress;
+                } else { // 지번 주소를 선택 했을경우(J)
+                    addr = data.jibunAddress;
+                }
+
+                // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+                if(data.userSelectedType === 'R'){
+                    // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                    // 법정동의 경우 마지막 글자가 "동" "로" "가" 인 경우만.
+                    if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                        extraAddr += data.bname;
+                    }
+                    // 건물명이 있고, 공동주택일 경우 추가한다.
+                    if(data.buildingName !== '' && data.apartment === 'Y'){
+                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                    }
+                    // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                    if(extraAddr !== ''){
+                        extraAddr = ' (' + extraAddr + ')';
+                    }
+                    // 조합된 참고항목을 상세주소 필드에 넣는다.
+                    document.querySelector('input[name="addressDetail"]').value = extraAddr;
+                
+                } else {
+                    document.querySelector('input[name="addressDetail"]').value = '';
+                }
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.querySelector('input[name="postCode"]').value = data.zonecode;
+                document.querySelector('input[name="address"]').value = addr;
+                // 커서를 상세주소 필드로 이동한다.
+                document.querySelector('input[name="addressDetail"]').focus();
+            }
+        }).open();
     }
-    sidebarToggle.addEventListener('click', () => {
-        if (sidebar.classList.contains('show')) {
-            closeSidebar();
-        } else {
-            openSidebar();
-        }
-    });
-    sidebarBackdrop.addEventListener('click', closeSidebar);
-
-    // Prevent sidebar toggle button from disappearing
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 991) closeSidebar();
-    });
-
-    // Dummy data for modals
-    const bizData = [
-        {num: '123-45-67890', name: '삼성전자', tel: '02-1234-5678', fax: '02-8765-4321'},
-        {num: '234-56-78901', name: 'LG화학', tel: '02-2345-6789', fax: '02-9876-5432'}
-    ];
-    const addrData = [
-        {zip: '04524', addr: '서울특별시 중구 세종대로 110'},
-        {zip: '06164', addr: '서울특별시 강남구 테헤란로 231'}
-    ];
-    const managerData = [
-        {name: '홍길동', code: 'M001', tel: '010-1234-5678', email: 'hong@company.com'},
-        {name: '김철수', code: 'M002', tel: '010-2345-6789', email: 'kim@company.com'}
-    ];
-
-    // 사업자 등록 번호 검색
-    document.getElementById('bizSearchBtn').onclick = function() {
-        const val = document.getElementById('bizSearchInput').value.trim();
-        const result = bizData.filter(d => d.num.includes(val));
-        const tbody = document.getElementById('bizSearchResult');
-        tbody.innerHTML = result.map(d => `
-            <tr>
-                <td>${d.num}</td>
-                <td>${d.name}</td>
-                <td>${d.tel}</td>
-                <td>${d.fax}</td>
-                <td><button class="btn btn-sm btn-primary" onclick="selectBiz('${d.num}','${d.tel}','${d.fax}')">선택</button></td>
-            </tr>
-        `).join('') || '<tr><td colspan="5" class="text-center text-secondary">검색 결과가 없습니다.</td></tr>';
-    };
-    window.selectBiz = function(num, tel, fax) {
-        document.getElementById('bizNum').value = num;
-        document.getElementById('bizTel').value = tel;
-        document.getElementById('bizFax').value = fax;
-        document.getElementById('bizNum').readOnly = true;
-        document.getElementById('bizTel').readOnly = true;
-        document.getElementById('bizFax').readOnly = true;
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('bizModal')).hide();
-    };
-
-    // 주소 검색
-    document.getElementById('addrSearchBtn').onclick = function() {
-        const val = document.getElementById('addrSearchInput').value.trim();
-        const result = addrData.filter(d => d.addr.includes(val));
-        const tbody = document.getElementById('addrSearchResult');
-        tbody.innerHTML = result.map(d => `
-            <tr>
-                <td>${d.zip}</td>
-                <td>${d.addr}</td>
-                <td><button class="btn btn-sm btn-primary" onclick="selectAddr('${d.zip}','${d.addr}')">선택</button></td>
-            </tr>
-        `).join('') || '<tr><td colspan="3" class="text-center text-secondary">검색 결과가 없습니다.</td></tr>';
-    };
-    window.selectAddr = function(zip, addr) {
-        document.getElementById('zipCode').value = zip;
-        document.getElementById('address').value = addr;
-        document.getElementById('zipCode').readOnly = true;
-        document.getElementById('address').readOnly = true;
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('addrModal')).hide();
-    };
-
-    // 담당자 검색
-    document.getElementById('managerSearchBtn').onclick = function() {
-        const val = document.getElementById('managerSearchInput').value.trim();
-        const result = managerData.filter(d => d.name.includes(val));
-        const tbody = document.getElementById('managerSearchResult');
-        tbody.innerHTML = result.map(d => `
-            <tr>
-                <td>${d.name}</td>
-                <td>${d.code}</td>
-                <td>${d.tel}</td>
-                <td><button class="btn btn-sm btn-primary" onclick="selectManager('${d.name}','${d.tel}','${d.email}')">선택</button></td>
-            </tr>
-        `).join('') || '<tr><td colspan="4" class="text-center text-secondary">검색 결과가 없습니다.</td></tr>';
-    };
-    window.selectManager = function(name, tel, email) {
-        document.getElementById('managerName').value = name;
-        document.getElementById('managerTel').value = tel;
-        document.getElementById('managerEmail').value = email;
-        document.getElementById('managerName').readOnly = true;
-        document.getElementById('managerTel').readOnly = true;
-        document.getElementById('managerEmail').readOnly = true;
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('managerModal')).hide();
-    };
-</script>
+  </script>
 </body>
 </html>

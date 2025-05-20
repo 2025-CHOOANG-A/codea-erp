@@ -20,8 +20,20 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @Transactional(readOnly = true)
-    public ClientDTO getPartnerDetails(int bpId) {
+    public ClientDTO getPartnerDetails(Integer bpId) {
         return mapper.selectPartnerWithContacts(bpId);
     }
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<CommonCodeDTO> findCommonCode(String codeType, String query) {
+		return mapper.findCommonCode(codeType, query);
+	}
+
+	@Override
+	public int insertClient(ClientDTO dto) {
+		return mapper.insertClient(dto);
+	}
+
 
 }

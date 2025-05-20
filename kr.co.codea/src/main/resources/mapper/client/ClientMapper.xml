@@ -4,12 +4,21 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.client.ClientMapper">
 
-  <resultMap id="ClientWithContacts" type="kr.co.codea.client.ClientDTO">
+  <resultMap id="Client" type="kr.co.codea.client.ClientDTO">
     <id property="bpId" column="BP_ID" />
-    <result property="bpCode" column="BP_CODE" />
-    <result property="bpType" column="BP_TYPE" />
-    <result property="bpName" column="BP_NAME" />
-    <!-- 생략: 다른 필드 매핑 -->
+  <result property="bpCode" column="BP_CODE" />
+  <result property="bpType" column="BP_TYPE" />
+  <result property="bpName" column="BP_NAME" />
+  <result property="ceoName" column="CEO_NAME" />
+  <result property="bizNo" column="BIZ_NO" />
+  <result property="bizCond" column="BIZ_COND" />
+  <result property="bizType" column="BIZ_TYPE" />
+  <result property="tel" column="TEL" />
+  <result property="fax" column="FAX" />
+  <result property="address" column="ADDRESS" />
+  <result property="addressDetail" column="ADDRESS_DETAIL" />
+  <result property="postCode" column="POST_CODE" />
+  <result property="remark" column="REMARK" />
     <collection property="contacts" ofType="kr.co.codea.client.ContactDTO">
       <id property="bcId" column="BC_ID" />
       <result property="bpId" column="BP_ID" />
@@ -18,19 +27,70 @@
       <result property="tel" column="TEL" />
       <result property="hp" column="HP" />
       <result property="email" column="EMAIL" />
+      <result property="remark" column="REMARK" />
+      
       <!-- 생략: 다른 필드 -->
     </collection>
   </resultMap>
 
-  <select id="selectAllPartners" resultType="kr.co.codea.client.ClientDTO">
-    SELECT BP_ID,BP_CODE,BP_TYPE,BP_NAME,BIZ_NO,TEL,ADDRESS FROM BUSINESS_PARTNER ORDER BY BP_ID
+<resultMap id="CommonCode" type="kr.co.codea.client.CommonCodeDTO">
+    <id property="codeId" column="CODE_ID"/>
+    <result property="codeType" column="CODE_TYPE"/>
+    <result property="code" column="CODE"/>
+    <result property="codeDesc" column="CODE_DESC"/>
+</resultMap>
+
+  <select id="selectAllPartners" resultType="kr.co.codea.client.ClientDTO" resultMap="Client">
+    SELECT BP_ID,BP_CODE,BP_TYPE,BP_NAME,BIZ_NO,TEL,ADDRESS FROM BUSINESS_PARTNER ORDER BY BP_ID DESC
   </select>
 
-  <select id="selectPartnerWithContacts" resultMap="ClientWithContacts" parameterType="long">
+  <select id="selectPartnerWithContacts" resultMap="Client" parameterType="Integer">
     SELECT p.*, c.BC_ID, c.BC_NAME, c.BC_POSITION, c.TEL, c.HP, c.EMAIL
       FROM BUSINESS_PARTNER p
       LEFT JOIN BUSINESS_CONTACT c ON p.BP_ID = c.BP_ID
       WHERE p.BP_ID = #{bpId}
   </select>
+  
+      <select id="findCommonCode" resultType="kr.co.codea.client.CommonCodeDTO" resultMap="CommonCode">
+        SELECT
+            CODE_ID,
+            CODE_TYPE,
+            CODE,
+            CODE_DESC
+        FROM
+            COMMON_CODE
+        WHERE
+            CODE_TYPE = #{codeType}
+            AND CODE LIKE '%' || #{query} || '%'
+        ORDER BY CODE
+    </select>
+    
+    <insert id="insertClient">
+        INSERT INTO BUSINESS_PARTNER (
+            BP_CODE,
+            BP_TYPE,
+            BP_NAME,
+            CEO_NAME,
+            BIZ_NO,
+            BIZ_COND,
+            BIZ_TYPE,
+            TEL,
+            FAX,
+            ADDRESS,
+            ADDRESS_DETAIL
+        ) VALUES (
+            #{bpCode},      
+            #{bpType},     
+            #{bpName},      
+            #{ceoName},
+            #{bizNo},
+            #{bizCond},     
+            #{bizType},
+            #{tel},
+            #{fax},
+            #{address},
+            #{addressDetail}
+        )
+    </insert>
 
 </mapper>
