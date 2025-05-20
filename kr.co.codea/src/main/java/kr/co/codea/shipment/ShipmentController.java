@@ -12,4 +12,7 @@ public class ShipmentController {
     public String detailPage() {
         return "shipment/shipment_detail"; // templates/shipment/shipment_detail.html
     }
+   
 }
+
+
