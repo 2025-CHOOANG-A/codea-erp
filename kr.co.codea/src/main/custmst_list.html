@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>거래처 목록</title>
+</head>
+<body>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    body {
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+    .sidebar {
+        width: 260px;
+        min-height: 100vh;
+        background: #f8f9fa;
+        position: fixed;
+        top: 0;
+        left: -260px;
+        z-index: 1040;
+        transition: left 0.3s;
+        border-right: 1px solid #dee2e6;
+        padding-top: 56px;
+    }
+    .sidebar.show {
+        left: 0;
+    }
+    .sidebar .nav-link {
+        color: #333;
+        border-radius: 0.375rem;
+        margin-bottom: 2px;
+    }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover {
+        background: #e9ecef;
+        color: #0d6efd;
+    }
+    .sidebar .sidebar-header {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #495057;
+        padding-left: 1rem;
+    }
+    .sidebar-toggle {
+        background: #f8f9fa;
+        border: none;
+        border-radius: 0 0.375rem 0.375rem 0;
+        padding: 0.5rem 0.75rem;
+        font-size: 1.25rem;
+        color: #495057;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        transition: background 0.2s;
+        margin-right: 0.5rem;
+    }
+    .sidebar-toggle:focus {
+        outline: none;
+        background: #e9ecef;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .table th, .table td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    .table a.name-link {
+        text-decoration: underline;
+        color: inherit;
+        cursor: pointer;
+    }
+    .filter-group .form-select, .filter-group .form-control {
+        min-width: 160px;
+        max-width: 220px;
+    }
+    .filter-group .form-select {
+        margin-right: 0.5rem;
+    }
+    .modal-table th {
+        background: #f1f3f5;
+        color: #495057;
+        width: 160px;
+        vertical-align: middle;
+    }
+    .modal-table td {
+        background: #fff;
+        vertical-align: middle;
+    }
+    @media (max-width: 991.98px) {
+        .sidebar {
+            width: 220px;
+            left: -220px;
+        }
+        .sidebar.show {
+            left: 0;
+        }
+    }
+    @media (max-width: 575.98px) {
+        .filter-group .form-select, .filter-group .form-control {
+            min-width: 100px;
+            max-width: 100%;
+        }
+    }
+</style>
+
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm fixed-top" style="z-index:1050;">
+    <div class="container-fluid">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="메뉴 열기">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                <rect width="16" height="2" y="2" rx="1"/>
+                <rect width="16" height="2" y="7" rx="1"/>
+                <rect width="16" height="2" y="12" rx="1"/>
+            </svg>
+        </button>
+        <span class="mx-auto fw-bold fs-4" style="letter-spacing:1px;">CodeA</span>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebarMenu">
+    <div class="sidebar-header">기준정보관리</div>
+    <nav class="nav flex-column mb-2">
+        <a class="nav-link" href="#">사업장관리</a>
+        <a class="nav-link" href="#">거래처관리</a>
+        <a class="nav-link" href="#">창고관리</a>
+        <a class="nav-link" href="#">제품관리</a>
+        <a class="nav-link" href="#">품목관리</a>
+        <a class="nav-link" href="#">사원관리</a>
+        <a class="nav-link" href="#">공지사항</a>
+    </nav>
+    <div class="sidebar-header">구매영업관리</div>
+    <nav class="nav flex-column mb-2">
+        <a class="nav-link" href="#">발주관리</a>
+        <a class="nav-link" href="#">주문관리</a>
+        <a class="nav-link" href="#">출고관리</a>
+        <a class="nav-link" href="#">자재소요량계산</a>
+    </nav>
+    <div class="sidebar-header">자재관리</div>
+    <nav class="nav flex-column mb-2">
+        <a class="nav-link" href="#">입고관리</a>
+        <a class="nav-link" href="#">재고관리</a>
+    </nav>
+    <div class="sidebar-header">생산관리</div>
+    <nav class="nav flex-column mb-2">
+        <a class="nav-link" href="#">생산계획</a>
+    </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="container-fluid" style="padding-top:72px; max-width: 100vw;">
+    <!-- Filter/Search -->
+    <form class="row align-items-center mb-3 filter-group g-2 flex-wrap">
+        <div class="col-auto">
+            <select class="form-select" id="typeFilter">
+                <option value="all">전체</option>
+                <option value="customer">고객사</option>
+                <option value="vendor">거래처</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select class="form-select" id="searchField">
+                <option value="code">거래처 코드</option>
+                <option value="name">거래처명</option>
+                <option value="phone">사업장 전화번호</option>
+                <option value="manager">담당자명</option>
+                <option value="managerPhone">담당자 전화번호</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <input type="text" class="form-control" id="searchInput" placeholder="검색어 입력">
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-primary" id="searchBtn">검색</button>
+        </div>
+    </form>
+
+    <!-- Table -->
+    <div class="table-responsive mb-2">
+        <table class="table table-bordered align-middle mb-0" id="custTable">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:40px;"><input type="checkbox" id="checkAll"></th>
+                    <th>거래처코드</th>
+                    <th>거래처명</th>
+                    <th>업종</th>
+                    <th>업태</th>
+                    <th>주소</th>
+                    <th>사업장전화번호</th>
+                    <th>사업장팩스번호</th>
+                    <th>담당자명</th>
+                    <th>담당자전화번호</th>
+                    <th>매입매출구분</th>
+                </tr>
+            </thead>
+            <tbody id="custTableBody">
+                <!-- JS로 데이터 렌더링 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paging & Buttons -->
+    <div class="d-flex align-items-center justify-content-between mt-3">
+        <nav aria-label="Page navigation" class="mx-auto" id="pagingNav">
+            <!-- JS로 페이징 렌더링 -->
+        </nav>
+        <div class="ms-auto">
+            <a href="#" class="btn btn-outline-primary btn-sm me-2" id="addBtn">등록</a>
+            <a href="#" class="btn btn-outline-danger btn-sm d-none" id="deleteBtn">삭제</a>
+        </div>
+    </div>
+</main>
+
+<!-- 상세 팝업 Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel">거래처 상세정보</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <h6 class="mb-3">거래처 정보</h6>
+                        <table class="table modal-table table-bordered">
+                            <tbody id="detailCustInfo">
+                                <!-- JS로 거래처 정보 렌더링 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-lg-6">
+                        <h6 class="mb-3">담당자 정보</h6>
+                        <table class="table modal-table table-bordered">
+                            <tbody id="detailManagerInfo">
+                                <!-- JS로 담당자 정보 렌더링 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-end">
+                <a href="#" class="btn btn-outline-secondary btn-sm" id="listBtn">목록</a>
+                <a href="#" class="btn btn-outline-primary btn-sm" id="editBtn">수정</a>
+                <a href="#" class="btn btn-outline-danger btn-sm" id="modalDeleteBtn">삭제</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 샘플 데이터
+    const custData = [
+        {
+            code: 'C001', name: '삼성전자', type: 'customer', industry: '전자', business: '제조', address: '경기 수원시', phone: '031-200-1111', fax: '031-200-2222',
+            manager: { code: 'M001', name: '홍길동', phone: '010-1234-5678', email: 'hong@sam.com' },
+            managerPhone: '010-1234-5678', buySell: '매출'
+        },
+        {
+            code: 'C002', name: 'LG화학', type: 'customer', industry: '화학', business: '제조', address: '서울 영등포구', phone: '02-345-6789', fax: '02-345-6790',
+            manager: { code: 'M002', name: '이순신', phone: '010-2345-6789', email: 'lee@lgchem.com' },
+            managerPhone: '010-2345-6789', buySell: '매출'
+        },
+        {
+            code: 'V001', name: '한화무역', type: 'vendor', industry: '무역', business: '도소매', address: '서울 중구', phone: '02-111-2222', fax: '02-111-3333',
+            manager: { code: 'M003', name: '김철수', phone: '010-3456-7890', email: 'kim@hanwha.com' },
+            managerPhone: '010-3456-7890', buySell: '매입'
+        },
+        {
+            code: 'V002', name: 'SK네트웍스', type: 'vendor', industry: '네트워크', business: '서비스', address: '서울 강남구', phone: '02-222-3333', fax: '02-222-4444',
+            manager: { code: 'M004', name: '박영희', phone: '010-4567-8901', email: 'park@sk.com' },
+            managerPhone: '010-4567-8901', buySell: '매입'
+        },
+        {
+            code: 'C003', name: '현대자동차', type: 'customer', industry: '자동차', business: '제조', address: '울산 남구', phone: '052-123-4567', fax: '052-123-4568',
+            manager: { code: 'M005', name: '최민수', phone: '010-5678-9012', email: 'choi@hyundai.com' },
+            managerPhone: '010-5678-9012', buySell: '매출'
+        },
+        {
+            code: 'V003', name: '롯데상사', type: 'vendor', industry: '상사', business: '도매', address: '서울 송파구', phone: '02-333-4444', fax: '02-333-5555',
+            manager: { code: 'M006', name: '정우성', phone: '010-6789-0123', email: 'jung@lotte.com' },
+            managerPhone: '010-6789-0123', buySell: '매입'
+        },
+        {
+            code: 'C004', name: '포스코', type: 'customer', industry: '철강', business: '제조', address: '경북 포항시', phone: '054-123-4567', fax: '054-123-4568',
+            manager: { code: 'M007', name: '한지민', phone: '010-7890-1234', email: 'han@posco.com' },
+            managerPhone: '010-7890-1234', buySell: '매출'
+        },
+        {
+            code: 'V004', name: '두산중공업', type: 'vendor', industry: '중공업', business: '제조', address: '경남 창원시', phone: '055-123-4567', fax: '055-123-4568',
+            manager: { code: 'M008', name: '이정재', phone: '010-8901-2345', email: 'lee@doosan.com' },
+            managerPhone: '010-8901-2345', buySell: '매입'
+        },
+        {
+            code: 'C005', name: 'CJ제일제당', type: 'customer', industry: '식품', business: '제조', address: '서울 중구', phone: '02-444-5555', fax: '02-444-6666',
+            manager: { code: 'M009', name: '김지수', phone: '010-9012-3456', email: 'kim@cj.com' },
+            managerPhone: '010-9012-3456', buySell: '매출'
+        },
+        {
+            code: 'V005', name: 'GS리테일', type: 'vendor', industry: '유통', business: '소매', address: '서울 강서구', phone: '02-555-6666', fax: '02-555-7777',
+            manager: { code: 'M010', name: '박지훈', phone: '010-0123-4567', email: 'park@gs.com' },
+            managerPhone: '010-0123-4567', buySell: '매입'
+        },
+        {
+            code: 'C006', name: '네이버', type: 'customer', industry: 'IT', business: '서비스', address: '경기 성남시', phone: '031-333-4444', fax: '031-333-5555',
+            manager: { code: 'M011', name: '유재석', phone: '010-2345-6789', email: 'yoo@naver.com' },
+            managerPhone: '010-2345-6789', buySell: '매출'
+        }
+    ];
+
+    let filteredData = [...custData];
+    let currentPage = 1;
+    const pageSize = 10;
+
+    function renderTable() {
+        const tbody = document.getElementById('custTableBody');
+        tbody.innerHTML = '';
+        const start = (currentPage - 1) * pageSize;
+        const pageData = filteredData.slice(start, start + pageSize);
+
+        pageData.forEach((row, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="checkbox" class="row-check"></td>
+                <td>${row.code}</td>
+                <td><a class="name-link" data-index="${start + idx}" href="#">${row.name}</a></td>
+                <td>${row.industry}</td>
+                <td>${row.business}</td>
+                <td>${row.address}</td>
+                <td>${row.phone}</td>
+                <td>${row.fax}</td>
+                <td><a class="name-link" data-index="${start + idx}" data-manager="1" href="#">${row.manager.name}</a></td>
+                <td>${row.managerPhone}</td>
+                <td>${row.buySell}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // 삭제 버튼 노출 제어
+        document.getElementById('deleteBtn').classList.toggle('d-none', filteredData.length === 0);
+
+        // 체크박스 전체선택 해제
+        document.getElementById('checkAll').checked = false;
+    }
+
+    function renderPaging() {
+        const nav = document.getElementById('pagingNav');
+        nav.innerHTML = '';
+        const total = filteredData.length;
+        const totalPages = Math.ceil(total / pageSize);
+        if (totalPages <= 1) return;
+
+        let html = '<ul class="pagination justify-content-center mb-0">';
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+        if (startPage > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="1">&laquo;</a></li>`;
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}">&lsaquo;</a></li>`;
+        }
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<li class="page-item${i === currentPage ? ' active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+        }
+        if (endPage < totalPages) {
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}">&rsaquo;</a></li>`;
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">&raquo;</a></li>`;
+        }
+        html += '</ul>';
+        nav.innerHTML = html;
+    }
+
+    function filterData() {
+        const type = document.getElementById('typeFilter').value;
+        const field = document.getElementById('searchField').value;
+        const keyword = document.getElementById('searchInput').value.trim();
+
+        filteredData = custData.filter(row => {
+            let typeMatch = (type === 'all') || (row.type === type);
+            let fieldMatch = true;
+            if (keyword) {
+                switch (field) {
+                    case 'code': fieldMatch = row.code.includes(keyword); break;
+                    case 'name': fieldMatch = row.name.includes(keyword); break;
+                    case 'phone': fieldMatch = row.phone.includes(keyword); break;
+                    case 'manager': fieldMatch = row.manager.name.includes(keyword); break;
+                    case 'managerPhone': fieldMatch = row.manager.phone.includes(keyword); break;
+                }
+            }
+            return typeMatch && fieldMatch;
+        });
+        currentPage = 1;
+        renderTable();
+        renderPaging();
+    }
+
+    // 상세정보 모달 렌더링
+    function showDetailModal(idx, isManager) {
+        const row = filteredData[idx];
+        if (!row) return;
+        // 거래처 정보
+        document.getElementById('detailCustInfo').innerHTML = `
+            <tr><th>거래처 코드</th><td>${row.code}</td></tr>
+            <tr><th>거래처명</th><td>${row.name}</td></tr>
+            <tr><th>업종</th><td>${row.industry}</td></tr>
+            <tr><th>업태</th><td>${row.business}</td></tr>
+            <tr><th>사업자 등록번호</th><td>${row.code}12345678</td></tr>
+            <tr><th>사업장 전화번호</th><td>${row.phone}</td></tr>
+            <tr><th>사업장 팩스 번호</th><td>${row.fax}</td></tr>
+            <tr><th>매입/매출 구분</th><td>${row.buySell}</td></tr>
+            <tr><th>주소</th><td>${row.address}</td></tr>
+        `;
+        // 담당자 정보
+        document.getElementById('detailManagerInfo').innerHTML = `
+            <tr><th>담당자 코드</th><td>${row.manager.code}</td></tr>
+            <tr><th>담당자명</th><td>${row.manager.name}</td></tr>
+            <tr><th>담당자 전화번호</th><td>${row.manager.phone}</td></tr>
+            <tr><th>담당자 이메일</th><td>${row.manager.email}</td></tr>
+        `;
+        const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+        modal.show();
+    }
+
+    // 이벤트 바인딩
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTable();
+        renderPaging();
+
+        document.getElementById('typeFilter').addEventListener('change', filterData);
+        document.getElementById('searchBtn').addEventListener('click', filterData);
+        document.getElementById('searchInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                filterData();
+            }
+        });
+
+        document.getElementById('searchField').addEventListener('change', () => {
+            document.getElementById('searchInput').value = '';
+        });
+
+        document.getElementById('pagingNav').addEventListener('click', e => {
+            if (e.target.tagName === 'A' && e.target.dataset.page) {
+                e.preventDefault();
+                currentPage = parseInt(e.target.dataset.page);
+                renderTable();
+                renderPaging();
+            }
+        });
+
+        document.getElementById('custTableBody').addEventListener('click', e => {
+            if (e.target.classList.contains('name-link')) {
+                e.preventDefault();
+                const idx = parseInt(e.target.dataset.index);
+                showDetailModal(idx, !!e.target.dataset.manager);
+            }
+        });
+
+        // 체크박스 전체선택
+        document.getElementById('checkAll').addEventListener('change', function() {
+            document.querySelectorAll('.row-check').forEach(cb => cb.checked = this.checked);
+        });
+
+        // 체크박스 개별선택 시 전체선택 해제
+        document.getElementById('custTableBody').addEventListener('change', function(e) {
+            if (e.target.classList.contains('row-check')) {
+                if (!e.target.checked) document.getElementById('checkAll').checked = false;
+            }
+        });
+
+        // 등록/삭제 버튼(페이지 이동)
+        document.getElementById('addBtn').addEventListener('click', e => {
+            e.preventDefault();
+            alert('등록 페이지로 이동');
+        });
+        document.getElementById('deleteBtn').addEventListener('click', e => {
+            e.preventDefault();
+            if (confirm('선택한 항목을 삭제하시겠습니까?')) {
+                const checks = document.querySelectorAll('.row-check:checked');
+                const codes = Array.from(checks).map((cb, i) => filteredData[(currentPage-1)*pageSize + i]?.code);
+                // 실제 삭제 로직은 서버 연동 필요
+                for (const code of codes) {
+                    const idx = custData.findIndex(row => row.code === code);
+                    if (idx > -1) custData.splice(idx, 1);
+                }
+                filterData();
+            }
+        });
+
+        // 상세 모달 하단 버튼
+        document.getElementById('listBtn').addEventListener('click', e => {
+            e.preventDefault();
+            bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+        });
+        document.getElementById('editBtn').addEventListener('click', e => {
+            e.preventDefault();
+            alert('수정 페이지로 이동');
+        });
+        document.getElementById('modalDeleteBtn').addEventListener('click', e => {
+            e.preventDefault();
+            if (confirm('삭제하시겠습니까?')) {
+                // 실제 삭제 로직 필요
+                bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+                filterData();
+            }
+        });
+
+        // 사이드바 토글
+        const sidebar = document.getElementById('sidebarMenu');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+        });
+        // 바깥 클릭 시 닫기 (모바일)
+        document.addEventListener('click', e => {
+            if (window.innerWidth < 992 && sidebar.classList.contains('show')) {
+                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                    sidebar.classList.remove('show');
+                }
+            }
+        });
+        // 사이드바 메뉴 클릭 시 닫기 (모바일)
+        sidebar.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 992) sidebar.classList.remove('show');
+            });
+        });
+    });
+</script>
+</body>
+</html>
