@@ -1,0 +1,26 @@
+.form-section-title {
+	font-size: 1.1rem;
+	font-weight: 600;
+	margin-bottom: 0.7rem;
+	margin-top: 1.5rem;
+}
+
+.form-control[readonly], .form-select[readonly] {
+	background-color: #f1f3f5 !important;
+	color: #495057;
+	opacity: 1;
+}
+
+.input-group-text.bg-light {
+	background: #f1f3f5 !important;
+}
+
+.modal-dialog-centered {
+	min-width: 600px;
+}
+
+@media (max-width: 991.98px) {	
+	.modal-dialog-centered {
+		min-width: 90vw;
+	}
+}
