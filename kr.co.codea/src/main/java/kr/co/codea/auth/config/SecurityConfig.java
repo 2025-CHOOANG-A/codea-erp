@@ -49,9 +49,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
             .authenticationManager(authenticationManager) // 직접 구성한 AuthenticationManager 설정
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/auth/login", "/auth/reissue").permitAll() // 로그인, 토큰 재발급 경로는 인증 없이 접근 허용
-                // .requestMatchers("/admin/**").hasRole("ADMIN") // 특정 권한 필요 경로 예시
-                .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+            		//.requestMatchers("/auth/login","/auth/reissue").permitAll()// 기존 설정, 아래 permitAll()에 의해 모두 허용됨
+            		//.requestMatchers("/admin/**").hasRole("ADMIN") // 특정 권한 필요 경로 예시
+            		.anyRequest().permitAll() // <-- 중요: 모든 요청을 인증 없이 허용하도록 변경
             )
             // JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
