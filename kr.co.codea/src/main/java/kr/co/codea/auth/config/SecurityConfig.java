@@ -47,14 +47,14 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (Stateless 서버)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
             .authenticationManager(authenticationManager) // 직접 구성한 AuthenticationManager 설정
-            // JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
-            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) // 위치를 여기로 옮기거나, authorizeHttpRequests 이후에 두어도 됩니다.
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authz -> authz
                 // 로그인 페이지 및 관련 정적 리소스, 로그인 API, 토큰 재발급 API는 항상 허용
-                .requestMatchers("/", "/login", "/auth/login", "/auth/reissue").permitAll()
-                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 정적 리소스 경로 예시
+                //.requestMatchers("/", "/login", "/auth/login", "/auth/reissue").permitAll()
+                //.requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 정적 리소스 경로 예시
                 // .requestMatchers("/index").authenticated() // /index 페이지는 인증 필요 (이전 HomeController 예시)
-                .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+                //.anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+                .anyRequest().permitAll()
             )
             // formLogin 설정을 통해 로그인 페이지 지정 및 관련 설정
             .formLogin(formLogin -> formLogin
