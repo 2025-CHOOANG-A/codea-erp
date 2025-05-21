@@ -1,0 +1,51 @@
+body {
+  min-height: 100vh;
+  background: #dbdfe3;
+}
+
+.login-container {
+  min-height: 100vh; /* 헤더 높이를 고려하여 조정하거나, body에서 헤더 높이만큼 padding-top을 줄 수 있습니다. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f8f8;
+  padding-top: 70px; /* 예시: 헤더 높이만큼 패딩 추가 */
+  box-sizing: border-box;
+}
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+  background: #fff;
+}
+.login-links {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+}
+.login-link {
+  color: #212529;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font-weight: 400;
+}
+.login-link:hover,
+.login-link:focus {
+  text-decoration: underline;
+  color: #0d6efd;
+}
+/* 메시지 표시를 위한 스타일 추가 */
+.message {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+.message.success {
+  color: green;
+}
+.message.error {
+  color: red;
+}

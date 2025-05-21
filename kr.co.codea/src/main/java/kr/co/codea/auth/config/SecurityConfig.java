@@ -2,20 +2,20 @@ package kr.co.codea.auth.config;
 
 import kr.co.codea.auth.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest; // PathRequest 임포트
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer; // WebSecurityCustomizer 임포트
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher; // AntPathRequestMatcher 임포트 (필요시)
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -25,11 +25,17 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final UserDetailsServiceImpl userDetailsServiceImpl;
 
+    /**
+     * 비밀번호 암호화에 사용할 BCryptPasswordEncoder 빈 등록
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * 사용자 인증을 위한 AuthenticationManager 빈 등록
+     */
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http
@@ -39,41 +45,61 @@ public class SecurityConfig {
         return authenticationManagerBuilder.build();
     }
 
+    /**
+     * JWT 인증 필터 빈 등록
+     */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtProvider);
     }
 
-    // WebSecurityCustomizer 빈을 추가하여 특정 경로를 Spring Security 필터 적용 대상에서 제외
+    /**
+     * 정적 리소스 및 인증 대상에서 제외할 경로 정의
+     */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()) // 일반적인 정적 리소스 (css, js, images 등) 경로들을 무시
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()) // 정적 리소스(css, js, 이미지 등)
                 .requestMatchers(
-                        new AntPathRequestMatcher("/.well-known/**"), // .well-known 하위 모든 경로 무시
-                        new AntPathRequestMatcher("/error") // Spring Boot 기본 오류 페이지 경로 무시
+                        new AntPathRequestMatcher("/.well-known/**"), // Let's Encrypt 인증 등에서 사용
+                        new AntPathRequestMatcher("/error")           // Spring Boot 기본 에러 페이지
                 );
     }
 
+    /**
+     * Spring Security 필터 체인 설정
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .csrf(csrf -> csrf.disable()) // JWT 사용 시 CSRF 비활성화
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 상태 없음
             .authenticationManager(authenticationManager)
-            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) // JWT 필터 등록
             .authorizeHttpRequests(authz -> authz
-                // webSecurityCustomizer에서 무시된 경로는 여기에 설정할 필요가 없음 (permitAll()과 다름)
-                .requestMatchers("/", "/login", "/auth/login", "/auth/reissue","/favicon.ico").permitAll()
-                // .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // webSecurityCustomizer로 이동
-                .requestMatchers("/index").authenticated()
-                .anyRequest().authenticated()
-            )
-            .formLogin(formLogin -> formLogin
-                .loginPage("/login")
-                .permitAll()
-            );
-
+                    .requestMatchers(
+                        "/",
+                        "/login",
+                        "/auth/login",
+                        "/auth/reissue",
+                        "/favicon.ico",
+                        "/.well-known/**",
+                        "/error"
+                    ).permitAll()
+                    .requestMatchers(
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/webjars/**"
+                    ).permitAll()
+                    .requestMatchers("/index").authenticated()
+                    .requestMatchers("/notice/**").hasRole("ADMIN") // 공지사항 하위 모든 경로는 ADMIN 역할만 접근 가능
+                    .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+                )
+                .formLogin(formLogin -> formLogin
+                    .loginPage("/login")
+                    .permitAll()
+                );
         return http.build();
     }
 }

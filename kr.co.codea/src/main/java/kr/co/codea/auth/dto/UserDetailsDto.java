@@ -9,70 +9,67 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
+/**
+ * Spring Security의 UserDetails 구현체
+ * - 사원 정보 및 권한 정보를 담는 DTO
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UserDetailsDto implements UserDetails {
 
-    private Long empId;      // 숫자형 직원 고유 ID (DB의 EMP_ID)
-    private String empUserId; // ✨ 로그인 ID (DB의 EMP_USER_ID) ✨
-    private String empName;  // 실제 사용자 이름 (DB의 EMP_NAME)
-    private String empPw;    // ✨ DB의 EMP_PW (암호화된 값) ✨
-    private Collection<? extends GrantedAuthority> authorities; // 최종적으로 설정될 권한 목록
-    private boolean empStatus; // ✨ 계정 활성화 상태 (DB의 EMP_STATUS) ✨
+    private Long empId;           // 직원 고유 ID (DB: EMP_ID)
+    private String empUserId;     // 로그인 ID (DB: EMP_USER_ID)
+    private String empName;       // 사용자 이름 (DB: EMP_NAME)
+    private String empPw;         // 암호화된 비밀번호 (DB: EMP_PW)
+    private Collection<? extends GrantedAuthority> authorities; // 권한 목록
+    private boolean empStatus;    // 계정 활성 상태 (DB: EMP_STATUS)
 
-    // EmployeeMapper.xml의 'ADMIN_CODE as adminCode' 매핑을 통해 DB의 ADMIN_CODE 값을 받기 위한 필드
-    // UserDetailsServiceImpl에서 이 값을 사용하여 'authorities'를 동적으로 생성합니다.
-    private String adminCode;
+    private String adminCode;     // DB의 ADMIN_CODE (권한 부여 시 사용)
 
-    // UserDetailsServiceImpl에서 권한 문자열을 임시로 받아 처리하기 위한 필드 (선택 사항)
-    // private String rawAuthoritiesString; // 필요하다면 유지, 현재는 adminCode 직접 사용
+    // 필요 시 사용 가능한 필드 예시:
+    // private String rawAuthoritiesString; // 문자열 형태의 권한 목록 (현재 미사용)
 
-
-    // UserDetails 인터페이스 메소드 구현
+    /** 권한 목록 반환 */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.authorities;
     }
 
-    /**
-     * 데이터베이스에 저장된 암호화된 비밀번호(empPw)를 반환합니다.
-     */
+    /** 암호화된 비밀번호 반환 */
     @Override
     public String getPassword() {
-        return this.empPw; // ✨ empPw 필드 반환 ✨
+        return this.empPw;
     }
 
-    /**
-     * Spring Security에서 사용자의 고유 식별자로 사용됩니다.
-     * 우리 시스템에서는 로그인 ID (empUserId)를 반환합니다.
-     */
+    /** 로그인 ID 반환 (고유 식별자) */
     @Override
     public String getUsername() {
-        return this.empUserId; // ✨ empUserId 필드 반환 ✨
+        return this.empUserId;
     }
 
+    /** 계정 만료 여부 (기본값: 만료되지 않음) */
     @Override
     public boolean isAccountNonExpired() {
-        return true; // 필요에 따라 로직 추가
+        return true;
     }
 
+    /** 계정 잠금 여부 (기본값: 잠금 아님) */
     @Override
     public boolean isAccountNonLocked() {
-        return true; // 필요에 따라 로직 추가
+        return true;
     }
 
+    /** 자격 증명 만료 여부 (기본값: 만료되지 않음) */
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // 필요에 따라 로직 추가
+        return true;
     }
 
-    /**
-     * 계정 활성화 상태를 반환합니다. (DB의 EMP_STATUS 값에 따라 설정됨)
-     */
+    /** 계정 활성 상태 반환 */
     @Override
     public boolean isEnabled() {
-        return this.empStatus; // ✨ empStatus 필드 반환 ✨
+        return this.empStatus;
     }
 }
