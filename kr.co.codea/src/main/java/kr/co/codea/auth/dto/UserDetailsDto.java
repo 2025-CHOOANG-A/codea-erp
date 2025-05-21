@@ -15,10 +15,11 @@ import java.util.Collection;
 @Builder // 빌더 패턴 사용
 public class UserDetailsDto implements UserDetails {
 
-    private String username; // EMP_ID (String으로 변환된 값)
+	private Long empId;      // 숫자형 직원 고유 ID (EMP_ID)
+    private String username; // 로그인 ID (EMP_USER_ID, 예: "hongload")
     private String password; // EMP_PW (암호화된 값)
     private Collection<? extends GrantedAuthority> authorities;
-    private boolean enabled;
+    private boolean enabled; // 계정 활성화 상태 (EMP_STATUS)
 
     // EmployeeMapper.xml에서 권한 문자열을 가져올 경우를 대비한 임시 필드
     // UserDetailsServiceImpl에서 이 값을 사용하여 authorities를 채웁니다.

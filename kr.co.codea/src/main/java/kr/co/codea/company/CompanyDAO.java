@@ -16,4 +16,15 @@ public class CompanyDAO implements CompanyService {
 		List<CompanyDTO> all = this.mp.alldata();
 		return all;
 	}
+	
+	@Override
+	public int insertCompany(CompanyDTO dto) {
+		int result = this.mp.insertCompany(dto);
+		return result;
+	}
+	@Override
+	public int updateCompany(CompanyDTO dto) {
+		int result = this.mp.updateCompany(dto);
+		return result;
+	}
 }
