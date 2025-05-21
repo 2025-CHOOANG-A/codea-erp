@@ -1,0 +1,98 @@
+<div th:fragment="view">
+  <main class="main-content">
+    <div class="container">
+      <h2 class="mb-4 fw-semibold">사업장 정보</h2>
+      <form>
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle company-table bg-white">
+            <tbody>
+              <tr>
+                <th scope="row">회사 로고</th>
+                <td colspan="3">
+                  <img src="/images/logo_sample.png" alt="회사 로고" class="company-logo" style="height:60px;" />
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">회사명</th>
+                <td>
+                  <input type="text" class="form-control" value="코드에이(주)" readonly>
+                </td>
+                <th scope="row">대표자명</th>
+                <td>
+                  <input type="text" class="form-control" value="홍길동" readonly>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">법인/개인</th>
+                <td>
+                  <input type="text" class="form-control" value="법인" readonly>
+                </td>
+                <th scope="row">법인등록번호</th>
+                <td>
+                  <input type="text" class="form-control" value="110111-1234567" readonly>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">사업자등록번호</th>
+                <td>
+                  <input type="text" class="form-control" value="123-45-67890" readonly>
+                </td>
+                <th scope="row">사업자등록증</th>
+                <td>
+                  <img src="/images/license_sample.png" alt="사업자등록증" class="company-license" style="height:60px;" />
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">업태</th>
+                <td>
+                  <input type="text" class="form-control" value="도소매업" readonly>
+                </td>
+                <th scope="row">업종</th>
+                <td>
+                  <input type="text" class="form-control" value="IT 서비스" readonly>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">주소</th>
+                <td>
+                  <input type="text" class="form-control" value="서울특별시 강남구 테헤란로 123" readonly>
+                </td>
+                <th scope="row">상세주소</th>
+                <td>
+                  <input type="text" class="form-control" value="5층 501호" readonly>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">우편번호</th>
+                <td colspan="3">
+                  <input type="text" class="form-control" value="06234" readonly>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">대표번호</th>
+                <td>
+                  <input type="text" class="form-control" value="02-1234-5678" readonly>
+                </td>
+                <th scope="row">팩스번호</th>
+                <td>
+                  <input type="text" class="form-control" value="02-8765-4321" readonly>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">이메일</th>
+                <td colspan="3">
+                  <input type="email" class="form-control" value="info@codea.co.kr" readonly>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      <!-- 관리자만 노출되는 수정 버튼 -->
+      <div class="text-end mt-3" id="editBtnWrapper" style="display: none">
+        <button onclick="location.href='/company/modify'"class="btn btn-primary px-4">수정</button>
+      </div>
+      </form>
+    </div>
+  </main>
+</div>

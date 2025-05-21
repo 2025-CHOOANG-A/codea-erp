@@ -1,11 +1,11 @@
 package kr.co.codea.company;
 
-import org.springframework.stereotype.Repository;
-
 import lombok.Data;
 
 @Data
-@Repository
 public class CompanyDTO {
-
+	Integer compId, bizCond;
+	String compName, compType, compImg, ceoName, bizNo;
+	String corpNo, bizImg, bizType, address, addressDetail, postCode;
+	String tel, fax, mail;
 }
