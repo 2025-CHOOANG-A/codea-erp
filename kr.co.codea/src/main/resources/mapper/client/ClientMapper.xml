@@ -13,33 +13,47 @@
   <result property="bizNo" column="BIZ_NO" />
   <result property="bizCond" column="BIZ_COND" />
   <result property="bizType" column="BIZ_TYPE" />
-  <result property="bp_tel" column="TEL" />
+  <result property="bp_tel" column="bp_tel" />
   <result property="fax" column="FAX" />
   <result property="address" column="ADDRESS" />
   <result property="addressDetail" column="ADDRESS_DETAIL" />
   <result property="postCode" column="POST_CODE" />
-  <result property="bp_remark" column="REMARK" />
+  <result property="bp_remark" column="bp_remark" />
     <collection property="contacts" ofType="kr.co.codea.client.ContactDTO">
       <id property="bcId" column="BC_ID" />
       <result property="bpId" column="BP_ID" />
       <result property="bcName" column="BC_NAME" />
       <result property="bcPosition" column="BC_POSITION" />
-      <result property="bc_tel" column="TEL" />
+      <result property="bc_tel" column="bc_tel" />
       <result property="hp" column="HP" />
       <result property="email" column="EMAIL" />
-      <result property="bc_remark" column="REMARK" />
+      <result property="bc_remark" column="bc_remark" />
       
       <!-- 생략: 다른 필드 -->
     </collection>
   </resultMap>
 
-   <!-- 공통코드 api -->
+   <!-- 공통코드 검색 api -->
 <resultMap id="CommonCode" type="kr.co.codea.client.CommonCodeDTO">
     <id property="codeId" column="CODE_ID"/>
     <result property="codeType" column="CODE_TYPE"/>
     <result property="code" column="CODE"/>
     <result property="codeDesc" column="CODE_DESC"/>
 </resultMap>
+
+   <!-- 공통코드 조회 api -->
+  <select id="findCommonCodeById" resultType="kr.co.codea.client.CommonCodeDTO" resultMap="CommonCode">
+    SELECT
+        CODE_ID,
+        CODE_TYPE,
+        CODE,
+        CODE_DESC
+    FROM
+        COMMON_CODE
+    WHERE
+        CODE_ID = #{codeId}
+  </select>
+
 
 
    <!-- 거래처 리스트 전체 출력 -->
@@ -82,10 +96,12 @@
             BIZ_NO,
             BIZ_COND,
             BIZ_TYPE,
+            POST_CODE,
             TEL,
             FAX,
             ADDRESS,
-            ADDRESS_DETAIL
+            ADDRESS_DETAIL,
+            REMARK
         ) VALUES (
             #{bpCode},      
             #{bpType},     
@@ -94,10 +110,12 @@
             #{bizNo},
             #{bizCond},     
             #{bizType},
-            #{tel},
+            #{postCode},
+            #{bp_tel},
             #{fax},
             #{address},
-            #{addressDetail}
+            #{addressDetail},
+            #{bc_remark, jdbcType=VARCHAR}
         )
     </insert>
     
@@ -112,12 +130,12 @@
           BIZ_NO = #{bizNo},
           BIZ_COND = #{bizCond},
           BIZ_TYPE = #{bizType},
-          TEL = #{tel},
+          TEL = #{bp_tel},
           FAX = #{fax},
           ADDRESS = #{address},
           ADDRESS_DETAIL = #{addressDetail},
           POST_CODE = #{postCode},
-          REMARK = #{remark}
+          REMARK = #{bp_remark}
       WHERE
           BP_ID = #{bpId}
   </update>
@@ -128,10 +146,10 @@
       SET
           BC_NAME = #{bcName},
           BC_POSITION = #{bcPosition},
-          TEL = #{tel},
+          TEL = #{bc_tel},
           HP = #{hp},
           EMAIL = #{email},
-          REMARK = #{remark}
+          REMARK = #{bc_remark}
       WHERE
           BC_ID = #{bcId}
           AND BP_ID = #{bpId} </update>
@@ -150,10 +168,10 @@
           #{bpId},
           #{bcName},
           #{bcPosition},
-          #{tel},
+          #{bc_tel},
           #{hp},
           #{email},
-          #{remark}
+          #{bc_remark}
       )
   </insert>
   

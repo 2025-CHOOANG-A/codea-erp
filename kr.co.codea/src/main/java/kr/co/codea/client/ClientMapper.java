@@ -10,12 +10,12 @@ public interface ClientMapper {
     List<ClientDTO> selectAllPartners();
     ClientDTO selectPartnerWithContacts(Integer bpId);
     List<CommonCodeDTO> findCommonCode(@Param("codeType") String codeType, @Param("query") String query);
-    
+    CommonCodeDTO findCommonCodeById(@Param("codeId") Integer codeId);
     //거래처 추가 
     int insertClient(ClientDTO client);
    
     //거래처 업데이트
-    int updateclinet(ClientDTO client);
+    int updateClient(ClientDTO client);
     
     //거래처 담당자 업데이트
     int updateContact(ContactDTO contact);

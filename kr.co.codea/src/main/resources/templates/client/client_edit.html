@@ -1,17 +1,9 @@
-<!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>거래처 정보 수정</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" th:href="@{/css/client_detail.css}"/>
-    <meta name="_csrf" th:content="${_csrf?.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
-</head>
-<body>
-    <main class="container" style="max-width: 1000px; margin-top: 3rem; margin-bottom: 4rem;">
+<div th:fragment="contentFragment" class="client-detail-container">
+    <th:block th:fragment="headFragment">
+        <link rel="stylesheet" th:href="@{/css/client_detail.css}"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </th:block>
+<main class="container" style="max-width: 1000px; margin-top: 3rem; margin-bottom: 4rem;">
         <div class="detail-bg-white">
             <h2 class="fw-bold mb-4 detail-title">거래처 정보 수정</h2>
 
@@ -23,58 +15,78 @@
             <form id="clientEditForm" th:object="${client}" th:data-bp-id="${client.bpId}">
                 <input type="hidden" th:field="*{bpId}" />
 
-                <div class="mb-3">
-                    <label for="bpCode" class="form-label">거래처 코드</label>
-                    <input type="text" class="form-control" id="bpCode" th:field="*{bpCode}" readonly />
-                </div>
-                <div class="mb-3">
-                    <label for="bpType" class="form-label">거래처 유형</label>
-                    <input type="text" class="form-control" id="bpType" th:field="*{bpType}" />
-                </div>
-                <div class="mb-3">
-                    <label for="bpName" class="form-label">거래처명<span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="bpName" th:field="*{bpName}" required />
-                </div>
-                <div class="mb-3">
-                    <label for="ceoName" class="form-label">대표자명</label>
-                    <input type="text" class="form-control" id="ceoName" th:field="*{ceoName}" />
-                </div>
-                <div class="mb-3">
-                    <label for="bizNo" class="form-label">사업자 번호</label>
-                    <input type="text" class="form-control" id="bizNo" th:field="*{bizNo}" />
-                </div>
-                <div class="mb-3">
-                    <label for="bizCond" class="form-label">업태</label>
-                    <input type="text" class="form-control" id="bizCond" th:field="*{bizCond}" />
-                </div>
-                <div class="mb-3">
-                    <label for="bizType" class="form-label">종목</label>
-                    <input type="text" class="form-control" id="bizType" th:field="*{bizType}" />
-                </div>
-                <div class="mb-3">
-                    <label for="tel" class="form-label">전화번호</label>
-                    <input type="text" class="form-control" id="tel" th:field="*{tel}" />
-                </div>
-                <div class="mb-3">
-                    <label for="fax" class="form-label">팩스번호</label>
-                    <input type="text" class="form-control" id="fax" th:field="*{fax}" />
-                </div>
-                <div class="mb-3">
-                    <label for="address" class="form-label">주소</label>
-                    <input type="text" class="form-control" id="address" th:field="*{address}" />
-                </div>
-                <div class="mb-3">
-                    <label for="addressDetail" class="form-label">상세 주소</label>
-                    <input type="text" class="form-control" id="addressDetail" th:field="*{addressDetail}" />
-                </div>
-                <div class="mb-3">
-                    <label for="postCode" class="form-label">우편번호</label>
-                    <input type="text" class="form-control" id="postCode" th:field="*{postCode}" />
-                </div>
-                <div class="mb-3">
-                    <label for="remark" class="form-label">비고</label>
-                    <textarea class="form-control" id="remark" th:field="*{remark}" rows="3"></textarea>
-                </div>
+                <div class="detail-section-title mb-3">거래처 정보</div>
+                <table class="table table-bordered table-detail company-table table-hover">
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="bg-light text-end" style="width:180px;">거래처 코드</th>
+                            <td><input type="text" class="form-control" id="bpCode" th:field="*{bpCode}" readonly /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">거래처 유형</th>
+                            <td><input type="text" class="form-control" id="bpType" th:field="*{bpType}" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">거래처명<span class="text-danger">*</span></th>
+                            <td><input type="text" class="form-control" id="bpName" th:field="*{bpName}" required /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">대표자명</th>
+                            <td><input type="text" class="form-control" id="ceoName" th:field="*{ceoName}" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">사업자 번호</th>
+                            <td><input type="text" class="form-control" id="bizNo" th:field="*{bizNo}" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">업태</th>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text"
+                                           name="bizCondCode"
+                                           id="bizCondInput" class="form-control"
+                                           th:field="*{bizCondCode}" placeholder="업태 검색 (예: 제조업, 도소매업)"
+                                           onkeyup="searchBizCond(this.value)"
+                                           th:readonly="${client.bizCondCode != null and client.bizCondCode.length() > 0}" />
+                                    <button type="button" class="btn btn-outline-secondary" id="clearBizCondBtn"
+                                            th:style="${client.bizCondCode != null and client.bizCondCode.length() > 0} ? 'display: block;' : 'display: none;'"
+                                            onclick="clearBizCondSelection()">&times;</button>
+                                </div>
+                                <input type="hidden" name="bizCond" id="bizCondHiddenId" th:field="*{bizCond}" />
+                                <div id="autocompleteResults" class="list-group" style="position: absolute; z-index: 1000; width: calc(100% - 200px); background-color: white; border: 1px solid #ddd; max-height: 200px; overflow-y: auto; display: none;">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">종목</th>
+                            <td><input type="text" class="form-control" id="bizType" th:field="*{bizType}" placeholder="종목 (예: 의류, 소프트웨어)" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">전화번호</th>
+                            <td><input type="text" class="form-control" id="bp_tel" th:field="*{bp_tel}" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">팩스번호</th>
+                            <td><input type="text" class="form-control" id="fax" th:field="*{fax}" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">주소</th>
+                            <td><input type="text" class="form-control" id="address" th:field="*{address}" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">상세 주소</th>
+                            <td><input type="text" class="form-control" id="addressDetail" th:field="*{addressDetail}" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">우편번호</th>
+                            <td><input type="text" class="form-control" id="postCode" th:field="*{postCode}" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="bg-light text-end">비고</th>
+                            <td><textarea class="form-control" id="bp_remark" th:field="*{bp_remark}" rows="3"></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
 
                 <div class="d-flex justify-content-end mt-5 gap-2">
                     <a th:href="@{/client/{id}(id=${client.bpId})}" class="btn btn-outline-secondary">
@@ -90,5 +102,4 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/clientUpdate.js}"></script>
-</body>
-</html>
+</div>

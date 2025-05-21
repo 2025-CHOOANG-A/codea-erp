@@ -67,6 +67,22 @@ public class ClientController {
     	
     }
     // 거래처 업데이트
+
+	 @GetMapping("/client/{id}/edit")
+	 public String editClientForm(@PathVariable("id") Integer id, Model m) {
+	     ClientDTO client = service.getPartnerDetails(id);
+	     if (client == null) {
+	         return "redirect:/client";
+	     }
+	     m.addAttribute("client", client);
+	        m.addAttribute("templateName", "client/client_edit");
+	        m.addAttribute("fragmentName", "contentFragment");
+	        
+	        return "client/client_default";
+	 }
+    
+    
+    
     @PutMapping("/client/{id}")
     @ResponseBody // JSON 응답을 위해 @ResponseBody 사용
     public ResponseEntity<?> updateClient(@PathVariable("id") Integer id, @RequestBody ClientDTO clientDTO) {
@@ -74,7 +90,7 @@ public class ClientController {
         if (!id.equals(clientDTO.getBpId())) {
             return new ResponseEntity<>(Map.of("message", "ID 불일치"), HttpStatus.BAD_REQUEST);
         }
-        int updatedRows = service.updateclinet(clientDTO);
+        int updatedRows = service.updateClient(clientDTO);
         if (updatedRows > 0) {
             return new ResponseEntity<>(Map.of("message", "거래처 정보가 성공적으로 업데이트되었습니다."), HttpStatus.OK);
         } else {

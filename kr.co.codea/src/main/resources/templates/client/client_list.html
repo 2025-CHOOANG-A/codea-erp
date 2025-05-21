@@ -47,12 +47,12 @@
 				      </td>
 				      <td th:text="${client.bpType}"></td>
 				      <td th:text="${client.bizNo}"></td>
-				      <td th:text="${client.tel}"></td>
+				      <td th:text="${client.bp_tel}"></td>
 				      <td th:text="${client.address}"></td>
 				      <td>
-				          <span th:unless="${client.remark}">-</span>
+				          <span th:unless="${client.bp_remark}">-</span>
 				          <button type="button" class="btn btn-outline-secondary btn-sm btn-remark"
-				                  th:if="${client.remark}" th:data-remark="${client.remark}" th:text="내용 확인"></button>
+				                  th:if="${client.bp_remark}" th:data-remark="${client.bp_remark}" th:text="내용 확인"></button>
 				      </td>
 				    </tr>
 				  </th:block>

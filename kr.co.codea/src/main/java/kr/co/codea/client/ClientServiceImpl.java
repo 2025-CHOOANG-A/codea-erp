@@ -21,7 +21,12 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @Transactional(readOnly = true)
     public ClientDTO getPartnerDetails(Integer bpId) {
-        return mapper.selectPartnerWithContacts(bpId);
+
+    	ClientDTO bpinfo = mapper.selectPartnerWithContacts(bpId);
+    	if(bpinfo.getBizCond() != null) {
+    		bpinfo.setBizCondCode(mapper.findCommonCodeById(bpinfo.getBizCond()).getCode());
+    	}
+        return bpinfo;
     }
 
 	@Override
@@ -36,8 +41,8 @@ public class ClientServiceImpl implements ClientService {
 	}
 
 	@Override
-	public int updateclinet(ClientDTO client) {
-		return mapper.updateclinet(client);
+	public int updateClient(ClientDTO client) {
+		return mapper.updateClient(client);
 	}
 
 	@Override
@@ -54,6 +59,13 @@ public class ClientServiceImpl implements ClientService {
 	public int deleteContact(Integer bcId, Integer bpId) {
 		return mapper.deleteContact(bcId, bpId);
 	}
+
+	@Override
+	public CommonCodeDTO findCommonCodeById(Integer codeId) {
+		
+		return mapper.findCommonCodeById(codeId);
+	}
+
 
 
 }

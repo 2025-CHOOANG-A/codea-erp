@@ -13,14 +13,16 @@ public class ClientDTO {
 	private String bpName;
 	private String ceoName;
 	private String bizNo;
-	private int bizCond;
+	private Integer bizCond;
 	private String bizType;
-	private String tel;
+	private String bp_tel;
+	// 	private String tel;
 	private String fax;
 	private String address;
 	private String addressDetail;
 	private String postCode;
-	private String remark;
+	private String bp_remark;
+	private String bizCondCode;
 
 
     
