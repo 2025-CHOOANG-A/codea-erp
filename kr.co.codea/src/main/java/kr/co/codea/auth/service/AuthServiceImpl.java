@@ -47,24 +47,23 @@ public class AuthServiceImpl implements AuthService {
         // 5. RefreshToken DB에 저장/업데이트
         UserDetailsDto userDetailsPrincipal = (UserDetailsDto) authentication.getPrincipal();
         // userDetailsPrincipal.getUsername()은 EMP_ID를 문자열로 반환해야 함
-        Long empId = Long.parseLong(userDetailsPrincipal.getUsername());
+        Long actualEmpId = userDetailsPrincipal.getEmpId(); // UserDetailsDto에서 숫자 EMP_ID를 직접 가져옴
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .empId(empId)
-                .token(refreshTokenValue)
-                .expiration(new Date(System.currentTimeMillis() + jwtProvider.getRefreshTokenExpirationMillis()))
-                // rtId는 DB에서 자동 생성되므로 여기서는 설정 안 함
-                // createdAt, updatedAt도 DB에서 SYSDATE로 자동 설정되거나, insert/update 시점에 설정
-                .build();
+     // 이제 actualEmpId (숫자형 EMP_ID)를 RefreshToken 생성에 사용
+     RefreshToken refreshToken = RefreshToken.builder()
+             .empId(actualEmpId) // 수정된 부분: 실제 숫자 empId 사용
+             .token(refreshTokenValue)
+             .expiration(new Date(System.currentTimeMillis() + jwtProvider.getRefreshTokenExpirationMillis()))
+             .build();
 
-        refreshTokenMapper.findByEmpId(empId)
-                .ifPresentOrElse(
-                        existingToken -> {
-                            existingToken.updateTokenInfo(refreshTokenValue, refreshToken.getExpiration());
-                            refreshTokenMapper.update(existingToken);
-                        },
-                        () -> refreshTokenMapper.insert(refreshToken)
-                );
+     refreshTokenMapper.findByEmpId(actualEmpId) // 수정된 부분: 실제 숫자 empId 사용
+             .ifPresentOrElse(
+                     existingToken -> {
+                         existingToken.updateTokenInfo(refreshTokenValue, refreshToken.getExpiration());
+                         refreshTokenMapper.update(existingToken);
+                     },
+                     () -> refreshTokenMapper.insert(refreshToken)
+             );
 
         return new TokenDto(accessToken, refreshTokenValue);
     }

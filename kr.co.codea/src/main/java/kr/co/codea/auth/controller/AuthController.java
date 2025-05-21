@@ -5,6 +5,8 @@ import kr.co.codea.auth.dto.TokenDto;
 import kr.co.codea.auth.dto.UserDetailsDto;
 import kr.co.codea.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,20 +31,25 @@ public class AuthController {
     public ResponseEntity<Void> logout(@AuthenticationPrincipal UserDetailsDto userDetailsDto) {
         // @AuthenticationPrincipal을 사용하면 현재 인증된 사용자의 UserDetails 객체를 직접 받을 수 있습니다.
         // 단, UserDetailsDto의 getUsername()이 Long 타입의 empId를 문자열로 반환해야 합니다.
-        if (userDetailsDto != null) {
-            Long empId = Long.parseLong(userDetailsDto.getUsername());
-            authService.logout(empId);
+    	if (userDetailsDto != null && userDetailsDto.getEmpId() != null) {
+            // userDetailsDto.getEmpId()를 호출하면 Long 타입의 숫자 EMP_ID가 직접 반환됩니다.
+            authService.logout(userDetailsDto.getEmpId());
             return ResponseEntity.ok().build();
         }
-        // 또는 SecurityContextHolder에서 직접 가져오기
+    	// 2. @AuthenticationPrincipal로 주입되지 않았거나 empId가 null인 경우 (예: 필터 순서 등)
+        //    SecurityContextHolder에서 직접 Authentication 객체를 가져와 처리 시도
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UserDetailsDto) {
             UserDetailsDto principal = (UserDetailsDto) authentication.getPrincipal();
-            Long empId = Long.parseLong(principal.getUsername());
-            authService.logout(empId);
-            return ResponseEntity.ok().build();
+            // 여기서도 getUsername() 대신 getEmpId()를 사용해야 합니다.
+            if (principal.getEmpId() != null) { // empId가 null이 아닌지 확인
+                authService.logout(principal.getEmpId());
+                return ResponseEntity.ok().build();
+            }
         }
-        return ResponseEntity.status(401).build(); // 인증 정보 없을 시
+
+        // 어떤 방법으로도 유효한 사용자 정보를 얻지 못한 경우
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 또는 다른 적절한 상태
     }
 
     // Refresh Token을 Request Body로 받는 예시
