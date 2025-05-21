@@ -1,10 +1,253 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title ?: '메인 페이지'}">메인 페이지</title>
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/sidebar.css" th:href="@{/css/sidebar.css}"/>
+    <style>
+        body {
+            min-height: 100vh;
+            background: #f8f9fa;
+            padding-top: 64px; /* 헤더 높이만큼 body 상단에 패딩 */
+        }
+        .sidebar {
+            width: 260px;
+            background: #343a40;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: -260px; /* 초기에는 숨김 */
+            height: 100vh;
+            padding-top: 64px; /* 헤더 높이만큼 사이드바 내용 시작 위치 조정 */
+            box-sizing: border-box;
+            z-index: 1035;
+            transition: left 0.3s;
+            overflow-y: auto;
+        }
+        .sidebar.show {
+            left: 0;
+        }
+        .sidebar .nav-link {
+            color: #adb5bd;
+            border-radius: 0;
+            padding-left: 2rem;
+        }
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:focus,
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background: #495057;
+            text-decoration: none;
+        }
+        .sidebar .sidebar-heading {
+            font-size: 0.95rem;
+            padding: 1rem 1.5rem 0.5rem 1.5rem;
+            color: #ced4da;
+            letter-spacing: 0.05em;
+        }
+        .sidebar .nav {
+            margin-bottom: 2rem;
+        }
+        .sidebar .nav-item {
+            margin-bottom: 0.2rem;
+        }
+        .sidebar-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: #adb5bd;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+        }
+        .sidebar-close:focus {
+            outline: none;
+        }
+        .sidebar-toggle {
+            background: #343a40;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 0.3rem;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar-toggle:hover,
+        .sidebar-toggle:focus {
+            background: #495057;
+            color: #fff;
+            outline: none;
+        }
+        .header {
+            height: 64px;
+            background: #fff;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            padding: 0 1.5rem;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 1.5rem;
+            letter-spacing: 0.05em;
+            color: #343a40;
+            user-select: none;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .main-content { /* 실제 페이지 컨텐츠가 표시될 영역 */
+            margin-top: 64px; /* 헤더 높이만큼 마진 */
+            padding: 1.5rem;
+            transition: margin-left 0.3s;
+        }
+        .sidebar.show ~ .main-content { /* 사이드바 열렸을 때 메인 컨텐츠의 왼쪽 마진 */
+            margin-left: 260px;
+        }
+        @media (max-width: 991.98px) {
+             .sidebar.show ~ .main-content {
+                margin-left: 220px;
+            }
+        }
+        /* ... (기존 다른 스타일 유지) ... */
+    </style>
 </head>
 <body>
-테스트
+    <nav id="sidebar" class="sidebar">
+        <button class="sidebar-close" id="sidebarClose" aria-label="사이드바 닫기">&times;</button>
+        <div class="sidebar-heading">기준정보관리</div>
+        <ul class="nav flex-column mb-2">
+            <li class="nav-item"><a class="nav-link" th:href="@{#}">사업장관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{#}">거래처관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{#}">창고관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{#}">제품관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{#}">품목관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{#}">사원관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{#}">공지사항</a></li>
+        </ul>
+        </nav>
+
+    <header class="header">
+        <div class="header-left">
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="사이드바 열기">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24">
+                    <rect y="4" width="24" height="2" rx="1" fill="currentColor" />
+                    <rect y="11" width="24" height="2" rx="1" fill="currentColor" />
+                    <rect y="18" width="24" height="2" rx="1" fill="currentColor" />
+                </svg>
+            </button>
+        </div>
+        <div class="header-center">CodeA</div>
+        <div id="authArea" class="header-right">
+            <th:block sec:authorize="isAuthenticated()">
+                <span class="fw-bold text-dark me-3"
+                      th:text="${#authentication.principal.empName} + '님'">
+                      </span>
+                <button class="btn btn-outline-secondary btn-sm" id="logoutButton">로그아웃</button>
+            </th:block>
+            <th:block sec:authorize="!isAuthenticated()">
+                <a th:href="@{/login}" class="btn btn-primary btn-sm">로그인</a>
+            </th:block>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <h1>메인 페이지에 오신 것을 환영합니다!</h1>
+
+        <div th:if="${userRealName}"> <p>안녕하세요, <span th:text="${userRealName}">사용자 이름</span>님
+               (EMP_ID: <span th:if="${empId}" th:text="${empId}">ID 없음</span>)!
+            </p>
+        </div>
+        <div th:unless="${userRealName}" sec:authorize="!isAuthenticated()">
+            <p>로그인되지 않았습니다.</p>
+        </div>
+
+        <p>테스트 내용입니다.</p>
+        </div>
+
+    <script>
+        // Sidebar toggle 스크립트
+        const sidebar = document.getElementById("sidebar");
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        const sidebarClose = document.getElementById("sidebarClose");
+
+        if (sidebarToggle && sidebar && sidebarClose) {
+            sidebarToggle.addEventListener("click", () => sidebar.classList.add("show"));
+            sidebarClose.addEventListener("click", () => sidebar.classList.remove("show"));
+            document.addEventListener("click", (e) => {
+                if (
+                    sidebar &&
+                    sidebar.classList.contains("show") &&
+                    !sidebar.contains(e.target) &&
+                    sidebarToggle &&
+                    !sidebarToggle.contains(e.target)
+                ) {
+                    sidebar.classList.remove("show");
+                }
+            });
+        } else {
+            console.warn("Sidebar-related elements not found. Sidebar functionality might be affected.");
+        }
+
+        // 로그아웃 버튼 이벤트 처리 (Thymeleaf로 버튼이 생성되었을 때만 이벤트 바인딩)
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoutButton = document.getElementById('logoutButton'); // Thymeleaf가 생성한 버튼 ID
+
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async function() {
+                    try {
+                        const response = await fetch('/auth/logout', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                                // CSRF 토큰이 필요하다면 여기에 추가
+                                // 'X-CSRF-TOKEN': '서버로부터 받은 CSRF 토큰 값'
+                            }
+                        });
+
+                        if (response.ok) {
+                            localStorage.removeItem('refreshToken'); // Refresh Token은 localStorage에서 관리한다고 가정
+                            // Access Token은 HttpOnly 쿠키이므로 서버에서 만료시킴
+                            alert('로그아웃 되었습니다.');
+                            window.location.href = '/login';
+                        } else {
+                            const errorText = await response.text();
+                            alert(`로그아웃에 실패했습니다: ${response.status} ${errorText || ''}`);
+                            localStorage.removeItem('refreshToken'); // 실패 시에도 로컬 정보 정리
+                            window.location.href = '/login';
+                        }
+                    } catch (error) {
+                        console.error('로그아웃 요청 중 오류 발생:', error);
+                        alert('로그아웃 처리 중 오류가 발생했습니다.');
+                        localStorage.removeItem('refreshToken');
+                        window.location.href = '/login';
+                    }
+                });
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

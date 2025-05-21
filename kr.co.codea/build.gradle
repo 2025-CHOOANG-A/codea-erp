@@ -18,6 +18,8 @@ repositories {
 dependencies {
 	// ===== [템플릿 엔진] =====
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' // Thymeleaf 템플릿 엔진
+	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect' // 레이아웃 다이얼렉트 사용 시
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6' // Spring Security 연동
 	
 	// ===== [JSON 처리] =====
 	implementation 'org.json:json:20240303' // JSON 파싱/생성 라이브러리

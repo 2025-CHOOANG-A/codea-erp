@@ -2,17 +2,20 @@ package kr.co.codea.auth.config;
 
 import kr.co.codea.auth.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest; // PathRequest 임포트
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer; // WebSecurityCustomizer 임포트
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher; // AntPathRequestMatcher 임포트 (필요시)
 
 @Configuration
 @EnableWebSecurity
@@ -20,7 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
-    private final UserDetailsServiceImpl userDetailsServiceImpl; // UserDetailsService 주입
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -31,8 +34,8 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http
                 .getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.userDetailsService(userDetailsServiceImpl) // 직접 구현한 UserDetailsService 설정
-                .passwordEncoder(passwordEncoder()); // PasswordEncoder 설정
+        authenticationManagerBuilder.userDetailsService(userDetailsServiceImpl)
+                .passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
     }
 
@@ -41,32 +44,35 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter(jwtProvider);
     }
 
+    // WebSecurityCustomizer 빈을 추가하여 특정 경로를 Spring Security 필터 적용 대상에서 제외
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()) // 일반적인 정적 리소스 (css, js, images 등) 경로들을 무시
+                .requestMatchers(
+                        new AntPathRequestMatcher("/.well-known/**"), // .well-known 하위 모든 경로 무시
+                        new AntPathRequestMatcher("/error") // Spring Boot 기본 오류 페이지 경로 무시
+                );
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (Stateless 서버)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
-            .authenticationManager(authenticationManager) // 직접 구성한 AuthenticationManager 설정
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authenticationManager(authenticationManager)
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authz -> authz
-                // 로그인 페이지 및 관련 정적 리소스, 로그인 API, 토큰 재발급 API는 항상 허용
-                //.requestMatchers("/", "/login", "/auth/login", "/auth/reissue").permitAll()
-                //.requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 정적 리소스 경로 예시
-                // .requestMatchers("/index").authenticated() // /index 페이지는 인증 필요 (이전 HomeController 예시)
-                //.anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
-                .anyRequest().permitAll()
+                // webSecurityCustomizer에서 무시된 경로는 여기에 설정할 필요가 없음 (permitAll()과 다름)
+                .requestMatchers("/", "/login", "/auth/login", "/auth/reissue","/favicon.ico").permitAll()
+                // .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // webSecurityCustomizer로 이동
+                .requestMatchers("/index").authenticated()
+                .anyRequest().authenticated()
             )
-            // formLogin 설정을 통해 로그인 페이지 지정 및 관련 설정
             .formLogin(formLogin -> formLogin
-                .loginPage("/login") // 커스텀 로그인 페이지 경로 (PageController에서 설정한 경로)
-                .permitAll() // 로그인 페이지 자체는 항상 접근 가능해야 함
+                .loginPage("/login")
+                .permitAll()
             );
-
-            // 필요에 따라 인증/인가 예외 처리 핸들러 추가
-            // .exceptionHandling(exceptions -> exceptions
-            // .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-            // .accessDeniedHandler(new CustomAccessDeniedHandler())
-            // );
 
         return http.build();
     }

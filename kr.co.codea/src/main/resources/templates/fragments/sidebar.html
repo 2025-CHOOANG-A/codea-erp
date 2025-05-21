@@ -1,43 +1,51 @@
-<div th:fragment="layout">
-<nav id="sidebar" class="sidebar">
-    <button class="sidebar-close" id="sidebarClose" aria-label="사이드바 닫기">&times;</button>
-    <div class="sidebar-heading">기준정보관리</div>
-    <ul class="nav flex-column mb-2">
-        <li class="nav-item"><a class="nav-link" href="#">사업장관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">거래처관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">창고관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">제품관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">품목관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">사원관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">공지사항</a></li>
-    </ul>
-    <div class="sidebar-heading">구매영업관리</div>
-    <ul class="nav flex-column mb-2">
-        <li class="nav-item"><a class="nav-link" href="#">발주관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">주문관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">출고관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">자재소요량계산</a></li>
-    </ul>
-    <div class="sidebar-heading">자재관리</div>
-    <ul class="nav flex-column mb-2">
-        <li class="nav-item"><a class="nav-link" href="#">입고관리</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">재고관리</a></li>
-    </ul>
-    <div class="sidebar-heading">생산관리</div>
-    <ul class="nav flex-column mb-4">
-        <li class="nav-item"><a class="nav-link" href="#">생산계획</a></li>
-    </ul>
-</nav>
+<div th:fragment="layout"> <nav id="sidebar" class="sidebar">
+        <button class="sidebar-close" id="sidebarClose" aria-label="사이드바 닫기">&times;</button>
+        <div class="sidebar-heading">기준정보관리</div>
+        <ul class="nav flex-column mb-2">
+            <li class="nav-item"><a class="nav-link" href="#">사업장관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">거래처관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">창고관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">제품관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">품목관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">사원관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">공지사항</a></li>
+        </ul>
+        <div class="sidebar-heading">구매영업관리</div>
+        <ul class="nav flex-column mb-2">
+            <li class="nav-item"><a class="nav-link" href="#">발주관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">주문관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">출고관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">자재소요량계산</a></li>
+        </ul>
+        <div class="sidebar-heading">자재관리</div>
+        <ul class="nav flex-column mb-2">
+            <li class="nav-item"><a class="nav-link" href="#">입고관리</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">재고관리</a></li>
+        </ul>
+        <div class="sidebar-heading">생산관리</div>
+        <ul class="nav flex-column mb-4">
+            <li class="nav-item"><a class="nav-link" href="#">생산계획</a></li>
+        </ul>
+    </nav>
 
-<!-- Header -->
-<header class="header">
-    <button class="sidebar-toggle" id="sidebarToggle" aria-label="사이드바 열기">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24">
-            <rect y="4" width="24" height="2" rx="1" fill="currentColor"/>
-            <rect y="11" width="24" height="2" rx="1" fill="currentColor"/>
-            <rect y="18" width="24" height="2" rx="1" fill="currentColor"/>
-        </svg>
-    </button>
-    <div class="header-logo">CodeA</div>
-</header>
+    <header class="header">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="사이드바 열기">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24">
+                <rect y="4" width="24" height="2" rx="1" fill="currentColor"/>
+                <rect y="11" width="24" height="2" rx="1" fill="currentColor"/>
+                <rect y="18" width="24" height="2" rx="1" fill="currentColor"/>
+            </svg>
+        </button>
+        <div class="header-logo">CodeA</div>
+
+        <div class="user-actions ms-auto">
+            <span id="usernameDisplay" class="me-3" style="color: #343a40; display: none;"></span>
+            <button id="logoutButton" class="btn btn-outline-secondary btn-sm me-2" style="display: none;">로그아웃</button>
+            <a href="/login" id="loginButton" class="btn btn-primary btn-sm" style="display: none;">로그인</a>
+        </div>
+    </header>
+
+    <main class="content-wrapper" style="padding-top: 64px; margin-left: 0; transition: margin-left 0.3s;">
+        </main>
+
 </div>
