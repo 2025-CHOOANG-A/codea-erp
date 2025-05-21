@@ -5,6 +5,40 @@
 <select id="alldata" resultType="kr.co.codea.company.CompanyDTO">
 select * from company
 </select>
+
+<update id="updateCompany" parameterType="kr.co.codea.company.CompanyDTO">
+    UPDATE COMPANY 
+    SET
+        COMP_NAME = #{compName},
+        COMP_TYPE  = #{compType},
+        COMP_IMG = #{compImg},
+        CEO_NAME  = #{ceoName},
+        BIZ_NO  = #{bizNo},
+        CORP_NO  = #{corpNo},
+        BIZ_IMG  = #{bizImg},
+        BIZ_COND = #{bizCond},
+        BIZ_TYPE  = #{bizType},
+        ADDRESS  = #{address},
+        ADDRESS_DETAIL  = #{addressDetail},
+        POST_CODE  = #{postCode},
+        TEL  = #{tel},
+        FAX  = #{fax},
+        MAIL  = #{mail},
+        updated_at = SYSDATE
+    WHERE COMP_ID = #{compId}
+</update>
+
+<insert id="insertCompany" parameterType="kr.co.codea.company.CompanyDTO">
+    INSERT INTO COMPANY (
+        COMP_NAME, COMP_TYPE, COMP_IMG, CEO_NAME, BIZ_NO,
+        CORP_NO, BIZ_IMG, BIZ_COND, BIZ_TYPE, ADDRESS,
+        ADDRESS_DETAIL, POST_CODE, TEL, FAX, MAIL
+    ) VALUES (
+        #{compName}, #{compType}, #{compImg}, #{ceoName}, #{bizNo},
+        #{corpNo}, #{bizImg}, #{bizCond}, #{bizType}, #{address},
+        #{addressDetail}, #{postCode}, #{tel}, #{fax}, #{mail}
+    )
+</insert>
 </mapper>
 <!-- <mapper namespace="kr.co.codea.company.CompanyMapper">
  -->
