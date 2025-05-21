@@ -29,11 +29,10 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder =
-            http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder
-            .userDetailsService(userDetailsServiceImpl) // 직접 구현한 UserDetailsService 설정
-            .passwordEncoder(passwordEncoder());       // PasswordEncoder 설정
+        AuthenticationManagerBuilder authenticationManagerBuilder = http
+                .getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.userDetailsService(userDetailsServiceImpl) // 직접 구현한 UserDetailsService 설정
+                .passwordEncoder(passwordEncoder()); // PasswordEncoder 설정
         return authenticationManagerBuilder.build();
     }
 
@@ -48,13 +47,20 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (Stateless 서버)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
             .authenticationManager(authenticationManager) // 직접 구성한 AuthenticationManager 설정
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authz -> authz
-            		//.requestMatchers("/auth/login","/auth/reissue").permitAll()// 기존 설정, 아래 permitAll()에 의해 모두 허용됨
-            		//.requestMatchers("/admin/**").hasRole("ADMIN") // 특정 권한 필요 경로 예시
-            		.anyRequest().permitAll() // <-- 중요: 모든 요청을 인증 없이 허용하도록 변경
+                // 로그인 페이지 및 관련 정적 리소스, 로그인 API, 토큰 재발급 API는 항상 허용
+                //.requestMatchers("/", "/login", "/auth/login", "/auth/reissue").permitAll()
+                //.requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 정적 리소스 경로 예시
+                // .requestMatchers("/index").authenticated() // /index 페이지는 인증 필요 (이전 HomeController 예시)
+                //.anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+                .anyRequest().permitAll()
             )
-            // JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
-            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+            // formLogin 설정을 통해 로그인 페이지 지정 및 관련 설정
+            .formLogin(formLogin -> formLogin
+                .loginPage("/login") // 커스텀 로그인 페이지 경로 (PageController에서 설정한 경로)
+                .permitAll() // 로그인 페이지 자체는 항상 접근 가능해야 함
+            );
 
             // 필요에 따라 인증/인가 예외 처리 핸들러 추가
             // .exceptionHandling(exceptions -> exceptions

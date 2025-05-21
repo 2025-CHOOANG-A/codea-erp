@@ -4,12 +4,14 @@ import lombok.Data;
 
 @Data
 public class ContactDTO {
-    private int BC_ID;
-    private String BP_CODE;
-    private String BP_TYPE;
-    private String BC_NAME;
-    private String BC_POSITION;
-    private String TEL;
-    private String FAX;
-    private String REMARK;
+	private Integer bpId;
+    private Integer bcId;
+    private String bcName;
+    private String bcPosition;
+    private String tel;
+    private String fax;
+    private String remark;
+    private String hp;
+    private String email;
+    
 }

@@ -1,0 +1,297 @@
+/* client_detail.css - Refined Black & White / Minimal Gray Theme */
+
+/* 전체 컨테이너 패딩 및 배경 */
+.client-detail-container main {
+    max-width: 1000px; /* 상세 페이지 너비 약간 증가 */
+    margin: 3rem auto 4rem; /* 상하 여백 더 여유롭게 */
+    padding: 0 1.5rem; /* 좌우 패딩 증가 */
+}
+
+.detail-bg-white {
+    background-color: #ffffff; /* 순백색 배경 */
+    padding: 3rem; /* 전체 패딩 증가 */
+    border-radius: 0.6rem; /* 둥근 모서리 약간 더 부드럽게 */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* 그림자 깊이와 부드러움 조정 */
+    border: 1px solid #e5e5e5; /* 연한 회색 테두리 */
+}
+
+/* 제목 스타일 */
+.detail-title {
+    font-size: 2rem; /* 제목 크기 더 키움 */
+    color: #212121; /* 진한 회색 (거의 블랙) */
+    border-bottom: 1px solid #cccccc; /* 연한 회색 구분선 */
+    padding-bottom: 1.5rem; /* 패딩 늘림 */
+    margin-bottom: 3rem !important; /* 마진 늘림 */
+    font-weight: 700; /* 더 굵은 글씨 */
+    text-align: center; /* 제목 중앙 정렬 */
+}
+
+/* 섹션 제목 스타일 */
+.detail-section-title {
+    font-size: 1.3rem; /* 섹션 제목 크기 */
+    font-weight: 600;
+    color: #333333; /* 어두운 회색 */
+    margin-top: 3.5rem; /* 위쪽 여백 더 늘림 */
+    margin-bottom: 1.5rem; /* 아래쪽 여백 늘림 */
+    padding-left: 1rem; /* 왼쪽 패딩 */
+    border-left: 5px solid #444444; /* 왼쪽 강조 선 두께 및 색상 조정 */
+    text-transform: uppercase; /* 대문자 */
+    letter-spacing: 0.06em; /* 글자 간격 약간 더 넓힘 */
+}
+
+/* 상세 테이블 기본 스타일 */
+.table-detail {
+    width: 100%;
+    margin-bottom: 2rem; /* 테이블 아래 여백 늘림 */
+    border-collapse: collapse;
+    border: 1px solid #e0e0e0; /* 테이블 전체 테두리 */
+}
+
+.table-detail th {
+    width: 200px; /* 레이블 컬럼 너비 약간 늘림 */
+    background: #f8f8f8; /* 아주 연한 회색 배경 */
+    vertical-align: middle;
+    font-weight: 500;
+    color: #555555; /* 부드러운 회색 */
+    padding: 1rem 1.5rem; /* 패딩 증가 */
+    border: 1px solid #eeeeee; /* 셀 테두리 */
+    text-align: left;
+}
+
+.table-detail td {
+    padding: 1rem 1.5rem; /* 패딩 증가 */
+    vertical-align: middle;
+    border: 1px solid #eeeeee; /* 셀 테두리 */
+    color: #333333;
+}
+
+/* 담당자 테이블 스타일 */
+.contact-table {
+    width: 100%;
+    margin-bottom: 2rem; /* 테이블 아래 여백 늘림 */
+    border-collapse: collapse;
+    border: 1px solid #e0e0e0; /* 테이블 전체 테두리 */
+}
+
+.contact-table th {
+    background-color: #e8e8e8; /* 좀 더 진한 회색 배경 */
+    font-weight: 600;
+    color: #333333;
+    padding: 0.8rem 1rem; /* 패딩 조정 (table-sm과 조화) */
+    border: 1px solid #d0d0d0;
+    text-align: center;
+}
+
+.contact-table td {
+    vertical-align: middle;
+    padding: 0.8rem 1rem; /* 패딩 조정 (table-sm과 조화) */
+    border: 1px solid #d0d0d0;
+    color: #444444;
+}
+
+/* 버튼 스타일 */
+.btn-list {
+    min-width: 100px; /* 버튼 최소 너비 */
+    padding: 0.7rem 1.4rem;
+    font-weight: 500;
+    border: 1px solid #cccccc;
+    background-color: #f0f0f0;
+    color: #555555;
+    transition: all 0.2s ease;
+}
+
+.btn-list:hover {
+    background-color: #e0e0e0;
+    border-color: #b0b0b0;
+    color: #333333;
+    transform: translateY(-1px); /* 살짝 위로 올라오는 효과 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 기본 버튼 (담당자 추가, 모달 저장) */
+.btn-primary {
+    background-color: #333333;
+    border-color: #333333;
+    color: #ffffff;
+    font-weight: 500;
+    padding: 0.7rem 1.4rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #555555;
+    border-color: #555555;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 거래처 정보 수정 버튼 (다크 그레이) */
+.btn-dark {
+    background-color: #4a4a4a; /* 더 진한 다크 그레이 */
+    border-color: #4a4a4a;
+    color: #ffffff;
+    font-weight: 500;
+    padding: 0.7rem 1.4rem;
+    transition: all 0.2s ease;
+}
+
+.btn-dark:hover {
+    background-color: #666666;
+    border-color: #666666;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+
+/* 담당자 수정 버튼 (아웃라인 다크) */
+.btn-outline-dark {
+    color: #4a4a4a;
+    border-color: #4a4a4a;
+    background-color: transparent;
+    font-weight: 500;
+    padding: 0.35rem 0.7rem; /* 작은 버튼 패딩 */
+    font-size: 0.85rem; /* 작은 버튼 폰트 크기 */
+    transition: all 0.2s ease;
+}
+.btn-outline-dark:hover {
+    background-color: #4a4a4a;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* 담당자 삭제 버튼 (아웃라인 레드) */
+.btn-outline-danger {
+    color: #dc3545; /* 빨간색 유지 */
+    border-color: #dc3545;
+    background-color: transparent;
+    font-weight: 500;
+    padding: 0.35rem 0.7rem; /* 작은 버튼 패딩 */
+    font-size: 0.85rem; /* 작은 버튼 폰트 크기 */
+    transition: all 0.2s ease;
+}
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+
+/* 알림 메시지 (등록된 담당자 없음) */
+.alert-info {
+    color: #555555; /* 글씨색 약간 어둡게 */
+    background-color: #f8f8f8; /* 아주 연한 회색 */
+    border-color: #e0e0e0; /* 연한 회색 테두리 */
+    text-align: center;
+    padding: 1.2rem;
+    margin-top: 1.8rem;
+    border-radius: 0.4rem;
+    font-size: 1.05rem;
+}
+
+/* 모달 스타일 */
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1rem); /* 화면 중앙에 위치 */
+}
+
+.modal-content {
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* 모달 그림자 더 강조 */
+    border: none; /* 기본 테두리 제거 */
+}
+
+.modal-header {
+    background-color: #f8f8f8; /* 모달 헤더 배경 */
+    border-bottom: 1px solid #eeeeee;
+    padding: 1.2rem 1.5rem;
+}
+
+.modal-title {
+    color: #333333;
+    font-weight: 600;
+    font-size: 1.15rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #eeeeee;
+    padding: 1rem 1.5rem;
+    background-color: #f8f8f8; /* 모달 푸터 배경 */
+}
+
+/* 폼 레이블 */
+.form-label {
+    font-weight: 500;
+    color: #444444;
+    margin-bottom: 0.4rem; /* 레이블과 인풋 간격 */
+}
+
+/* 필수 입력 표시 */
+.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Bootstrap Icons를 위한 간격 */
+.me-1 {
+    margin-right: 0.25rem !important;
+}
+
+/* 반응형 디자인을 위한 미디어 쿼리 */
+@media (max-width: 768px) {
+    .client-detail-container main {
+        padding: 0 0.8rem;
+        margin: 2rem auto 3rem;
+    }
+    .detail-bg-white {
+        padding: 1.5rem;
+        border-radius: 0.4rem;
+    }
+    .detail-title {
+        font-size: 1.8rem;
+        margin-bottom: 2rem !important;
+    }
+    .detail-section-title {
+        font-size: 1.1rem;
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        padding-left: 0.8rem;
+        border-left: 4px solid #444444;
+    }
+    .table-detail th, .table-detail td,
+    .contact-table th, .contact-table td {
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
+    }
+    .table-detail th {
+        width: 140px; /* 모바일에서 레이블 너비 조정 */
+    }
+    .btn-list, .btn-dark, .btn-primary {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        min-width: unset;
+    }
+    .d-flex.justify-content-end.mt-5.gap-2 {
+        flex-direction: column; /* 버튼 세로 정렬 */
+        align-items: stretch;
+    }
+    .d-flex.justify-content-end.mt-5.gap-2 a,
+    .d-flex.justify-content-end.mt-5.gap-2 button {
+        margin-bottom: 0.5rem; /* 버튼 간격 */
+    }
+
+    .modal-dialog {
+        margin: 0.5rem; /* 모바일에서 모달 마진 줄임 */
+    }
+    .modal-body {
+        padding: 1rem;
+    }
+    .modal-footer {
+        padding: 0.8rem 1rem;
+    }
+}
