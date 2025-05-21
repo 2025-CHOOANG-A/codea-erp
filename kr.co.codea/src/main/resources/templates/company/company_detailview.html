@@ -1,14 +1,15 @@
 <div th:fragment="view">
+  <main class="main-content">
     <div class="container">
       <h2 class="mb-4 fw-semibold">사업장 정보</h2>
       <div class="table-responsive">
         <table class="table table-bordered align-middle company-table bg-white">
-          <tbody>
+          <tbody th:each="dto : ${alldata}">
             <tr>
               <th scope="row">회사 로고</th>
               <td colspan="3">
-                <img
-                  src="https://via.placeholder.com/100x60?text=Logo"
+                <img 
+                  th:src="${dto.compImg != null} ? @{${dto.compImg}} : 'https://via.placeholder.com/100x60?text=Logo'"
                   alt="회사 로고"
                   class="company-logo"
                 />
@@ -16,23 +17,23 @@
             </tr>
             <tr>
               <th scope="row">회사명</th>
-              <td>코드에이(주)</td>
+              <td th:text="${dto.compName}"></td>
               <th scope="row">대표자명</th>
-              <td>홍길동</td>
+              <td th:text="${dto.ceoName}"></td>
             </tr>
             <tr>
               <th scope="row">법인/개인</th>
-              <td>법인</td>
+              <td th:text="${dto.compType}"></td>
               <th scope="row">법인등록번호</th>
-              <td>110111-1234567</td>
+              <td th:text="${dto.corpNo}"></td>
             </tr>
             <tr>
               <th scope="row">사업자등록번호</th>
-              <td>123-45-67890</td>
+              <td th:text="${dto.bizNo}"></td>
               <th scope="row">사업자등록증</th>
               <td>
                 <img
-                  src="https://via.placeholder.com/100x60?text=License"
+                  th:src="${dto.bizImg != null} ? @{${dto.bizImg}} : 'https://via.placeholder.com/100x60?text=License'"
                   alt="사업자등록증"
                   class="company-license"
                 />
@@ -40,36 +41,42 @@
             </tr>
             <tr>
               <th scope="row">업태</th>
-              <td>도소매업</td>
+              <td th:text="${dto.bizCond}"></td>
               <th scope="row">업종</th>
-              <td>IT 서비스</td>
+              <td th:text="${dto.bizType}"></td>
             </tr>
             <tr>
               <th scope="row">주소</th>
-              <td>서울특별시 강남구 테헤란로 123</td>
+              <td th:text="${dto.address}"></td>
               <th scope="row">상세주소</th>
-              <td>5층 501호</td>
+              <td th:text="${dto.addressDetail}"></td>
             </tr>
             <tr>
               <th scope="row">우편번호</th>
-              <td colspan="3">06234</td>
+              <td colspan="3" th:text="${dto.postCode}"></td>
             </tr>
             <tr>
               <th scope="row">대표번호</th>
-              <td>02-1234-5678</td>
+              <td th:text="${dto.tel}"></td>
               <th scope="row">팩스번호</th>
-              <td>02-8765-4321</td>
+              <td th:text="${dto.fax}"></td>
             </tr>
             <tr>
               <th scope="row">이메일</th>
-              <td colspan="3">info@codea.co.kr</td>
+              <td colspan="3" th:text="${dto.mail}"></td>
             </tr>
           </tbody>
         </table>
       </div>
       <!-- 관리자만 노출되는 수정 버튼 -->
       <div class="text-end mt-3" id="editBtnWrapper" style="display: none">
-        <button class="btn btn-primary px-4">수정</button>
+        <button onclick="location.href='/company/modify'" class="btn btn-primary px-4">수정</button>
       </div>
+      <!-- 
+      <div class="text-end mt-3" th:if="${session.loginUser.role == 'ADMIN'}">
+        <button onclick="location.href='/company/modify'" class="btn btn-primary px-4">수정</button>
+      </div>
+      -->
     </div>
+  </main>
 </div>
