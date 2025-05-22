@@ -23,6 +23,10 @@ public class ClientDTO {
 	private String postCode;
 	private String bp_remark;
 	private String bizCondCode;
+	
+	//검색관련
+	private String keyword;
+	private String searchType;
 
 
     

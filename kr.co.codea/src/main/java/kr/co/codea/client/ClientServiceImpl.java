@@ -2,10 +2,11 @@ package kr.co.codea.client;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Service //구현체
 public class ClientServiceImpl implements ClientService {
     private final ClientMapper mapper;
 
@@ -64,6 +65,12 @@ public class ClientServiceImpl implements ClientService {
 	public CommonCodeDTO findCommonCodeById(Integer codeId) {
 		
 		return mapper.findCommonCodeById(codeId);
+	}
+
+	@Override
+	public List<ClientDTO> searchClientbyKeyword(@Param("dto") ClientDTO dto) {
+		
+		return mapper.searchClientbyKeyword(dto);
 	}
 
 

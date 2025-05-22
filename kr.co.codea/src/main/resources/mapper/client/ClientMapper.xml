@@ -5,7 +5,7 @@
 <mapper namespace="kr.co.codea.client.ClientMapper">
 
   <resultMap id="Client" type="kr.co.codea.client.ClientDTO">
-    <id property="bpId" column="BP_ID" />
+  <id property="bpId" column="BP_ID" />
   <result property="bpCode" column="BP_CODE" />
   <result property="bpType" column="BP_TYPE" />
   <result property="bpName" column="BP_NAME" />
@@ -19,7 +19,7 @@
   <result property="addressDetail" column="ADDRESS_DETAIL" />
   <result property="postCode" column="POST_CODE" />
   <result property="bp_remark" column="bp_remark" />
-    <collection property="contacts" ofType="kr.co.codea.client.ContactDTO">
+  <collection property="contacts" ofType="kr.co.codea.client.ContactDTO">
       <id property="bcId" column="BC_ID" />
       <result property="bpId" column="BP_ID" />
       <result property="bcName" column="BC_NAME" />
@@ -54,12 +54,23 @@
         CODE_ID = #{codeId}
   </select>
 
+<!--거래처 리스트 출력 + 검색 기능  -->
+<select id="searchClientbyKeyword" parameterType="ClientDTO" resultMap="Client">
+    SELECT
+        BP_ID, BP_CODE, BP_TYPE, BP_NAME, BIZ_NO, TEL AS bp_tel, ADDRESS, CEO_NAME -- 필요한 컬럼 모두 포함
+    FROM
+        BUSINESS_PARTNER
+    <where>
+        <if test="dto.keyword != null and dto.keyword != ''">
+            AND (
+   				 BP_NAME LIKE '%' || #{dto.keyword} || '%'
+                OR BP_CODE LIKE '%' || #{dto.keyword} || '%'
+            )
+        </if>
+        </where>
+    ORDER BY BP_ID DESC
+    </select>
 
-
-   <!-- 거래처 리스트 전체 출력 -->
-  <select id="selectAllPartners" resultType="kr.co.codea.client.ClientDTO" resultMap="Client">
-    SELECT BP_ID,BP_CODE,BP_TYPE,BP_NAME,BIZ_NO,TEL AS bp_tel,ADDRESS FROM BUSINESS_PARTNER ORDER BY BP_ID DESC
-  </select>
   
    <!-- 거래처 상세 + 담당자 -->
   <select id="selectPartnerWithContacts" resultMap="Client" parameterType="Integer">

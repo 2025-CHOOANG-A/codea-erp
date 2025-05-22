@@ -25,6 +25,9 @@ public interface ClientMapper {
     
     //담당자 삭제 
     int deleteContact(@Param("bcId") Integer bcId, @Param("bpId") Integer bpId); // bpId도 함께 받도록
+    
+    List<ClientDTO> searchClientbyKeyword(@Param("dto") ClientDTO dto);    
+
 
 
 

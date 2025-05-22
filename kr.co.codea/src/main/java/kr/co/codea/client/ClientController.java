@@ -26,11 +26,13 @@ public class ClientController {
         this.service = service;
     }
 
-    //거래처 리스트
+    //거래처 리스트 + 검색기능
     @GetMapping("/client")
-    public String list(Model m) {
-        List<ClientDTO> list = service.getAllPartners();
+    public String list(Model m, ClientDTO dto) {
+		List<ClientDTO> list = service.searchClientbyKeyword(dto);
         m.addAttribute("clients", list);
+        m.addAttribute("searchDto", dto); 
+        
         m.addAttribute("templateName", "client/client_list");
         m.addAttribute("fragmentName", "contentFragment");
         System.out.println(list);

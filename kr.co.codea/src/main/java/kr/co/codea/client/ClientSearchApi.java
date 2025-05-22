@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,14 +23,10 @@ public class ClientSearchApi {
 	}
 	
 	@GetMapping
-	public ResponseEntity<List<ClientDTO>> serachClient(
-			@ModelAttribute ClientDTO dto){
+	public ResponseEntity<List<ClientDTO>> searchClient(
+			@ModelAttribute ClientDTO dto){ //검색 분류값 dto / 유저입력 검색 키워드
 		
-		
-		
-		
-		return ResponseEntity.ok(null);
-	}
- 
-
+		List<ClientDTO> client = service.searchClientbyKeyword(dto);
+		return ResponseEntity.ok(client);
+	} 
 }
