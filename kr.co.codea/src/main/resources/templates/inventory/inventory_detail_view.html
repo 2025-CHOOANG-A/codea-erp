@@ -12,11 +12,11 @@
 					<tbody>
 						<tr>
 							<th scope="row">재고 번호</th>
-							<td>STK-20240601</td>
+							<td th:text="${detail.inventoryCode}"></td>
 						</tr>
 						<tr>
 							<th scope="row">최근 수정일자</th>
-							<td>2024-06-01</td>
+							<td th:text="${detail.updatedAt != null ? detail.updatedAt : detail.createdAt}"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -25,27 +25,27 @@
 					<tbody>
 						<tr>
 							<th scope="row">제품 코드</th>
-							<td>PRD-00123</td>
+							<td th:text="${detail.itemCode}"></td>
 						</tr>
 						<tr>
 							<th scope="row">제품 명</th>
-							<td>고급 볼트</td>
+							<td th:text="${detail.itemName}"></td>
 						</tr>
 						<tr>
 							<th scope="row">제품 구분</th>
-							<td>부품</td>
+							<td th:text="${detail.itemType}"></td>
 						</tr>
 						<tr>
 							<th scope="row">규격</th>
-							<td>M8 x 30mm</td>
+							<td th:text="${detail.spec}"></td>
 						</tr>
 						<tr>
-							<th scope="row">단가</th>
-							<td>1,200원</td>
+							<th scope="row">평균 단가</th>
+							<td th:text="${detail.averageCost}"></td>
 						</tr>
 						<tr>
 							<th scope="row">단위</th>
-							<td>EA</td>
+							<td th:text="${detail.code}"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -54,7 +54,7 @@
 					<tbody>
 						<tr>
 							<th scope="row">보유 수량</th>
-							<td>1,500</td>
+							<td th:text="${detail.currentQty}"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -63,11 +63,11 @@
 					<tbody>
 						<tr>
 							<th scope="row">창고 코드</th>
-							<td>WH-002</td>
+							<td th:text="${detail.whCode}"></td>
 						</tr>
 						<tr>
 							<th scope="row">창고명</th>
-							<td>2공장 창고</td>
+							<td th:text="${detail.whName}"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -76,15 +76,15 @@
 					<tbody>
 						<tr>
 							<th scope="row">담당자 코드</th>
-							<td>EMP-1002</td>
+							<td th:text="${detail.empNo}"></td>
 						</tr>
 						<tr>
 							<th scope="row">담당자 명</th>
-							<td>김철수</td>
+							<td th:text="${detail.empName}"></td>
 						</tr>
 						<tr>
 							<th scope="row">담당자 전화번호</th>
-							<td>010-1234-5678</td>
+							<td th:text="${detail.hp}"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -93,12 +93,13 @@
 					<tbody>
 						<tr>
 							<th scope="row">비고</th>
-							<td>특이사항 없음</td>
+							<td th:text="${detail.remark}"></td>
 						</tr>
 					</tbody>
 				</table>
-				<div class="d-flex justify-content-end">
-					<a href="#" class="btn btn-outline-secondary">목록</a>
+				<div class="d-flex justify-content-end gap-2">
+					<a th:href="@{/inventory/list}" class="btn btn-outline-secondary">목록</a>
+					<a href="#" class="btn btn-primary">수정</a>
 				</div>
 			</div>
 		</div>

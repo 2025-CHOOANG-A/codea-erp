@@ -7,25 +7,42 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class InventoryDAO implements InventoryService {
-	/*
+	
 	@Autowired
 	private InventoryMapper mp;
-	*/
 	
-	/*
 	@Override
-	public List<InventoryDTO> inv_select(InventoryDTO dto) {
-		List<InventoryDTO> all = this.mp.inv_select(dto);
+	public List<InventoryDTO> inv_list() {	// 목록 페이지
+		List<InventoryDTO> list = this.mp.inv_list();
 		
-		return all;
+		return list;
 	}
-	*/
-	/*
+	
 	@Override
-	public int inv_write(InventoryDTO dto) {	// 등록 페이지
-		int result = this.mp.inv_write(dto);
+	public InventoryDTO inv_detail(int inventoryId) {	// 상세 페이지
+		InventoryDTO detail = this.mp.inv_detail(inventoryId);
 		
-		return result;
+		return detail;
 	}
-	*/
+
+	@Override
+	public List<InventoryDTO> inv_sea_item() {	// 등록 및 수정 페이지 제품 검색
+		List<InventoryDTO> sea_item = this.mp.inv_list();
+		
+		return sea_item;
+	}
+	
+	@Override
+	public List<InventoryDTO> inv_sea_wh() {	// 등록 및 수정 페이지 창고 검색
+		List<InventoryDTO> sea_wh = this.mp.inv_sea_wh();
+		
+		return sea_wh;
+	}
+	
+	@Override
+	public List<InventoryDTO> inv_sea_emp() {	// 등록 및 수정 페이지 담당자 검색
+		List<InventoryDTO> sea_emp = this.mp.inv_sea_emp();
+		
+		return sea_emp;
+	}
 }

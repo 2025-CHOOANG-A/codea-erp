@@ -8,20 +8,12 @@
 			<div class="form-section-title">재고 정보</div>
 			<div class="row g-2 align-items-center">
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="stockNo">재고 번호</label>
-					<div class="input-group">
-						<input type="text" id="stockNo" class="form-control" readonly style="background:#e9ecef;">
-						<button class="btn btn-outline-secondary" type="button" id="refreshStockNo" title="새로고침">
-							<i class="bi bi-arrow-clockwise"></i>
-						</button>
-						<button class="btn btn-outline-secondary" type="button" id="checkStockNo" title="중복체크">
-							중복체크
-						</button>
-					</div>
+					<label class="form-label mb-1">재고 번호</label>
+					<input type="text" class="form-control" value="재고 번호는 자동으로 생성됩니다." readonly style="background:#e9ecef;">
 				</div>
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="stockDate">재고 등록일자</label>
-					<input type="date" id="stockDate" class="form-control" max="">
+					<label class="form-label mb-1" for="createdAt">재고 등록일자</label>
+					<input type="date" id="createdAt" class="form-control">
 				</div>
 			</div>
 		</div>
@@ -31,13 +23,13 @@
 			<div class="form-section-title">제품 정보</div>
 			<div class="row g-2 align-items-center mb-2">
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="productCode">제품 코드</label>
-					<input type="text" id="productCode" class="form-control" readonly style="background:#e9ecef;">
+					<label class="form-label mb-1" for="itemCode">제품 코드</label>
+					<input type="text" id="itemCode" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="productName">제품명</label>
+					<label class="form-label mb-1" for="itemName">제품명</label>
 					<div class="input-group">
-						<input type="text" id="productName" class="form-control" readonly style="background:#e9ecef;">
+						<input type="text" id="itemName" class="form-control" readonly style="background:#e9ecef;">
 						<button class="btn btn-outline-secondary" type="button" id="searchProductBtn">
 							<i class="bi bi-search"></i> 검색
 						</button>
@@ -46,28 +38,22 @@
 			</div>
 			<div class="row g-2 align-items-center mb-2">
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="productType">제품 구분</label>
-					<input type="text" id="productType" class="form-control" readonly style="background:#e9ecef;">
+					<label class="form-label mb-1" for="itemType">제품 구분</label>
+					<input type="text" id="itemType" class="form-control" readonly style="background:#e9ecef;">
+				</div>
+				<div class="col-md-6">
+					<label class="form-label mb-1" for="spec">규격</label>
+					<input type="text" id="spec" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 			</div>
 			<div class="row g-2 align-items-center mb-2">
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="productSpec">규격</label>
-					<input type="text" id="productSpec" class="form-control" readonly style="background:#e9ecef;">
+ 					<label class="form-label mb-1" for="currentQty">보유 수량</label>
+					<input type="number" id="currentQty" class="form-control" min="0">
 				</div>
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="productPrice">단가</label>
-					<input type="number" id="productPrice" class="form-control" readonly style="background:#e9ecef;">
-				</div>
-			</div>
-			<div class="row g-2 align-items-center mb-2">
-				<div class="col-md-6">
- 					<label class="form-label mb-1" for="stockQty">보유 수량</label>
-					<input type="number" id="stockQty" class="form-control" min="0">
-				</div>
-				<div class="col-md-6">
-					<label class="form-label mb-1" for="productUnit">단위</label>
-					<input type="text" id="productUnit" class="form-control" readonly style="background:#e9ecef;">
+					<label class="form-label mb-1" for="code">단위</label>
+					<input type="text" id="code" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 			</div>
 		</div>
@@ -77,13 +63,13 @@
 			<div class="form-section-title">창고 정보</div>
 			<div class="row g-2 align-items-center">
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="warehouseCode">창고 코드</label>
-					<input type="text" id="warehouseCode" class="form-control" readonly style="background:#e9ecef;">
+					<label class="form-label mb-1" for="whCode">창고 코드</label>
+					<input type="text" id="whCode" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="warehouseName">재고 창고</label>
+					<label class="form-label mb-1" for="whName">재고 창고</label>
 					<div class="input-group">
-						<input type="text" id="warehouseName" class="form-control" readonly style="background:#e9ecef;">
+						<input type="text" id="whName" class="form-control" readonly style="background:#e9ecef;">
 						<button class="btn btn-outline-secondary" type="button" id="searchWarehouseBtn">
 							<i class="bi bi-search"></i> 검색
 						</button>
@@ -97,17 +83,17 @@
 			<div class="form-section-title">담당자 정보</div>
 			<div class="row g-2 align-items-center">
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="managerName">담당자명</label>
+					<label class="form-label mb-1" for="empName">담당자명</label>
 					<div class="input-group">
-						<input type="text" id="managerName" class="form-control" readonly style="background:#e9ecef;">
+						<input type="text" id="empName" class="form-control" readonly style="background:#e9ecef;">
 						<button class="btn btn-outline-secondary" type="button" id="searchManagerBtn">
 							<i class="bi bi-search"></i> 검색
 						</button>
 					</div>
 				</div>
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="managerPhone">담당자 전화번호</label>
-					<input type="text" id="managerPhone" class="form-control" readonly style="background:#e9ecef;">
+					<label class="form-label mb-1" for="hp">담당자 전화번호</label>
+					<input type="text" id="hp" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 			</div>
 		</div>
@@ -150,7 +136,6 @@
 								<th>제품 구분</th>
 								<th>규격</th>
 								<th>단위</th>
-								<th>단가</th>
 								<th>선택</th>
 							</tr>
 						</thead>
