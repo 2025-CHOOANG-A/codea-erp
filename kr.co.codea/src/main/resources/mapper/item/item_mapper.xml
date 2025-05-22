@@ -4,33 +4,83 @@
 <mapper namespace="kr.co.codea.item.item_mapper">
 
 <!-- insert  -->
-  <insert id="insert_item" parameterType="kr.co.codea.item.item_DTO">
-    INSERT INTO ITEM (
-        ITEM_ID,UNIT_CODE,ITEM_CODE,ITEM_NAME,ITEM_TYPE,ITEM_CAL_L,ITEM_CAL_S
-    )
-    VALUES (
-        #{ITEM_ID},
-        #{UNIT_CODE},
-        #{ITEM_CODE}, 
-        #{ITEM_NAME},
-        #{ITEM_TYPE},
-        #{ITEM_CAL_L},
-        #{ITEM_CAL_S}
-    )
+  <insert id="insert_item" parameterType="kr.co.codea.item.item_list_DTO">
+INSERT INTO ITEM (
+    ITEM_ID,UNIT_CODE,ITEM_CODE,ITEM_NAME,ITEM_TYPE,ITEM_CAT_L,ITEM_CAT_S
+)
+VALUES (
+    #{ITEM_ID},
+    #{UNIT_CODE},
+    #{ITEM_CODE}, 
+    #{ITEM_NAME},
+    #{ITEM_TYPE},
+    #{ITEM_CAT_L},
+    #{ITEM_CAT_S}
+)
 </insert>
 
-<select id="item_select" resultType="kr.co.codea.item.item_DTO">
-    SELECT
-      ITEM_ID,
-      UNIT_CODE,
-      ITEM_CODE,
-      ITEM_NAME,
-      ITEM_TYPE,
-      ITEM_CAT_L,
-      ITEM_CAT_S
-    FROM ITEM
-    ORDER BY ITEM_ID DESC
+<!-- 
 
+    SELECT
+        i.INVENTORY_CODE,
+        it.ITEM_CODE,
+        it.ITEM_NAME,
+        catL.CATEGORY_NAME AS categoryLName,
+        catS.CATEGORY_NAME AS categorySName,
+        w.WH_NAME AS warehouseName,
+        i.CURRENT_QTY AS currentQty,
+        i.AVERAGE_COST AS averageCost,
+        i.EMP_NO AS empNo,
+        i.REMARK AS remark
+    FROM INVENTORY i
+    JOIN ITEM it ON i.ITEM_ID = it.ITEM_ID
+    LEFT JOIN ITEM_CATEGORY catL ON it.ITEM_CAT_L = catL.CATEGORY_ID AND catL.CATEGORY_LEVEL = 1
+    LEFT JOIN ITEM_CATEGORY catS ON it.ITEM_CAT_S = catS.CATEGORY_ID AND catS.CATEGORY_LEVEL = 2
+    JOIN WAREHOUSE w ON i.WH_ID = w.WH_ID
+
+    SELECT
+        B.INVENTORY_CODE AS inventoryCode,
+        A.ITEM_CAT_L AS itemCatL,
+        A.ITEM_CAT_S AS itemCatS,
+        A.ITEM_CODE AS itemCode,
+        A.ITEM_NAME AS itemName,
+        A.SPEC AS spec,
+        D.PRICE AS price,
+        B.CURRENT_QTY AS currentQty,
+        B.WH_ID AS warehouseId,
+        A.REMARK AS remark
+         
+     FROM ITEM A
+     JOIN INVENTORY B ON A.ITEM_ID = B.ITEM_ID
+     JOIN WAREHOUSE C ON B.WH_ID = C.WH_ID
+     JOIN PARTNER_ITEM D ON A.ITEM_ID = D.ITEM_ID   
+     
+ -->
+<select id="item_select" resultType="kr.co.codea.item.item_list_DTO"> 
+  
+SELECT 
+  A.ITEM_CODE,
+  A.ITEM_NAME,
+  A.ITEM_CAT_L,
+  A.ITEM_CAT_S,
+  A.SPEC,
+  A.REMARK,
+  B.INVENTORY_CODE,
+  B.CURRENT_QTY,
+  B.WH_ID,
+  D.PRICE
+FROM ITEM A
+LEFT JOIN INVENTORY B ON A.ITEM_ID = B.ITEM_ID
+LEFT JOIN (
+  SELECT *
+  FROM (
+    SELECT 
+      ITEM_ID, PRICE,
+      ROW_NUMBER() OVER (PARTITION BY ITEM_ID ORDER BY PRICE_DATE DESC) AS RN
+    FROM PARTNER_ITEM
+  )
+  WHERE RN = 1
+) D ON A.ITEM_ID = D.ITEM_ID
 </select>
 
 

@@ -11,11 +11,10 @@ public class item_service {
 	@Autowired
 	item_mapper item_mp; //item mapper 
 
-	public List<item_DTO> item_select(){
-		List<item_DTO> result = item_mp.item_select(); 
+	public List<item_list_DTO> item_select(){
+		List<item_list_DTO> result = item_mp.item_select(); 
 		
-		return result;
-		
+		return result;	
 	}
 	
 	

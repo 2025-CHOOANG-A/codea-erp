@@ -6,6 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface item_mapper {
-	public void insert_item(item_DTO dto);            // 등록용
-    List<item_DTO> item_select();     // 목록 조회용
+	public void insert_item(item_list_DTO dto);            // 등록용
+    List<item_list_DTO> item_select();     // 목록 조회용
 }

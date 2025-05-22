@@ -359,16 +359,23 @@
               </tr>
             </thead>
             <tbody id="productTableBody">
-              <!-- JS로 데이터 렌더링 -->
-              
-      <tr th:each="item : ${itemlist}">
-        <td th:text="${item.ITEM_CODE}"></td>
-        <td th:text="${item.ITEM_TYPE}"></td>
-      </tr>            
+              <!-- JS로 데이터 렌더링 -->            
+       <tr th:each="item : ${itemlist}">
+         <td th:text="${item.inventoryCode}"></td> 
+         <td th:text="${item.itemCatL}"></td>
+         <td th:text="${item.itemCatS}"></td>      
+         <td th:text="${item.itemCode}"></td>
+         <td th:text="${item.itemName}"></td>
+         <td th:text="${item.spec}"></td>
+         <td th:text="${item.price}"></td>
+         <td th:text="${item.currentQty}"></td>
+         <td th:text="${item.whId}"></td>
+         <td th:text="${item.whcd}"></td>
+         <td th:text="${item.reMark}"></td>
+          </tr>     
             </tbody>
           </table>
         </div>
-
         <!-- Table Footer: Pagination & Add Button -->
         <div class="table-footer mt-3">
           <div class="pagination-wrapper">
@@ -378,8 +385,8 @@
               </ul>
             </nav>
           </div>
-         <!-- <a href="#" class="btn btn-success" id="addBtn">추가</a> -->
-         <input type="button">추가
+        <a href="#" class="btn btn-success" id="addBtn">추가</a> 
+          <!-- <input type="button" class="btn btn-success" onclick="item_wirteok()">추가-->
         </div>
       </div>
     </main>
@@ -448,171 +455,11 @@
       });
       if (window.innerWidth < 992) closeSidebar();
 
-      // 샘플 데이터
-     /*
-      const sampleData = [
-        {
-          stockNo: "1001",
-          category: "제품",
-          subCategory: "전자",
-          code: "P-001",
-          name: "스마트폰",
-          spec: "128GB",
-          price: 800000,
-          qty: 50,
-          warehouse: "본사창고",
-          warehouseCode: "WH01",
-          remark: "신제품",
-        },
-        {
-          stockNo: "1002",
-          category: "제품",
-          subCategory: "가전",
-          code: "P-002",
-          name: "에어컨",
-          spec: "2in1",
-          price: 1200000,
-          qty: 20,
-          warehouse: "2공장",
-          warehouseCode: "WH02",
-          remark: "",
-        },
-        {
-          stockNo: "1003",
-          category: "자재",
-          subCategory: "부품",
-          code: "M-001",
-          name: "배터리",
-          spec: "리튬이온",
-          price: 30000,
-          qty: 200,
-          warehouse: "본사창고",
-          warehouseCode: "WH01",
-          remark: "수입품",
-        },
-        {
-          stockNo: "1004",
-          category: "제품",
-          subCategory: "전자",
-          code: "P-003",
-          name: "노트북",
-          spec: "i7/16GB",
-          price: 1500000,
-          qty: 15,
-          warehouse: "본사창고",
-          warehouseCode: "WH01",
-          remark: "",
-        },
-        {
-          stockNo: "1005",
-          category: "자재",
-          subCategory: "포장",
-          code: "M-002",
-          name: "박스",
-          spec: "중형",
-          price: 500,
-          qty: 1000,
-          warehouse: "2공장",
-          warehouseCode: "WH02",
-          remark: "",
-        },
-        {
-          stockNo: "1006",
-          category: "제품",
-          subCategory: "가전",
-          code: "P-004",
-          name: "냉장고",
-          spec: "600L",
-          price: 900000,
-          qty: 10,
-          warehouse: "본사창고",
-          warehouseCode: "WH01",
-          remark: "프로모션",
-        },
-        {
-          stockNo: "1007",
-          category: "제품",
-          subCategory: "전자",
-          code: "P-005",
-          name: "태블릿",
-          spec: "64GB",
-          price: 400000,
-          qty: 30,
-          warehouse: "본사창고",
-          warehouseCode: "WH01",
-          remark: "",
-        },
-        {
-          stockNo: "1008",
-          category: "자재",
-          subCategory: "부품",
-          code: "M-003",
-          name: "메모리",
-          spec: "8GB",
-          price: 20000,
-          qty: 300,
-          warehouse: "2공장",
-          warehouseCode: "WH02",
-          remark: "고속",
-        },
-        {
-          stockNo: "1009",
-          category: "제품",
-          subCategory: "가전",
-          code: "P-006",
-          name: "세탁기",
-          spec: "드럼",
-          price: 700000,
-          qty: 12,
-          warehouse: "본사창고",
-          warehouseCode: "WH01",
-          remark: "",
-        },
-        {
-          stockNo: "1010",
-          category: "자재",
-          subCategory: "포장",
-          code: "M-004",
-          name: "테이프",
-          spec: "50m",
-          price: 300,
-          qty: 500,
-          warehouse: "2공장",
-          warehouseCode: "WH02",
-          remark: "",
-        },
-        {
-          stockNo: "1011",
-          category: "제품",
-          subCategory: "전자",
-          code: "P-007",
-          name: "스마트워치",
-          spec: "블루투스",
-          price: 250000,
-          qty: 40,
-          warehouse: "본사창고",
-          warehouseCode: "WH01",
-          remark: "한정판",
-        },
-        {
-          stockNo: "1012",
-          category: "자재",
-          subCategory: "부품",
-          code: "M-005",
-          name: "커넥터",
-          spec: "USB-C",
-          price: 1500,
-          qty: 800,
-          warehouse: "2공장",
-          warehouseCode: "WH02",
-          remark: "",
-        },
-      ];
-*/
+  
       // 페이징/필터 변수
       let currentPage = 1;
       const rowsPerPage = 10;
-      let filteredData = sampleData.slice();
+      //let filteredData = sampleData.slice();
 
       // 필터/검색
       function filterAndRender() {
@@ -747,14 +594,12 @@
             location.href=""
           }
         });
-
       // 추가 버튼
       document.getElementById("addBtn").addEventListener("click", function (e) {
-       // e.preventDefault();
+        e.preventDefault();
         alert("제품정보 입력페이지로 이동합니다.");
-        location.href="./item_write"
+        location.href = "/item/item_write";
       });
-
       // 최초 렌더링
       filterAndRender();
     </script>

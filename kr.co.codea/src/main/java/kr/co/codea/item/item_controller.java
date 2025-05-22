@@ -21,8 +21,8 @@ public class item_controller {
 	Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	
-	@Resource(name="item_DTO")
-	item_DTO item_DTO;
+	@Resource(name="item_list_DTO")
+	item_list_DTO item_lits_DTO;
 	
 	   @Autowired
 	    private item_service service;
@@ -35,7 +35,8 @@ public class item_controller {
 	    	
 	 @GetMapping("/item_list")
 	 public String itemList(Model m) {
-		   List<item_DTO> itemlist = service.item_select(); // 목록 조회
+		   List<item_list_DTO> itemlist = service.item_select(); // 목록 조회
+		   //System.out.println(itemlist);
 	        m.addAttribute("itemlist", itemlist);       // Thymeleaf에 전달
 	        return "item/item_list";  // → templates/item/item_list.html
 	    }
