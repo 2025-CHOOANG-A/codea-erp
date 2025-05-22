@@ -65,6 +65,18 @@ dependencies {
 	
 	// 페이징 처리용
 	implementation 'org.springframework.data:spring-data-commons'
+	
+	//파일 업로드
+	implementation 'commons-fileupload:commons-fileupload:1.5'
+	// FTP 파일 전송
+	implementation 'commons-net:commons-net:3.8.0'
+	// JAVA (Controller에서 외부 서버 접속 허용)
+	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	
+	//POI
+	implementation 'org.apache.poi:poi:5.2.3'
+	implementation 'org.apache.poi:poi-ooxml:5.2.3'
+	
 }
 
 tasks.named('test') {
