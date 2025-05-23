@@ -1,126 +1,182 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-  <head>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>사원 상세 정보 - CodeA</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-      body {
-        min-height: 100vh;
-        background-color: #f8f9fa;
-      }
-      .main-content {
-        margin-left: 250px;
-        transition: margin-left 0.3s;
-        padding: 2rem 1rem 1rem 1rem;
-      }
-      .sidebar.collapsed ~ .main-content {
-        margin-left: 0;
-      }
+      body { min-height: 100vh; background-color: #f8f9fa; }
+      /* ... (공통 CSS 생략 - 이전 답변 내용과 동일하게 유지) ... */
+      .sidebar { width: 260px; min-width: 200px; max-width: 300px; background: #343a40; color: #fff; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1040; transition: transform 0.2s; display: flex; flex-direction: column; }
+      .sidebar.collapsed { transform: translateX(-100%); }
+      .sidebar .sidebar-header { padding: 1.2rem 1.5rem; font-size: 1.2rem; font-weight: 600; background: #23272b; border-bottom: 1px solid #222; letter-spacing: 1px; }
+      .sidebar .nav-link { color: #adb5bd; padding: 0.7rem 1.5rem; font-size: 1rem; border-radius: 0.3rem; transition: background 0.15s; }
+      .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #495057; color: #fff; }
+      .sidebar .menu-title { padding: 0.8rem 1.5rem 0.3rem 1.5rem; font-size: 0.95rem; color: #ced4da; font-weight: 500; letter-spacing: 0.5px; }
+      .sidebar .nav { flex-direction: column; gap: 0.1rem; }
+      .sidebar .nav-item { width: 100%; }
+      .sidebar-toggle-btn { background: #343a40; border: none; color: #fff; padding: 0.65rem 0.9rem; border-radius: 0 0.5rem 0.5rem 0; font-size: 1.3rem; display: flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); position: fixed; top: 1.1rem; left: 0.2rem; z-index: 1100; transition: left 0.2s; }
+      .sidebar.collapsed ~ .sidebar-toggle-btn { left: 0.2rem; }
+      .sidebar:not(.collapsed) ~ .sidebar-toggle-btn { left: 260px; }
+      .header { height: 64px; background: #fff; border-bottom: 1px solid #dee2e6; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 1020; padding: 0 1rem; }
+      .header .logo { font-size: 1.7rem; font-weight: 700; letter-spacing: 2px; color: #343a40; user-select: none; }
+      .main-content-wrapper { padding-top: 2rem; padding-bottom: 2rem; }
+      .main-content-wrapper.with-sidebar { margin-left: 260px; }
+      .sidebar.collapsed ~ .main-content-wrapper.with-sidebar { margin-left: 0; }
+
       @media (max-width: 991.98px) {
-        .main-content {
-          margin-left: 0;
-        }
+        .main-content-wrapper.with-sidebar { margin-left: 0; }
+        .sidebar:not(.collapsed) ~ .main-content-wrapper.with-sidebar { margin-left: 260px; }
+        .sidebar-toggle-btn { left: 0.2rem !important; }
+        .sidebar:not(.collapsed) ~ .sidebar-toggle-btn { left: 260px !important; }
       }
-      .profile-img {
-        width: 120px;
-        height: 160px;
-        object-fit: cover;
-        border-radius: 0.5rem;
-        border: 3px solid #e9ecef;
-        background: #fff;
-        margin-bottom: 1.5rem;
-        margin-top: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      }
-      .profile-table th {
-        width: 30%;
-        background: #f8f9fa;
-        color: #6c757d;
-        font-weight: 500;
-        vertical-align: middle;
-      }
-      .profile-table td {
-        background: #fff;
-        vertical-align: middle;
-      }
+      .profile-img { width: 120px; height: 160px; object-fit: contain; border-radius: 0.5rem; border: 3px solid #e9ecef; background: #fff; margin-bottom: 1.5rem; margin-top: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+      .profile-table th { width: 30%; background: #f8f9fa; color: #6c757d; font-weight: 500; vertical-align: middle; }
+      .profile-table td { background: #fff; vertical-align: middle; }
+      .admin-info-table th { width: 30%; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">메뉴</div>
+            <div class="menu-title">기준정보관리</div>
+            <ul class="nav flex-column mb-2">
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/business-unit}">사업장관리</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/accounts}">거래처관리</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/warehouse}">창고관리</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/products}">제품관리</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/items}">품목관리</a></li>
+                <li class="nav-item">
+                  <a class="nav-link active" th:href="@{/employee}">사원관리</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/notice}">공지사항</a></li>
+            </ul>
+    </nav>
+    <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="사이드바 열기/닫기">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+        <rect width="16" height="2" y="2" rx="1" /><rect width="16" height="2" y="7" rx="1" /><rect width="16" height="2" y="12" rx="1" />
+      </svg>
+    </button>
+    <header class="header">
+      <a th:href="@{/index}" style="text-decoration: none;"><span class="logo">CodeA</span></a>
+    </header>
 
+    <div class="main-content-wrapper with-sidebar" th:if="${employeeView != null && employeeView.generalInfo != null}">
+        <div class="container" style="max-width: 700px">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom-0">
+                    <h4 class="mb-0 fw-bold text-center mt-3"
+                        th:text="${(employeeView.accountInfo != null && employeeView.accountInfo.empName != null ? employeeView.accountInfo.empName : employeeView.generalInfo.empName) + ' 님의 프로필'}">
+                        사원 프로필
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column align-items-center mb-3">
+                         <th:block th:with="imagePath=${employeeView.generalInfo.empImg != null && !#strings.isEmpty(employeeView.generalInfo.empImg) ? employeeView.generalInfo.empImg : '/images/logo_without_text.jpg'}">
+        <img th:src="@{${imagePath}}"
+             alt="프로필 이미지" class="profile-img shadow-sm" />
+    </th:block>
+                        <div class="fw-bold fs-5 mt-2" th:text="${employeeView.generalInfo.empName}">홍길동</div>
+                    </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <div class="container" style="max-width: 600px">
-        <div class="card shadow-sm mb-4">
-          <div class="card-header bg-white border-bottom-0"></div>
-          <h5 class="mb-0 fw-bold text-center mt-3">사원 프로필</h5>
-          <div class="card-body">
-            <div class="d-flex flex-column align-items-center mb-3">
-              <img
-                src="https://i.pinimg.com/236x/2c/c0/41/2cc04135e9c5d94385144a567c35bf6c.jpg"
-                alt="프로필 이미지"
-                class="profile-img shadow-sm"
-              />
-              <div class="fw-bold fs-5 mt-2">홍길동</div>
+                    <h5>기본 정보</h5>
+                    <table class="table table-bordered profile-table mb-4" th:object="${employeeView.generalInfo}">
+                        <tbody>
+                            <tr><th scope="row">이름</th><td th:text="*{empName}">홍길동</td></tr>
+                            <tr><th scope="row">사원번호</th><td th:text="*{empNo}">EMP001</td></tr>
+                            <tr><th scope="row">부서</th><td th:text="*{empDept}">영업팀</td></tr>
+                            <tr><th scope="row">직책</th><td th:text="*{empPosition}">과장</td></tr>
+                            <tr><th scope="row">이메일</th><td th:text="*{email}">hong@codea.com</td></tr>
+                            <tr><th scope="row">내선번호</th><td th:text="*{tel}">1234</td></tr>
+                            <tr th:if="*{hp != null}"><th scope="row">전화번호</th><td th:text="*{hp}">010-1234-5678</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div sec:authorize="hasRole('ADMIN')" th:if="${employeeView.accountInfo != null}">
+                        <hr>
+                        <h5>계정 정보 (관리자용)</h5>
+                        <table class="table table-bordered admin-info-table mb-0" th:object="${employeeView.accountInfo}">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">계정 권한</th>
+                                    <td>
+                                        <span th:each="auth, iterStat : *{authorities}" th:text="${auth.authority} + (${iterStat.last} ? '' : ', ')">ROLE_USER</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계정 활성 상태</th>
+                                    <td th:text="*{enabled} ? '활성' : '비활성'">활성</td>
+                                </tr>
+                                <tr th:if="*{empUserId != null}">
+                                    <th scope="row">로그인 ID</th>
+                                    <td th:text="*{empUserId}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <table class="table table-bordered profile-table mb-0">
-              <tbody>
-                <tr>
-                  <th scope="row">이름</th>
-                  <td>홍길동</td>
-                </tr>
-                <tr>
-                  <th scope="row">사원번호</th>
-                  <td>EMP001</td>
-                </tr>
-                <tr>
-                  <th scope="row">부서</th>
-                  <td>영업팀</td>
-                </tr>
-                <tr>
-                  <th scope="row">직책</th>
-                  <td>과장</td>
-                </tr>
-                <tr>
-                  <th scope="row">이메일</th>
-                  <td>hong@codea.com</td>
-                </tr>
-                <tr>
-                  <th scope="row">내선번호</th>
-                  <td>1234</td>
-                </tr>
-                <tr>
-                  <th scope="row">전화번호</th>
-                  <td>010-1234-5678</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="d-flex justify-content-end gap-2">
-          <!-- 아래 버튼은 본인 또는 관리자일 때만 보이게 JS로 제어 -->
-          <button id="editBtn" class="btn btn-outline-primary">수정</button>
-          <button id="deleteBtn" class="btn btn-outline-danger">삭제</button>
-          <a href="#" class="btn btn-secondary">목록</a>
-        </div>
-      </div>
-    </main>
+             <div class="main-content-wrapper with-sidebar" th:if="${employeeView != null && employeeView.generalInfo != null}">
+			    <div class="d-flex justify-content-end gap-2">
+				    <th:block th:with="currentDisplayEmpId=${employeeView.generalInfo?.empId}">
+				
+				        <th:block th:if="${canEdit}">
+				            <a th:href="@{/employee/{empId}/edit(empId=${employeeView.generalInfo.empId})}" class="btn btn-sm btn-outline-primary">수정</a>
+				        </th:block>
+				
+				        <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+				            <form th:action="@{/employee/{empId}/delete(empId=${employeeView.generalInfo.empId})}" method="post" style="display: inline;" onsubmit="return confirm('정말로 이 사원을 삭제하시겠습니까?');">
+				                <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+				            </form>
+				        </th:block>
+				    </th:block>
+				    <a th:href="@{/employee}" class="btn btn-secondary">목록</a>
+				</div>
+			    
+		    </div>
 
-    <script>
-      // 본인/관리자 여부에 따라 버튼 표시 (예시: isOwnerOrAdmin 변수로 제어)
-      const isOwnerOrAdmin = false; // 실제 구현 시 서버에서 값 받아와야 함
-      document.getElementById("editBtn").style.display = isOwnerOrAdmin
-        ? ""
-        : "none";
-      document.getElementById("deleteBtn").style.display = isOwnerOrAdmin
-        ? ""
-        : "none";
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+    <script>
+        const sidebar = document.getElementById("sidebar");
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        const mainContentWrapper = document.querySelector(".main-content-wrapper");
+
+        function updateSidebarAndContentMargin() {
+            if (!sidebar || !mainContentWrapper) return;
+            const isMobile = window.innerWidth < 992;
+            const isSidebarCollapsed = sidebar.classList.contains("collapsed");
+
+            if (isMobile) {
+                mainContentWrapper.classList.remove("with-sidebar");
+            } else {
+                mainContentWrapper.classList.toggle("with-sidebar", !isSidebarCollapsed);
+            }
+        }
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener("click", () => {
+                if (sidebar) {
+                    sidebar.classList.toggle("collapsed");
+                    updateSidebarAndContentMargin();
+                }
+            });
+        }
+        document.addEventListener("click", (e) => {
+            if (window.innerWidth < 992 && sidebar && !sidebar.classList.contains("collapsed")) {
+                if (!sidebar.contains(e.target) && sidebarToggle && !sidebarToggle.contains(e.target)) {
+                     sidebar.classList.add("collapsed");
+                     updateSidebarAndContentMargin();
+                }
+            }
+        });
+        function initializeSidebarState() {
+            if (!sidebar) return;
+            const shouldBeCollapsedInitially = window.innerWidth < 992;
+            sidebar.classList.toggle("collapsed", shouldBeCollapsedInitially);
+            updateSidebarAndContentMargin();
+        }
+        initializeSidebarState();
+        window.addEventListener("resize", initializeSidebarState);
+    </script>
+</body>
 </html>

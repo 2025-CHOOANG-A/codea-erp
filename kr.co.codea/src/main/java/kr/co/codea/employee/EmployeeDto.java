@@ -10,5 +10,7 @@ public class EmployeeDto {
     String empDept;     // 부서
     String empPosition; // 직책
     String email;       // 이메일
-    String tel;         // 내선번호 (회사 전화번호)
+    String tel;
+    String hp;         // 내선번호 (회사 전화번호)
+    String empImg;      // 사원 이미지
 }

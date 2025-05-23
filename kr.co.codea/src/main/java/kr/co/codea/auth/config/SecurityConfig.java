@@ -79,7 +79,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) // JWT 필터 등록
                 .authorizeHttpRequests(authz -> authz
                         // 1. 가장 구체적인 규칙을 먼저 정의합니다. (예: ADMIN 역할)
-                        //.requestMatchers("/notice/**").hasRole("ADMIN") // 공지사항 하위 모든 경로는 ADMIN 역할만 접근 가능
+                        .requestMatchers("/notice/**").hasRole("ADMIN") // 공지사항 하위 모든 경로는 ADMIN 역할만 접근 가능
 
                         // 2. 인증 없이 접근 가능한 공개 경로를 정의합니다.
                         // 이제 정적 리소스(css, js, 이미지 등), favicon.ico, .well-known/**, /error 등도 이곳에서 permitAll() 합니다.
@@ -99,8 +99,8 @@ public class SecurityConfig {
                         // /index는 일반적으로 인증된 사용자만 접근하고 싶으므로, permitAll() 목록에서 제외합니다.
 
                         // 3. 그 외 모든 요청은 인증이 필요합니다. (가장 마지막에 위치)
-                        //.anyRequest().authenticated()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
+                        //.anyRequest().permitAll()
                 )
                 .formLogin(formLogin -> formLogin
                         .loginPage("/login")

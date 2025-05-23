@@ -13,5 +13,35 @@
         FROM EMPLOYEE
         ORDER BY EMP_NAME ASC  -- 이름을 가나다 순으로 정렬
     </select>
+    
+    <select id="findEmployeeById" parameterType="long" resultType="kr.co.codea.employee.EmployeeDto">
+    SELECT
+        EMP_ID      as empId,
+        EMP_NO      as empNo,
+        EMP_NAME    as empName,
+        EMP_DEPT    as empDept,
+        EMP_POSITION as empPosition,
+        EMAIL       as email,
+        TEL         as tel,
+        HP          as hp,
+        EMP_IMG     as empImg
+    FROM EMPLOYEE
+    WHERE EMP_ID = #{empId}
+	</select>
+	
+	<update id="updateEmployeeDetailsByMap" parameterType="java.util.Map">
+	    UPDATE EMPLOYEE
+	    <trim prefix="SET" suffixOverrides=",">
+	        <if test="email != null">EMAIL = #{email, jdbcType=VARCHAR},</if>
+	        <if test="hp != null">HP = #{hp, jdbcType=VARCHAR},</if>
+	        <if test="empDept != null">EMP_DEPT = #{empDept, jdbcType=VARCHAR},</if>
+	        <if test="empPosition != null">EMP_POSITION = #{empPosition, jdbcType=VARCHAR},</if>
+	        <if test="tel != null">TEL = #{tel, jdbcType=VARCHAR},</if>
+	        <if test="containsKey('adminCode')"> ADMIN_CODE = #{adminCode, jdbcType=VARCHAR},
+	        </if>
+	        <if test="empStatus != null">EMP_STATUS = #{empStatus, jdbcType=NUMERIC},</if>
+	    </trim>
+	    WHERE EMP_ID = #{empId}
+	</update>
 
 </mapper>

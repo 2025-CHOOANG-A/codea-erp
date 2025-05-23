@@ -14,7 +14,9 @@ java {
 repositories {
     mavenCentral()
 }
-
+tasks.withType(JavaCompile) {
+    options.compilerArgs += '-parameters'
+}
 dependencies {
 	// ===== [템플릿 엔진] =====
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' // Thymeleaf 템플릿 엔진
