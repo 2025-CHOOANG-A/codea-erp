@@ -20,10 +20,9 @@ public class RefreshToken {
     private Date createdAt;   // 생성 시간
     private Date updatedAt;   // 마지막 수정 시간
 
-    // 이 메소드가 누락되었을 가능성이 높습니다.
     public void updateTokenInfo(String newToken, Date newExpiration) {
         this.token = newToken;
         this.expiration = newExpiration;
-        this.updatedAt = new Date(); // 업데이트 시간도 갱신
+        this.updatedAt = new Date(); // 업데이트 시간 갱신
     }
 }

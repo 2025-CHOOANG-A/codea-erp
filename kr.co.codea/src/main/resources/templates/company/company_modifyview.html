@@ -3,6 +3,10 @@
       <div class="container">
         <h2 class="mb-4 fw-semibold">사업장 정보 작성</h2>
         <form id="companyForm" method="POST" autocomplete="off" action="/company/modifydo"  enctype="multipart/form-data">
+          <input type="hidden" name="compId" th:value="${dto.compId}" />
+          <input type="hidden" name="originCompImg" th:value="${dto.compImg}" />
+		  <input type="hidden" name="originBizImg" th:value="${dto.bizImg}" />
+          <input type="hidden" name="url" value="ftp url" />
           <div class="table-responsive">
             <table class="table table-bordered align-middle company-table bg-white">
               <tbody>
@@ -12,7 +16,7 @@
                     <input
                       type="file"
                       class="form-control"
-                      name="compImg"
+                      name="compImgFile"
                       accept="image/*"
                     />
                     <!-- 기존 이미지 표시 (있을 때) -->
@@ -61,7 +65,7 @@
                   </td>
                   <th scope="row">사업자등록증 <span class="text-danger">*</span></th>
                   <td>
-                    <input type="file" class="form-control" name="bizImg"
+                    <input type="file" class="form-control" name="bizImgFile"
                       accept="image/*,application/pdf" />
                     <!-- 기존 파일 표시 -->
                     <div th:if="${dto.bizImg != null}">

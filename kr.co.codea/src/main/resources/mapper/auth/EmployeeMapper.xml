@@ -3,22 +3,23 @@
 
     <select id="findByLoginId" parameterType="string" resultType="kr.co.codea.auth.dto.UserDetailsDto">
         SELECT
-        	EMP_ID as empId,
-            EMP_USER_ID as username,
-            EMP_PW as password,
-            EMP_STATUS as enabled,
-			ADMIN_CODE as rawAuthoritiesString
-		FROM EMPLOYEE
-        WHERE EMP_USER_ID = #{loginId}
-    </select>
+            EMP_ID        as empId,
+            EMP_USER_ID   as empUserId,
+            EMP_NAME      as empName,
+            EMP_PW        as empPw,
+            EMP_STATUS    as empStatus,
+            ADMIN_CODE    as adminCode
+        FROM EMPLOYEE
+        WHERE EMP_USER_ID = #{loginId} </select>
 
     <select id="findByEmpId" parameterType="long" resultType="kr.co.codea.auth.dto.UserDetailsDto">
         SELECT
-            TO_CHAR(EMP_ID) as username,
-            EMP_PW as password,
-            EMP_STATUS as enabled,
-            ADMIN_CODE as rawAuthoritiesString
+            EMP_ID        as empId,
+            EMP_USER_ID   as empUserId,
+            EMP_NAME      as empName,
+            EMP_PW        as empPw,
+            EMP_STATUS    as empStatus,
+            ADMIN_CODE    as adminCode
         FROM EMPLOYEE
-        WHERE EMP_ID = #{empId}
-    </select>
+        WHERE EMP_ID = #{empId} </select>
 </mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.storage.StorageMapper">
+
+<!-- 공통코드 검색 api -->
+<resultMap id="CommonCode" type="kr.co.codea.client.CommonCodeDTO">
+    <id property="codeId" column="CODE_ID"/>
+    <result property="codeType" column="CODE_TYPE"/>
+    <result property="code" column="CODE"/>
+    <result property="codeDesc" column="CODE_DESC"/>
+</resultMap>
+
+<!--창고 리스트 + 검색  -->
+<select id="selectStorageList" resultType="kr.co.codea.storage.StorageDTO">
+SELECT
+	w.WH_ID,
+	w.WH_CODE,
+	w.WH_NAME,
+	w.ADDRESS,
+	w.ADDRESS_DETAIL,
+	w.TEL,
+	w.POST_CODE,
+	w.REMARK,
+	w.EMP_NO,
+	e.EMP_NAME
+FROM WAREHOUSE w
+JOIN EMPLOYEE e ON w.EMP_NO = e.EMP_NO
+<where>
+<if test="dto.keyword != null and dto.keyword != ''">
+AND (WH_CODE LIKE '%' || #{dto.keyword} || '%' OR WH_NAME LIKE '%' || #{dto.keyword} || '%' )
+</if>
+</where>
+</select>
+
+<!--창소 상세정보  -->
+
+<select id="selectStorageDetailById" resultType="kr.co.codea.storage.StorageDTO">
+SELECT
+	w.WH_ID,
+	w.WH_CODE,
+	w.WH_NAME,
+	w.ADDRESS,
+	w.ADDRESS_DETAIL,
+	w.TEL,
+	w.POST_CODE,
+	w.REMARK,
+	w.EMP_NO,
+	e.EMP_NAME
+FROM WAREHOUSE w
+JOIN EMPLOYEE e ON w.EMP_NO = e.EMP_NO
+WHERE w.WH_ID = #{whId}
+</select>
+
+
+
+
+<insert id="insertStorageList">
+INSERT INTO WAREHOUSE (
+    WH_CODE,
+    WH_NAME,
+    ADDRESS,
+    ADDRESS_DETAIL,
+    REMARK,
+    TEL,
+    POST_CODE,
+    EMP_NO,
+) VALUES (
+    'WH_SEOUL_02', -- 사용자 설정 고유 코드
+    '서울 강서 물류 창고', -- 창고 이름
+    '서울특별시 강서구 마곡동 123-45', -- 주소
+    '강서 물류센터 1층', -- 상세 주소
+    '서울 강서 지역 물류 허브 창고' -- 비고
+);
+</insert>
+</mapper>

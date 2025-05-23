@@ -2,17 +2,20 @@ package kr.co.codea.auth.config;
 
 import kr.co.codea.auth.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
+// import org.springframework.boot.autoconfigure.security.servlet.PathRequest; // 이제 이 import는 필요하지 않을 수 있습니다.
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+// import org.springframework.security.web.util.matcher.AntPathRequestMatcher; // 이 import도 이제 필요하지 않을 수 있습니다.
 
 @Configuration
 @EnableWebSecurity
@@ -20,60 +23,89 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
-    private final UserDetailsServiceImpl userDetailsServiceImpl; // UserDetailsService 주입
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
+    /**
+     * 비밀번호 암호화에 사용할 BCryptPasswordEncoder 빈 등록
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * 사용자 인증을 위한 AuthenticationManager 빈 등록
+     */
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http
                 .getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.userDetailsService(userDetailsServiceImpl) // 직접 구현한 UserDetailsService 설정
-                .passwordEncoder(passwordEncoder()); // PasswordEncoder 설정
+        authenticationManagerBuilder.userDetailsService(userDetailsServiceImpl)
+                .passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
     }
 
+    /**
+     * JWT 인증 필터 빈 등록
+     */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtProvider);
     }
 
+    /**
+     * Spring Security 6.x에서는 대부분의 경우 WebSecurityCustomizer의 ignoring() 대신
+     * HttpSecurity의 authorizeHttpRequests().permitAll()을 권장합니다.
+     * 따라서 이 메서드는 비워두거나 (정적 리소스 외에 무시할 것이 없다면) 제거할 수 있습니다.
+     * 만약 H2-console 등과 같이 필터 체인 자체를 완전히 무시해야 하는 특별한 경우가 아니라면 사용하지 않는 것이 좋습니다.
+     */
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                // H2-console과 같이 필터 체인 자체를 무시해야 하는 경우에만 이곳에 추가합니다.
+                // .requestMatchers(new AntPathRequestMatcher("/h2-console/**"))
+                ; // 정적 리소스는 이제 SecurityFilterChain에서 처리합니다.
+    }
+
+    /**
+     * Spring Security 필터 체인 설정
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (Stateless 서버)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
-            .authenticationManager(authenticationManager) // 직접 구성한 AuthenticationManager 설정
-            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-            .authorizeHttpRequests(authz -> authz
-<<<<<<< HEAD
-            		//.requestMatchers("/auth/login","/auth/reissue").permitAll()// 기존 설정, 아래 permitAll()에 의해 모두 허용됨
-            		//.requestMatchers("/admin/**").hasRole("ADMIN") // 특정 권한 필요 경로 예시
-            		.anyRequest().permitAll() // <-- 중요: 모든 요청을 인증 없이 허용하도록 변경
-=======
-                // 로그인 페이지 및 관련 정적 리소스, 로그인 API, 토큰 재발급 API는 항상 허용
-                //.requestMatchers("/", "/login", "/auth/login", "/auth/reissue").permitAll()
-                //.requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 정적 리소스 경로 예시
-                // .requestMatchers("/index").authenticated() // /index 페이지는 인증 필요 (이전 HomeController 예시)
-                //.anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
-                .anyRequest().permitAll()
->>>>>>> branch 'dev_1dng970' of https://github.com/2025-CHOOANG-A/codea-erp.git
-            )
-            // formLogin 설정을 통해 로그인 페이지 지정 및 관련 설정
-            .formLogin(formLogin -> formLogin
-                .loginPage("/login") // 커스텀 로그인 페이지 경로 (PageController에서 설정한 경로)
-                .permitAll() // 로그인 페이지 자체는 항상 접근 가능해야 함
-            );
+                .csrf(csrf -> csrf.disable()) // JWT 사용 시 CSRF 비활성화
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 상태 없음
+                .authenticationManager(authenticationManager)
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) // JWT 필터 등록
+                .authorizeHttpRequests(authz -> authz
+                        // 1. 가장 구체적인 규칙을 먼저 정의합니다. (예: ADMIN 역할)
+                        //.requestMatchers("/notice/**").hasRole("ADMIN") // 공지사항 하위 모든 경로는 ADMIN 역할만 접근 가능
 
-            // 필요에 따라 인증/인가 예외 처리 핸들러 추가
-            // .exceptionHandling(exceptions -> exceptions
-            // .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-            // .accessDeniedHandler(new CustomAccessDeniedHandler())
-            // );
+                        // 2. 인증 없이 접근 가능한 공개 경로를 정의합니다.
+                        // 이제 정적 리소스(css, js, 이미지 등), favicon.ico, .well-known/**, /error 등도 이곳에서 permitAll() 합니다.
+                        .requestMatchers(
+                                "/",
+                                "/login",
+                                "/auth/login",
+                                "/auth/reissue",
+                                "/favicon.ico",
+                                "/.well-known/**",
+                                "/error",
+                                "/css/**", // 정적 리소스 추가
+                                "/js/**",  // 정적 리소스 추가
+                                "/images/**", // 정적 리소스 추가
+                                "/webjars/**" // 정적 리소스 추가 (WebJars 사용 시)
+                        ).permitAll()
+                        // /index는 일반적으로 인증된 사용자만 접근하고 싶으므로, permitAll() 목록에서 제외합니다.
 
+                        // 3. 그 외 모든 요청은 인증이 필요합니다. (가장 마지막에 위치)
+                        //.anyRequest().authenticated()
+                        .anyRequest().permitAll()
+                )
+                .formLogin(formLogin -> formLogin
+                        .loginPage("/login")
+                        .permitAll()
+                );
         return http.build();
     }
 }

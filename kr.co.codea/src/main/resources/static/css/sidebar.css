@@ -1,97 +1,116 @@
-.sidebar {
-	width: 260px;
-	background: #343a40;
-	color: #fff;
-	position: fixed;
-	top: 0;
-	left: -260px;
-	height: 100vh;
-	z-index: 1040;
-	transition: left 0.3s;
-	overflow-y: auto;
-}
-
-.sidebar.show {
-	left: 0;
-}
-
-.sidebar .nav-link {
-	color: #adb5bd;
-	border-radius: 0;
-	padding-left: 2rem;
-}
-
-.sidebar .nav-link.active, .sidebar .nav-link:focus, .sidebar .nav-link:hover {
-	color: #fff;
-	background: #495057;
-	text-decoration: none;
-}
-
-.sidebar .sidebar-heading {
-	font-size: 0.95rem;
-	padding: 1rem 1.5rem 0.5rem 1.5rem;
-	color: #ced4da;
-	letter-spacing: 0.05em;
-}
-
-.sidebar .nav {
-	margin-bottom: 2rem;
-}
-
-.sidebar .nav-item {
-	margin-bottom: 0.2rem;
-}
-
-.sidebar-close {
-	position: absolute;
-	top: 1rem;
-	right: 1rem;
-	color: #adb5bd;
-	background: none;
-	border: none;
-	font-size: 1.5rem;
-}
-
-.sidebar-close:focus {
-	outline: none;
-}
-
-.sidebar-toggle {
-	background: #343a40;
-	border: none;
-	color: #fff;
-	font-size: 1.5rem;
-	padding: 0.5rem 0.8rem;
-	border-radius: 0.3rem;
-	margin-right: 1rem;
-	transition: background 0.2s;
-	display: flex;
-	align-items: center;
-}
-
-.sidebar-toggle:hover, .sidebar-toggle:focus {
-	background: #495057;
-	color: #fff;
-	outline: none;
-}
-
-.header {
-	height: 64px;
-	background: #fff;
-	border-bottom: 1px solid #dee2e6;
-	display: flex;
-	align-items: center;
-	position: sticky;
-	top: 0;
-	z-index: 1030;
-	padding: 0 1.5rem;
-}
-
-.header-logo {
-	margin: 0 auto;
-	font-weight: bold;
-	font-size: 1.5rem;
-	letter-spacing: 0.05em;
-	color: #343a40;
-	user-select: none;
-}
+        .sidebar {
+            width: 260px;
+            background: #343a40;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: -260px; /* 초기에는 숨김 */
+            height: 100vh;
+            padding-top: 64px; /* 헤더 높이만큼 사이드바 내용 시작 위치 조정 */
+            box-sizing: border-box;
+            z-index: 1035;
+            transition: left 0.3s;
+            overflow-y: auto;
+        }
+        .sidebar.show {
+            left: 0;
+        }
+        .sidebar .nav-link {
+            color: #adb5bd;
+            border-radius: 0;
+            padding-left: 2rem;
+        }
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:focus,
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background: #495057;
+            text-decoration: none;
+        }
+        .sidebar .sidebar-heading {
+            font-size: 0.95rem;
+            padding: 1rem 1.5rem 0.5rem 1.5rem;
+            color: #ced4da;
+            letter-spacing: 0.05em;
+        }
+        .sidebar .nav {
+            margin-bottom: 2rem;
+        }
+        .sidebar .nav-item {
+            margin-bottom: 0.2rem;
+        }
+        .sidebar-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: #adb5bd;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+        }
+        .sidebar-close:focus {
+            outline: none;
+        }
+        .sidebar-toggle {
+            background: #343a40;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 0.3rem;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar-toggle:hover,
+        .sidebar-toggle:focus {
+            background: #495057;
+            color: #fff;
+            outline: none;
+        }
+        .header {
+            height: 64px;
+            background: #fff;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            padding: 0 1.5rem;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 1.5rem;
+            letter-spacing: 0.05em;
+            color: #343a40;
+            user-select: none;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .main-content { /* 실제 페이지 컨텐츠가 표시될 영역 */
+            margin-top: 64px; /* 헤더 높이만큼 마진 */
+            padding: 1.5rem;
+            transition: margin-left 0.3s;
+        }
+        .sidebar.show ~ .main-content { /* 사이드바 열렸을 때 메인 컨텐츠의 왼쪽 마진 */
+            margin-left: 260px;
+        }
+        @media (max-width: 991.98px) {
+             .sidebar.show ~ .main-content {
+                margin-left: 220px;
+            }
+        }
