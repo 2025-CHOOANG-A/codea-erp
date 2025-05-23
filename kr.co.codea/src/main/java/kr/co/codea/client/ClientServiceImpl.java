@@ -2,10 +2,11 @@ package kr.co.codea.client;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Service //구현체
 public class ClientServiceImpl implements ClientService {
     private final ClientMapper mapper;
 
@@ -21,7 +22,12 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @Transactional(readOnly = true)
     public ClientDTO getPartnerDetails(Integer bpId) {
-        return mapper.selectPartnerWithContacts(bpId);
+
+    	ClientDTO bpinfo = mapper.selectPartnerWithContacts(bpId);
+    	if(bpinfo.getBizCond() != null) {
+    		bpinfo.setBizCondCode(mapper.findCommonCodeById(bpinfo.getBizCond()).getCode());
+    	}
+        return bpinfo;
     }
 
 	@Override
@@ -36,8 +42,8 @@ public class ClientServiceImpl implements ClientService {
 	}
 
 	@Override
-	public int updateclinet(ClientDTO client) {
-		return mapper.updateclinet(client);
+	public int updateClient(ClientDTO client) {
+		return mapper.updateClient(client);
 	}
 
 	@Override
@@ -54,6 +60,19 @@ public class ClientServiceImpl implements ClientService {
 	public int deleteContact(Integer bcId, Integer bpId) {
 		return mapper.deleteContact(bcId, bpId);
 	}
+
+	@Override
+	public CommonCodeDTO findCommonCodeById(Integer codeId) {
+		
+		return mapper.findCommonCodeById(codeId);
+	}
+
+	@Override
+	public List<ClientDTO> searchClientbyKeyword(@Param("dto") ClientDTO dto) {
+		
+		return mapper.searchClientbyKeyword(dto);
+	}
+
 
 
 }
