@@ -1,131 +1,169 @@
-// Set max date for stockDate and allow today to be selected
-const stockDateInput = document.getElementById('stockDate');
+const DateInput = document.getElementById('createdAt');
 const today = new Date();
 const yyyy = today.getFullYear();
 const mm = String(today.getMonth() + 1).padStart(2, '0');
 const dd = String(today.getDate()).padStart(2, '0');
 const todayStr = `${yyyy}-${mm}-${dd}`;
-stockDateInput.max = todayStr;
-stockDateInput.value = todayStr;
 
-// 제품 검색 모달
-const productSearchModal = new bootstrap.Modal(document.getElementById('productSearchModal'));
-document.getElementById('searchProductBtn').addEventListener('click', () => {
-	document.getElementById('productSearchInput').value = '';
-	document.querySelector('#productSearchTable tbody').innerHTML = '';
-	productSearchModal.show();
+DateInput.min = todayStr;
+DateInput.max = todayStr;
+DateInput.value = todayStr;
+DateInput.readOnly = true;	// 날짜 선택 불가
+
+// 제품 검색
+document.getElementById("searchProductBtn").addEventListener("click", () => {
+	const modal = new bootstrap.Modal(document.getElementById("item_sea"));
+	modal.show();
 });
-document.getElementById('productSearchForm').addEventListener('submit', function(e){
+
+document.getElementById("item_sea_form").addEventListener("submit", function(e){
 	e.preventDefault();
-	// 예시 데이터
-	const products = [
-		{code:'P001', name:'제품A', type:'완제품', spec:'100x200', unit:'EA', price:1000},
-		{code:'P002', name:'제품B', type:'반제품', spec:'50x100', unit:'BOX', price:500},
-		{code:'P003', name:'제품C', type:'원자재', spec:'30x60', unit:'EA', price:300}
-	];
-	const keyword = document.getElementById('productSearchInput').value.trim();
-	const filtered = products.filter(p => p.name.includes(keyword));
-	const tbody = document.querySelector('#productSearchTable tbody');
-	tbody.innerHTML = '';
-	filtered.forEach(p => {
-		const tr = document.createElement('tr');
-		tr.innerHTML = `
-			<td>${p.code}</td>
-			<td>${p.name}</td>
-			<td>${p.type}</td>
-			<td>${p.spec}</td>
-			<td>${p.unit}</td>
-			<td>${p.price}</td>
-			<td><button type="button" class="btn btn-sm btn-primary select-product">선택</button></td>
-		`;
-		tr.querySelector('.select-product').addEventListener('click', () => {
-			document.getElementById('productCode').value = p.code;
-			document.getElementById('productName').value = p.name;
-			document.getElementById('productType').value = p.type;
-			document.getElementById('productSpec').value = p.spec;
-			document.getElementById('productUnit').value = p.unit;
-			document.getElementById('productPrice').value = p.price;
-			productSearchModal.hide();
-		});
-		tbody.appendChild(tr);
+	
+	const keyword = document.getElementById("item_sea_in").value.trim();
+	const tbody = document.querySelector("#item_sea_table tbody");
+	tbody.innerHTML = "";
+	
+	fetch(`/inventory/searchItem?itemName=${encodeURIComponent(keyword)}`)
+	.then(aa => {
+		return aa.json();
+	}).then(bb => {
+		if(bb.length == 0){
+			tbody.innerHTML = `<tr><td colspan='6'>검색 결과가 없습니다.</td></tr>`;
+			return;
+		}
+		else{
+			bb.forEach(item => {
+				const tr = document.createElement("tr");
+				
+				tr.innerHTML = `
+					<td>${item.itemCode}</td>
+					<td>${item.itemName}</td>
+					<td>${item.itemType}</td>
+					<td>${item.spec}</td>
+					<td>${item.code}</td>
+					<td>
+						<button type="button" class="btn btn-sm btn-primary select-product">선택</button>
+					</td>
+				`;
+				
+				// 선택 버튼 클릭
+				tr.querySelector(".select-product").addEventListener("click", () => {
+					document.getElementById("itemCode").value = item.itemCode;
+					document.getElementById("itemName").value = item.itemName;
+					document.getElementById("itemType").value = item.itemType;
+					document.getElementById("spec").value = item.spec;
+					document.getElementById("code").value = item.code;
+					
+					// 닫기
+					bootstrap.Modal.getInstance(document.getElementById("item_sea")).hide();
+				});
+				
+				tbody.appendChild(tr);
+			});
+		}
+	}).catch(error => {
+		console.log(error);
 	});
 });
 
-// 창고 검색 모달
-const warehouseSearchModal = new bootstrap.Modal(document.getElementById('warehouseSearchModal'));
-document.getElementById('searchWarehouseBtn').addEventListener('click', () => {
-	document.getElementById('warehouseSearchInput').value = '';
-	document.querySelector('#warehouseSearchTable tbody').innerHTML = '';
-	warehouseSearchModal.show();
+// 창고 검색
+document.getElementById("searchWarehouseBtn").addEventListener("click", () => {
+	const modal = new bootstrap.Modal(document.getElementById("wh_sea"));
+	modal.show();
 });
-document.getElementById('warehouseSearchForm').addEventListener('submit', function(e){
+
+document.getElementById("wh_sea_form").addEventListener("submit", function(e){
 	e.preventDefault();
-	// 예시 데이터
-	const warehouses = [
-	    {code:'W001', name:'본사창고', addr:'서울시 강남구'},
-	    {code:'W002', name:'2공장창고', addr:'경기도 수원시'},
-	    {code:'W003', name:'외주창고', addr:'인천시 남동구'}
-	];
-	const keyword = document.getElementById('warehouseSearchInput').value.trim();
-	const filtered = warehouses.filter(w => w.name.includes(keyword));
-	const tbody = document.querySelector('#warehouseSearchTable tbody');
-	tbody.innerHTML = '';
-	filtered.forEach(w => {
-		const tr = document.createElement('tr');
-		tr.innerHTML = `
-			<td>${w.code}</td>
-			<td>${w.name}</td>
-			<td>${w.addr}</td>
-			<td><button type="button" class="btn btn-sm btn-primary select-warehouse">선택</button></td>
-		`;
-		tr.querySelector('.select-warehouse').addEventListener('click', () => {
-			document.getElementById('warehouseCode').value = w.code;
-			document.getElementById('warehouseName').value = w.name;
-			warehouseSearchModal.hide();
-		});
-		tbody.appendChild(tr);
+	
+	const keyword = document.getElementById("wh_sea_in").value.trim();
+	const tbody = document.querySelector("#wh_sea_table tbody");
+	tbody.innerHTML = "";
+	
+	fetch(`/inventory/searchWh?whName=${encodeURIComponent(keyword)}`)
+	.then(aa => {
+		return aa.json();
+	}).then(bb => {
+		if(bb.length == 0){
+			tbody.innerHTML = `<tr><td colspan='4'>검색 결과가 없습니다.</td></tr>`;
+			return;
+		}
+		else{
+			bb.forEach(wh => {
+				const tr = document.createElement("tr");
+				
+				tr.innerHTML = `
+					<td>${wh.whCode}</td>
+					<td>${wh.whName}</td>
+					<td>${wh.address}${wh.addressDetail}</td>
+					<td>
+						<button type="button" class="btn btn-sm btn-primary select-product">선택</button>
+					</td>
+				`;
+				
+				// 선택 버튼 클릭
+				tr.querySelector(".select-product").addEventListener("click", () => {
+					document.getElementById("whCode").value = wh.whCode;
+					document.getElementById("whName").value = wh.whName;
+					
+					// 닫기
+					bootstrap.Modal.getInstance(document.getElementById("wh_sea")).hide();
+				});
+				
+				tbody.appendChild(tr);
+			});
+		}
+	}).catch(error => {
+		console.log(error);
 	});
 });
 
-// 담당자 검색 모달
-const managerSearchModal = new bootstrap.Modal(document.getElementById('managerSearchModal'));
-document.getElementById('searchManagerBtn').addEventListener('click', () => {
-	document.getElementById('managerSearchInput').value = '';
-	document.querySelector('#managerSearchTable tbody').innerHTML = '';
-	managerSearchModal.show();
-});
-document.getElementById('managerSearchForm').addEventListener('submit', function(e){
-	e.preventDefault();
-	// 예시 데이터
-	const managers = [
-		{code:'M001', name:'홍길동', phone:'010-1234-5678'},
-		{code:'M002', name:'김철수', phone:'010-2345-6789'},
-		{code:'M003', name:'이영희', phone:'010-3456-7890'}
-	];
-	const keyword = document.getElementById('managerSearchInput').value.trim();
-	const filtered = managers.filter(m => m.name.includes(keyword));
-	const tbody = document.querySelector('#managerSearchTable tbody');
-	tbody.innerHTML = '';
-	filtered.forEach(m => {
-		const tr = document.createElement('tr');
-		tr.innerHTML = `
-			<td>${m.code}</td>
-			<td>${m.name}</td>
-			<td>${m.phone}</td>
-			<td><button type="button" class="btn btn-sm btn-primary select-manager">선택</button></td>
-		`;
-		tr.querySelector('.select-manager').addEventListener('click', () => {
-			document.getElementById('managerName').value = m.name;
-			document.getElementById('managerPhone').value = m.phone;
-			managerSearchModal.hide();
-		});
-		tbody.appendChild(tr);
-	});
+// 담당자 검색
+document.getElementById("searchManagerBtn").addEventListener("click", () => {
+	const modal = new bootstrap.Modal(document.getElementById("emp_sea"));
+	modal.show();
 });
 
-// Prevent modal input line breaks
-document.querySelectorAll('.modal input').forEach(input => {
-	input.addEventListener('keydown', e => {
-		if (e.key === 'Enter') e.preventDefault();
+document.getElementById("emp_sea_form").addEventListener("submit", function(e){
+	e.preventDefault();
+	
+	const keyword = document.getElementById("emp_sea_in").value.trim();
+	const tbody = document.querySelector("#emp_sea_table tbody");
+	tbody.innerHTML = "";
+	
+	fetch(`/inventory/searchEmp?empName=${encodeURIComponent(keyword)}`)
+	.then(aa => {
+		return aa.json();
+	}).then(bb => {
+		if(bb.length == 0){
+			tbody.innerHTML = `<tr><td colspan='4'>검색 결과가 없습니다.</td></tr>`;
+			return;
+		}
+		else{
+			bb.forEach(emp => {
+				const tr = document.createElement("tr");
+				
+				tr.innerHTML = `
+					<td>${emp.empNo}</td>
+					<td>${emp.empName}</td>
+					<td>${emp.hp}</td>
+					<td>
+						<button type="button" class="btn btn-sm btn-primary select-product">선택</button>
+					</td>
+				`;
+				
+				// 선택 버튼 클릭
+				tr.querySelector(".select-product").addEventListener("click", () => {
+					document.getElementById("empName").value = emp.empName;
+					document.getElementById("hp").value = emp.hp;
+					
+					// 닫기
+					bootstrap.Modal.getInstance(document.getElementById("emp_sea")).hide();
+				});
+				
+				tbody.appendChild(tr);
+			});
+		}
+	}).catch(error => {
+		console.log(error);
 	});
 });

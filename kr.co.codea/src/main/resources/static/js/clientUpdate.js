@@ -279,3 +279,96 @@ async function deleteContact(bcId) {
         }
     }
 }
+
+
+
+// /js/clientUpdate.js 에 추가 (또는 client_edit.html 내 <script> 태그에)
+
+let debounceTimer;
+
+
+// 선택된 업태 초기화 함수 (edit 페이지용)
+function clearBizCondSelection() {
+    const bizCondInput = document.getElementById('bizCondInput');
+    const bizCondHiddenId = document.getElementById('bizCondHiddenId'); // DB 저장용 ID (bizCond)
+    const clearBtn = document.getElementById('clearBizCondBtn');
+    const resultsDiv = document.getElementById('autocompleteResults');
+
+    bizCondInput.value = ''; // 화면에 표시된 값 초기화
+    bizCondHiddenId.value = ''; // 숨겨진 CODE_ID 초기화
+    bizCondInput.readOnly = false; // 수정 가능하게 변경
+    clearBtn.style.display = 'none'; // X 버튼 숨기기
+    resultsDiv.style.display = 'none'; // 자동 완성 결과 숨기기
+    bizCondInput.focus(); // 입력 필드에 포커스
+}
+
+// 업태 검색 함수 (edit 페이지용)
+function searchBizCond(query) {
+    const resultsDiv = document.getElementById('autocompleteResults');
+    const bizCondInput = document.getElementById('bizCondInput'); // 화면 표시용 (bizCondCode)
+    const bizCondHiddenId = document.getElementById('bizCondHiddenId'); // DB 저장용 ID (bizCond)
+    const clearBtn = document.getElementById('clearBizCondBtn');
+
+    if (bizCondInput.readOnly && query !== bizCondInput.value) {
+        resultsDiv.style.display = 'none';
+        return;
+    }
+
+    if (query.length < 2) {
+        resultsDiv.style.display = 'none';
+        return;
+    }
+
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        fetch(`/api/common-codes/biz-cond?query=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                resultsDiv.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        const resultItem = document.createElement('a');
+                        resultItem.href = '#';
+                        resultItem.classList.add('list-group-item', 'list-group-item-action');
+                        resultItem.textContent = item.code; // code (업태명) 표시
+                        resultItem.onclick = function() {
+                            bizCondInput.value = item.code; // 화면에 업태명 (String) 표시
+                            bizCondHiddenId.value = item.codeId; // 숨겨진 필드에 숫자 CODE_ID 설정
+
+                            bizCondInput.readOnly = true;
+                            clearBtn.style.display = 'block';
+                            resultsDiv.style.display = 'none';
+                            return false;
+                        };
+                        resultsDiv.appendChild(resultItem);
+                    });
+                    resultsDiv.style.display = 'block';
+                } else {
+                    resultsDiv.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching common codes:', error);
+                resultsDiv.style.display = 'none';
+            });
+    }, 300);
+}
+
+// 인풋 필드 외 다른 곳 클릭 시 자동 완성 결과 숨기기
+document.addEventListener('click', function(event) {
+    const bizCondInput = document.getElementById('bizCondInput');
+    const autocompleteResults = document.getElementById('autocompleteResults');
+    const clearBtn = document.getElementById('clearBizCondBtn');
+
+    if (event.target !== bizCondInput && !autocompleteResults.contains(event.target) && event.target !== clearBtn) {
+        autocompleteResults.style.display = 'none';
+    }
+});
+
+// 나머지 clientUpdate.js의 내용 (폼 제출, 메시지 박스 등)
+// ...

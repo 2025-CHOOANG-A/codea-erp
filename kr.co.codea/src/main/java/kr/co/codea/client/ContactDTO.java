@@ -8,9 +8,10 @@ public class ContactDTO {
     private Integer bcId;
     private String bcName;
     private String bcPosition;
-    private String tel;
+    //private String tel;
+    private String bc_tel;
     private String fax;
-    private String remark;
+    private String bc_remark;
     private String hp;
     private String email;
     
