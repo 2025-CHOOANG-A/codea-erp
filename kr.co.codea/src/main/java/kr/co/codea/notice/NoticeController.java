@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/notice")
-@PreAuthorize("hasRole('ROLE_ADMIN')") // ✨ ADMIN 역할만 이 메소드 호출 가능 ✨
+@PreAuthorize("hasRole('ROLE_ADMIN')") //ADMIN 역할만 이 메소드 호출 가능
 @RequiredArgsConstructor
 public class NoticeController {
 	@GetMapping("/list")

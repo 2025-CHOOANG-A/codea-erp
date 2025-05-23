@@ -458,27 +458,7 @@
       renderTable(currentPage);
       renderPagination(currentPage);
 
-      // 사이드바 토글
-      const sidebar = document.getElementById("sidebar");
-      const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
-      const sidebarBackdrop = document.getElementById("sidebarBackdrop");
-      const sidebarCloseBtn = document.getElementById("sidebarCloseBtn");
-
-      function openSidebar() {
-        sidebar.classList.remove("collapsed");
-        sidebar.classList.add("show");
-        document.body.classList.add("sidebar-open");
-      }
-      function closeSidebar() {
-        sidebar.classList.add("collapsed");
-        sidebar.classList.remove("show");
-        document.body.classList.remove("sidebar-open");
-      }
-
-      sidebarToggleBtn.addEventListener("click", openSidebar);
-      sidebarBackdrop.addEventListener("click", closeSidebar);
-      if (sidebarCloseBtn)
-        sidebarCloseBtn.addEventListener("click", closeSidebar);
+     
 
       // PC에서 항상 열려있게
       function handleResize() {

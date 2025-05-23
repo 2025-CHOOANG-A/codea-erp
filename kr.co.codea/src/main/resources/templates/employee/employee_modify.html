@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -13,60 +13,7 @@
         min-height: 100vh;
         background-color: #f8f9fa;
       }
-      .sidebar {
-        width: 250px;
-        min-height: 100vh;
-        background: #343a40;
-        color: #fff;
-        position: fixed;
-        top: 0;
-        left: 0;
-        transition: transform 0.3s ease;
-        z-index: 1040;
-      }
-      .sidebar.collapsed {
-        transform: translateX(-100%);
-      }
-      .sidebar .sidebar-header {
-        padding: 1.2rem 1rem;
-        font-weight: bold;
-        font-size: 1.2rem;
-        background: #23272b;
-        letter-spacing: 1px;
-        border-bottom: 1px solid #495057;
-      }
-      .sidebar .nav-link {
-        color: #adb5bd;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.375rem;
-        transition: background 0.2s, color 0.2s;
-      }
-      .sidebar .nav-link.active,
-      .sidebar .nav-link:hover {
-        background: #495057;
-        color: #fff;
-      }
-      .sidebar .menu-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #ced4da;
-        margin: 1.2rem 1.5rem 0.5rem 1.5rem;
-        letter-spacing: 0.5px;
-      }
-      .sidebar-toggle-btn {
-        background: #343a40;
-        border: none;
-        color: #fff;
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.375rem;
-        margin-right: 1rem;
-        display: flex;
-        align-items: center;
-        transition: background 0.2s;
-      }
-      .sidebar-toggle-btn:hover {
-        background: #23272b;
-      }
+
       .main-content {
         margin-left: 250px;
         transition: margin-left 0.3s;
@@ -76,12 +23,6 @@
         margin-left: 0;
       }
       @media (max-width: 991.98px) {
-        .sidebar {
-          transform: translateX(-100%);
-        }
-        .sidebar.show {
-          transform: translateX(0);
-        }
         .main-content {
           margin-left: 0;
         }
@@ -167,68 +108,7 @@
   </head>
   <body>
     <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar collapsed">
-      <div class="sidebar-header">
-        <span>메뉴</span>
-      </div>
-      <div>
-        <div class="menu-title">기준정보관리</div>
-        <ul class="nav flex-column mb-2">
-          <li><a class="nav-link" href="#">사업장관리</a></li>
-          <li><a class="nav-link" href="#">거래처관리</a></li>
-          <li><a class="nav-link" href="#">창고관리</a></li>
-          <li><a class="nav-link" href="#">제품관리</a></li>
-          <li><a class="nav-link" href="#">품목관리</a></li>
-          <li><a class="nav-link" href="#">사원관리</a></li>
-          <li><a class="nav-link" href="#">공지사항</a></li>
-        </ul>
-        <div class="menu-title">구매영업관리</div>
-        <ul class="nav flex-column mb-2">
-          <li><a class="nav-link" href="#">발주관리</a></li>
-          <li><a class="nav-link" href="#">주문관리</a></li>
-          <li><a class="nav-link" href="#">출고관리</a></li>
-          <li><a class="nav-link" href="#">자재소요량계산</a></li>
-        </ul>
-        <div class="menu-title">자재관리</div>
-        <ul class="nav flex-column mb-2">
-          <li><a class="nav-link" href="#">입고관리</a></li>
-          <li><a class="nav-link" href="#">재고관리</a></li>
-        </ul>
-        <div class="menu-title">생산관리</div>
-        <ul class="nav flex-column mb-2">
-          <li><a class="nav-link" href="#">생산계획</a></li>
-        </ul>
-      </div>
-    </nav>
 
-    <!-- Header -->
-    <header
-      class="d-flex align-items-center justify-content-between px-3 py-2 shadow-sm bg-white"
-      style="position: sticky; top: 0; z-index: 1050"
-    >
-      <button
-        id="sidebarToggle"
-        class="sidebar-toggle-btn"
-        aria-label="사이드바 열기/닫기"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="22"
-          height="22"
-          fill="currentColor"
-          class="bi bi-list"
-          viewBox="0 0 16 16"
-        >
-          <rect width="16" height="2" y="2" rx="1" />
-          <rect width="16" height="2" y="7" rx="1" />
-          <rect width="16" height="2" y="12" rx="1" />
-        </svg>
-      </button>
-      <div class="mx-auto text-center" style="flex: 1">
-        <span class="fw-bold fs-4" style="letter-spacing: 2px">CodeA</span>
-      </div>
-      <div style="width: 40px"></div>
-    </header>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -498,28 +378,6 @@
     </main>
 
     <script>
-      // 사이드바 토글
-      const sidebar = document.getElementById("sidebar");
-      const sidebarToggle = document.getElementById("sidebarToggle");
-      function toggleSidebar() {
-        if (window.innerWidth < 992) {
-          sidebar.classList.toggle("show");
-        } else {
-          sidebar.classList.toggle("collapsed");
-        }
-      }
-      sidebarToggle.addEventListener("click", toggleSidebar);
-
-      // 화면 크기 변경 시 사이드바 상태 초기화
-      window.addEventListener("resize", () => {
-        if (window.innerWidth >= 992) {
-          sidebar.classList.remove("show");
-          sidebar.classList.add("collapsed");
-        } else {
-          sidebar.classList.remove("collapsed");
-        }
-      });
-
       // 프로필 이미지 미리보기
       document
         .getElementById("profileImg")
