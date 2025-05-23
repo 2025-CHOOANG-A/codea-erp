@@ -1,0 +1,65 @@
+body {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+.main-content {
+  margin-left: 260px;
+  padding: 2.5rem 2rem 2rem 2rem;
+  transition: margin-left 0.2s;
+}
+.sidebar.collapsed ~ .main-content {
+  margin-left: 0;
+}
+@media (max-width: 991.98px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
+/* Table underline link */
+.table-link {
+  text-decoration: underline;
+  color: inherit;
+  cursor: pointer;
+}
+/* Hide add button for non-admins (simulate with class) */
+.d-admin-none {
+  display: none !important;
+}
+/* Table scroll and height */
+.table-responsive {
+  max-height: 520px;
+  min-height: 350px;
+  overflow-y: auto;
+}
+/* Paging */
+.pagination {
+  margin-bottom: 0;
+}
+/* Search/filter bar */
+.filter-bar {
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+.filter-bar .form-select,
+.filter-bar .form-control {
+  min-width: 120px;
+  max-width: 220px;
+}
+.filter-bar .form-control[name="search"] {
+  min-width: 220px;
+  max-width: 320px;
+}
+@media (max-width: 575.98px) {
+  .main-content {
+    padding: 1rem 0.5rem;
+  }
+  .filter-bar .form-select,
+  .filter-bar .form-control {
+    min-width: 100px;
+    max-width: 100%;
+  }
+  .filter-bar .form-control[name="search"] {
+    min-width: 100px;
+    max-width: 100%;
+  }
+}

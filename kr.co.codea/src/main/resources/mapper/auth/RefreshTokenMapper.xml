@@ -23,7 +23,7 @@
             CREATED_AT   as createdAt,
             UPDATED_AT   as updatedAt
         FROM REFRESH_TOKEN
-        WHERE TOKEN = #{tokenValue} </select>
+        WHERE TOKEN = #{token} </select>
 
     <insert id="insert" parameterType="kr.co.codea.auth.dto.RefreshToken">
         INSERT INTO ERP.REFRESH_TOKEN (
@@ -54,6 +54,6 @@
 
     <delete id="deleteByToken" parameterType="string">
         DELETE FROM ERP.REFRESH_TOKEN
-        WHERE TOKEN = #{tokenValue} </delete>
+        WHERE TOKEN = #{token} </delete>
 
 </mapper>

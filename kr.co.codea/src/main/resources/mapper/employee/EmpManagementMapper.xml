@@ -1,0 +1,17 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.employee.EmpManagementMapper">
+
+    <select id="findAllEmployeesForList" resultType="kr.co.codea.employee.EmployeeDto">
+        SELECT
+            EMP_NO      as empNo,-- 사원 고유번호
+            EMP_NAME    as empName, -- 사원 이름
+            EMP_DEPT    as empDept, -- 부서
+            EMP_POSITION as empPosition, -- 직급
+            EMAIL       as email, -- 이메일
+            TEL         as tel,-- 내선번호
+            EMP_ID      as empId -- 사원 테이블 고유번호
+        FROM EMPLOYEE
+        ORDER BY EMP_NAME ASC  -- 이름을 가나다 순으로 정렬
+    </select>
+
+</mapper>

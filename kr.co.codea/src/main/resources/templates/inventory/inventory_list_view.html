@@ -28,7 +28,7 @@
 						</select>
 					</div>
 					<div class="col-auto">
-						<input type="text" class="form-control" id="searchInput" name="keyword" placeholder="검색어 입력" style="min-width:160px;">
+						<input type="text" class="form-control" id="searchInput" name="keyword" placeholder="Search..." style="min-width:160px;">
 					</div>
 					<div class="col-auto">
 						<button type="submit" class="btn btn-primary">검색</button>
@@ -58,7 +58,19 @@
 							</tr>
 						</thead>
 						<tbody>
-							<!-- JS로 데이터 렌더링 -->
+							<tr th:each = "n : ${list}" th:onclick="|location.href='/inventory/detail?inventoryId=${n.inventoryId}'|" style="cursor:pointer;">
+								<td>[[${n.inventoryCode}]]</td>	<!-- 재고 번호 -->
+								<td>[[${n.itemCode}]]</td>	<!-- 제품 코드 -->
+								<td>[[${n.itemName}]]</td>	<!-- 제품명 -->
+								<td>[[${n.itemType}]]</td>	<!-- 제품 구분 -->
+								<td>[[${n.spec}]]</td>	<!-- 규격 -->
+								<td>[[${n.averageCost}]]</td>	<!-- 평균 단가 -->
+								<td>[[${n.currentQty}]]</td>	<!-- 보유 수량 -->
+								<td>[[${n.code}]]</td>	<!-- 단위 -->
+								<td>[[${n.whName}]]</td>	<!-- 창고 명 -->
+								<td>[[${n.whCode}]]</td>	<!-- 창고 코드 -->
+								<td>[[${n.empName}]]</td>	<!-- 담당자명 -->
+							</tr>
 						</tbody>
 					</table>
 				</div>
