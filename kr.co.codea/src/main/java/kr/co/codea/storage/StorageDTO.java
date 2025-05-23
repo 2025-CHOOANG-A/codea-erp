@@ -20,6 +20,8 @@ public class StorageDTO {
 	
 	//조인
 	private String empName;
+	private String empTel;
+
 
 	
 	//검색관련

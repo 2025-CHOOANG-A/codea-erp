@@ -54,8 +54,6 @@ WHERE w.WH_ID = #{whId}
 </select>
 
 
-
-
 <insert id="insertStorageList">
 INSERT INTO WAREHOUSE (
     WH_CODE,
@@ -67,11 +65,14 @@ INSERT INTO WAREHOUSE (
     POST_CODE,
     EMP_NO,
 ) VALUES (
-    'WH_SEOUL_02', -- 사용자 설정 고유 코드
-    '서울 강서 물류 창고', -- 창고 이름
-    '서울특별시 강서구 마곡동 123-45', -- 주소
-    '강서 물류센터 1층', -- 상세 주소
-    '서울 강서 지역 물류 허브 창고' -- 비고
+	whCode,
+	whName,
+	address,
+	addressDetail,
+	remark,
+	tel,
+	postCode,
+	empNo
 );
 </insert>
 </mapper>

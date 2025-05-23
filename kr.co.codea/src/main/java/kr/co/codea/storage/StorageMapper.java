@@ -10,6 +10,8 @@ public interface StorageMapper {
 	 List<StorageDTO> selectStorageList(@Param("dto") StorageDTO dto);
 	 
 	 StorageDTO selectStorageDetailById(Integer whId); 
+	 
+	 int insertStorageList(StorageDTO dto);
 
 
 }

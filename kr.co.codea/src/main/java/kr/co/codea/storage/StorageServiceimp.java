@@ -24,4 +24,10 @@ public class StorageServiceimp implements StorageService {
 		return mapper.selectStorageDetailById(whId);
 	}
 
+
+	@Override
+	public int insertStorageList(StorageDTO dto) {
+		return mapper.insertStorageList(dto);
+	}
+
 }
