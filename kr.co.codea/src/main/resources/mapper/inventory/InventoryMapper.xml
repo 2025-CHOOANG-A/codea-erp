@@ -25,24 +25,42 @@ WHERE INVENTORY_ID = #{inventoryId}
 
 <!-- 등록 및 페이지 제품 검색 -->
 <select id="inv_sea_item" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, C.CODE
-FROM INVENTORY A
-JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
-JOIN COMMON_CODE C ON B.UNIT_CODE = C.CODE_ID
+SELECT A.ITEM_CODE, A.ITEM_NAME, A.ITEM_TYPE, A.SPEC, B.CODE
+FROM ITEM A
+JOIN COMMON_CODE B ON A.UNIT_CODE = B.CODE_ID
+WHERE A.ITEM_NAME LIKE '%' || #{itemName} || '%'
 </select>
 
 <!-- 등록 및 수정 페이지 창고 검색 -->
 <select id="inv_sea_wh" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT B.WH_CODE, B.WH_NAME, B.ADDRESS, B.ADDRESS_DETAIL
-FROM INVENTORY A
-JOIN WAREHOUSE B ON A.WH_ID = B.WH_ID
+SELECT WH_CODE, WH_NAME, ADDRESS, ADDRESS_DETAIL
+FROM WAREHOUSE
+WHERE WH_NAME LIKE '%' || #{whName} || '%'
 </select>
 
 <!-- 등록 및 수정 페이지 담당자 검색 -->
 <select id="inv_sea_emp" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT B.EMP_NO, B.EMP_NAME, B.HP
-FROM INVENTORY A
-JOIN EMPLOYEE B ON A.EMP_NO = B.EMP_NO
+SELECT EMP_NO, EMP_NAME, HP
+FROM EMPLOYEE
+WHERE EMP_NAME LIKE '%' || '홍길동' || '%'
+</select>
+
+<!-- 입고 수량 자동 입력 -->
+<select id="inv_in_qty" resultType="int">
+SELECT QUANTITY FROM (
+SELECT I.QUANTITY FROM INOUT I
+WHERE I.INOUT_TYPE = 21 AND I.ITEM_ID = #{itemId} AND I.WH_ID = #{whId}
+ORDER BY I.INOUT_TIME DESC)
+WHERE ROWNUM = 1
+</select>
+
+<!-- 출고 수량 자동 입력 -->
+<select id="inv_out_qty" resultType="int">
+SELECT QUANTITY FROM (
+SELECT I.QUANTITY FROM INOUT I
+WHERE I.INOUT_TYPE = 24 AND I.ITEM_ID = #{itemId} AND I.WH_ID = #{whId}
+ORDER BY I.INOUT_TIME DESC)
+WHERE ROWNUM = 1
 </select>
 
 <!-- 등록 페이지 저장 -->

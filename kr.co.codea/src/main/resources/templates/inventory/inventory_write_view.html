@@ -3,6 +3,11 @@
 <!-- Main Content -->
 <main class="container py-4" style="max-width:900px;">
 	<form autocomplete="off">
+		<input type="hidden" name="itemId" th:value="${dto.itemId}">
+		<input type="hidden" name="whId" th:value="${dto.whId}">
+		<input type="hidden" name="expectedQty" th:value="${dto.expectedQty}">
+		<input type="hidden" name="allocatedQty" th:value="${dto.allocatedQty}">
+	
 		<!-- 재고 정보 -->
 		<div class="mb-4">
 			<div class="form-section-title">재고 정보</div>
@@ -113,22 +118,22 @@
 </main>
 
 <!-- 제품 검색 모달 -->
-<div class="modal fade" id="productSearchModal" tabindex="-1" aria-labelledby="productSearchModalLabel" aria-hidden="true">
+<div class="modal fade" id="item_sea" tabindex="-1" aria-labelledby="productSearchModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered modal-wide">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="productSearchModalLabel">제품 검색</h5>
+				<h5 class="modal-title" id="item_sea_label">제품 검색</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
 			</div>
 			<div class="modal-body">
-				<form class="mb-3" id="productSearchForm" autocomplete="off">
+				<form class="mb-3" id="item_sea_form" autocomplete="off">
 					<div class="input-group" style="max-width:400px;">
-						<input type="text" class="form-control" id="productSearchInput" placeholder="제품명 입력">
+						<input type="text" class="form-control" id="item_sea_in" placeholder="제품명 입력">
 						<button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> 검색</button>
 					</div>
 				</form>
 				<div class="table-responsive">
-					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="productSearchTable">
+					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="item_sea_table">
 						<thead class="table-light">
 							<tr>
 								<th>제품 코드</th>
@@ -150,22 +155,22 @@
 </div>
 
 <!-- 창고 검색 모달 -->
-<div class="modal fade" id="warehouseSearchModal" tabindex="-1" aria-labelledby="warehouseSearchModalLabel" aria-hidden="true">
+<div class="modal fade" id="wh_sea" tabindex="-1" aria-labelledby="warehouseSearchModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered modal-wide">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="warehouseSearchModalLabel">창고 검색</h5>
+				<h5 class="modal-title" id="wh_sea_label">창고 검색</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
 			</div>
 			<div class="modal-body">
-				<form class="mb-3" id="warehouseSearchForm" autocomplete="off">
+				<form class="mb-3" id="wh_sea_form" autocomplete="off">
 					<div class="input-group" style="max-width:400px;">
-						<input type="text" class="form-control" id="warehouseSearchInput" placeholder="창고명 입력">
+						<input type="text" class="form-control" id="wh_sea_in" placeholder="창고명 입력">
 						<button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> 검색</button>
 					</div>
 				</form>
 				<div class="table-responsive">
-					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="warehouseSearchTable">
+					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="wh_sea_table">
 						<thead class="table-light">
 							<tr>
 								<th>창고 코드</th>
@@ -185,22 +190,22 @@
 </div>
 
 <!-- 담당자 검색 모달 -->
-<div class="modal fade" id="managerSearchModal" tabindex="-1" aria-labelledby="managerSearchModalLabel" aria-hidden="true">
+<div class="modal fade" id="emp_sea" tabindex="-1" aria-labelledby="managerSearchModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered modal-wide">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="managerSearchModalLabel">담당자 검색</h5>
+				<h5 class="modal-title" id="emp_sea_label">담당자 검색</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
 			</div>
 			<div class="modal-body">
-				<form class="mb-3" id="managerSearchForm" autocomplete="off">
+				<form class="mb-3" id="emp_sea_form" autocomplete="off">
 					<div class="input-group" style="max-width:400px;">
-						<input type="text" class="form-control" id="managerSearchInput" placeholder="담당자명 입력">
+						<input type="text" class="form-control" id="emp_sea_in" placeholder="담당자명 입력">
 						<button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> 검색</button>
 					</div>
 				</form>
 				<div class="table-responsive">
-					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="managerSearchTable">
+					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="emp_sea_table">
 						<thead class="table-light">
 							<tr>
 								<th>담당자 코드</th>
