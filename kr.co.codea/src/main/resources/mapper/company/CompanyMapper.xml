@@ -23,11 +23,10 @@ select * from company
         POST_CODE  = #{postCode},
         TEL  = #{tel},
         FAX  = #{fax},
-        MAIL  = #{mail},
-        updated_at = SYSDATE
+        MAIL  = #{mail}
     WHERE COMP_ID = #{compId}
 </update>
-
+        <!-- updated_at = SYSDATE -->
 <insert id="insertCompany" parameterType="kr.co.codea.company.CompanyDTO">
     INSERT INTO COMPANY (
         COMP_NAME, COMP_TYPE, COMP_IMG, CEO_NAME, BIZ_NO,
