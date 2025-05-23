@@ -3,7 +3,7 @@
  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.item.item_mapper">
 
-<!-- insert  -->
+<!-- insert -> 재품등록 조회  -->
   <insert id="insert_item" parameterType="kr.co.codea.item.item_list_DTO">
 INSERT INTO ITEM (
     ITEM_ID,UNIT_CODE,ITEM_CODE,ITEM_NAME,ITEM_TYPE,ITEM_CAT_L,ITEM_CAT_S
@@ -19,45 +19,10 @@ VALUES (
 )
 </insert>
 
-<!-- 
-
-    SELECT
-        i.INVENTORY_CODE,
-        it.ITEM_CODE,
-        it.ITEM_NAME,
-        catL.CATEGORY_NAME AS categoryLName,
-        catS.CATEGORY_NAME AS categorySName,
-        w.WH_NAME AS warehouseName,
-        i.CURRENT_QTY AS currentQty,
-        i.AVERAGE_COST AS averageCost,
-        i.EMP_NO AS empNo,
-        i.REMARK AS remark
-    FROM INVENTORY i
-    JOIN ITEM it ON i.ITEM_ID = it.ITEM_ID
-    LEFT JOIN ITEM_CATEGORY catL ON it.ITEM_CAT_L = catL.CATEGORY_ID AND catL.CATEGORY_LEVEL = 1
-    LEFT JOIN ITEM_CATEGORY catS ON it.ITEM_CAT_S = catS.CATEGORY_ID AND catS.CATEGORY_LEVEL = 2
-    JOIN WAREHOUSE w ON i.WH_ID = w.WH_ID
-
-    SELECT
-        B.INVENTORY_CODE AS inventoryCode,
-        A.ITEM_CAT_L AS itemCatL,
-        A.ITEM_CAT_S AS itemCatS,
-        A.ITEM_CODE AS itemCode,
-        A.ITEM_NAME AS itemName,
-        A.SPEC AS spec,
-        D.PRICE AS price,
-        B.CURRENT_QTY AS currentQty,
-        B.WH_ID AS warehouseId,
-        A.REMARK AS remark
-         
-     FROM ITEM A
-     JOIN INVENTORY B ON A.ITEM_ID = B.ITEM_ID
-     JOIN WAREHOUSE C ON B.WH_ID = C.WH_ID
-     JOIN PARTNER_ITEM D ON A.ITEM_ID = D.ITEM_ID   
-     
- -->
-<select id="item_select" resultType="kr.co.codea.item.item_list_DTO"> 
-  
+<!-- 제품목록 조회  
+ resultType="kr.co.codea.item.item_list_DTO"
+-->
+<select id="item_select"  parameterType="String"  resultMap="itemListResultMap">   
 SELECT 
   A.ITEM_CODE,
   A.ITEM_NAME,
@@ -68,9 +33,11 @@ SELECT
   B.INVENTORY_CODE,
   B.CURRENT_QTY,
   B.WH_ID,
+  C.WH_CODE,
   D.PRICE
 FROM ITEM A
 LEFT JOIN INVENTORY B ON A.ITEM_ID = B.ITEM_ID
+LEFT JOIN WAREHOUSE C ON B.WH_ID = C.WH_ID
 LEFT JOIN (
   SELECT *
   FROM (
@@ -81,7 +48,38 @@ LEFT JOIN (
   )
   WHERE RN = 1
 ) D ON A.ITEM_ID = D.ITEM_ID
+
+<where>
+  <if test="keyword != null and keyword != ''">
+ AND (
+      A.ITEM_NAME LIKE CONCAT('%', #{keyword}, '%')
+      OR A.ITEM_CODE LIKE CONCAT('%', #{keyword}, '%')
+      OR A.ITEM_CAT_L LIKE CONCAT('%', #{keyword}, '%')
+      OR A.ITEM_CAT_S LIKE CONCAT('%', #{keyword}, '%')
+      OR A.SPEC LIKE CONCAT('%', #{keyword}, '%')
+      OR A.REMARK LIKE CONCAT('%', #{keyword}, '%')
+      OR B.INVENTORY_CODE LIKE CONCAT('%', #{keyword}, '%')
+      OR C.WH_CODE LIKE CONCAT('%', #{keyword}, '%')
+    )
+</if>
+</where>
 </select>
 
 
+
+
+<!-- resultMap -->
+<resultMap id="itemListResultMap" type="kr.co.codea.item.item_list_DTO">
+    <result property="itemCode" column="ITEM_CODE"/>
+    <result property="itemName" column="ITEM_NAME"/>
+    <result property="itemCatL" column="ITEM_CAT_L"/>
+    <result property="itemCatS" column="ITEM_CAT_S"/>
+    <result property="spec" column="SPEC"/>
+    <result property="reMark" column="REMARK"/>
+    <result property="inventoryCode" column="INVENTORY_CODE"/>
+    <result property="currentQty" column="CURRENT_QTY"/>
+    <result property="whId" column="WH_ID"/>
+    <result property="whCode" column="WH_CODE"/>
+    <result property="price" column="PRICE"/>
+</resultMap>
 </mapper>

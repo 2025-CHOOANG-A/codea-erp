@@ -10,7 +10,7 @@
       rel="stylesheet"
     />
     <style>
-      body {
+ body {
         min-height: 100vh;
         background: #f8f9fa;
       }
@@ -310,34 +310,35 @@
     <main id="mainContent" class="main-content">
       <div class="container-fluid px-0">
         <!-- Filter/Search Bar -->
+        <!-- 
         <form
           class="filter-bar mb-3"
           id="filterForm"
           autocomplete="off"
           onsubmit="return false;"
         >
-          <select
-            class="form-select"
-            id="categoryFilter"
-            style="max-width: 140px"
-          >
+         -->
+          <select class="form-select" id="categoryFilter" style="max-width: 140px">
             <option value="전체">전체</option>
             <option value="제품">제품</option>
             <option value="자재">자재</option>
           </select>
+          <!-- 검색버튼 -->
+          <!-- keyword= 검색 파라미터값 -->
+         <form class="d-flex" method="get" th:action="@{/item_list}"> 
           <input
             type="text"
             class="form-control"
-            id="searchInput"
+            id="search_input"
+             name ="keyword" 
+            th:value="${keyword}" 
             placeholder="제품명, 코드 등 검색"
             style="flex: 1; min-width: 200px; max-width: 320px"
           />
-          <button type="button" class="btn btn-primary" id="searchBtn">
-            검색
-          </button>
+          <button type="button" class="btn btn-primary" id="searchBtn">검색</button>
         </form>
 
-        <!-- Table -->
+        <!-- 테이블칼럼-->
         <div class="table-responsive">
           <table
             class="table table-bordered align-middle mb-0"
@@ -370,7 +371,7 @@
          <td th:text="${item.price}"></td>
          <td th:text="${item.currentQty}"></td>
          <td th:text="${item.whId}"></td>
-         <td th:text="${item.whcd}"></td>
+         <td th:text="${item.whCode}"></td>
          <td th:text="${item.reMark}"></td>
           </tr>     
             </tbody>
@@ -462,10 +463,55 @@
       //let filteredData = sampleData.slice();
 
       // 필터/검색
+/*
       function filterAndRender() {
-        const category = document.getElementById("categoryFilter").value;
+  const category = document.getElementById("categoryFilter").value;
+  const keyword = document
+    .getElementById("search_input") // ← 여기도 수정
+    .value.trim()
+    .toLowerCase();
+
+  filteredData = sampleData.filter((item) => {
+    const matchCategory =
+      category === "전체" || item.category.toLowerCase() === category.toLowerCase();
+    const matchKeyword =
+      !keyword ||
+      item.stockNo.toLowerCase().includes(keyword) ||
+      item.code.toLowerCase().includes(keyword) ||
+      item.name.toLowerCase().includes(keyword) ||
+      item.subCategory.toLowerCase().includes(keyword) ||
+      item.warehouse.toLowerCase().includes(keyword) ||
+      item.warehouseCode.toLowerCase().includes(keyword);
+    return matchCategory && matchKeyword;
+  });
+
+  currentPage = 1;
+  renderTable();
+  renderPagination();
+}
+
+// ✅ ID 정확하게 수정
+document
+  .getElementById("categoryFilter")
+  .addEventListener("change", filterAndRender);
+
+document
+  .getElementById("searchBtn")
+  .addEventListener("click", filterAndRender);
+
+document
+  .getElementById("search_input") // ← 여기 수정
+  .addEventListener("keydown", function (e) {
+    if (e.key === "Enter") filterAndRender();
+  });
+    */  
+      
+      
+     /* 
+      function filterAndRender() {
+        //const category = document.getElementById("categoryFilter").value;
         const keyword = document
-          .getElementById("searchInput")
+          .getElementById("search_input")
           .value.trim()
           .toLowerCase();
         filteredData = sampleData.filter((item) => {
@@ -497,7 +543,7 @@
         .addEventListener("keydown", function (e) {
           if (e.key === "Enter") filterAndRender();
         });
-
+      */
       // 테이블 렌더링
       function renderTable() {
         const tbody = document.getElementById("productTableBody");
@@ -601,7 +647,7 @@
         location.href = "/item/item_write";
       });
       // 최초 렌더링
-      filterAndRender();
+      //filterAndRender();
     </script>
   </body>
 </html>

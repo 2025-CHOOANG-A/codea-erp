@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.annotation.Resource;
 
@@ -24,8 +25,8 @@ public class item_controller {
 	@Resource(name="item_list_DTO")
 	item_list_DTO item_lits_DTO;
 	
-	   @Autowired
-	    private item_service service;
+	@Autowired
+	private item_service service;
 	
 	
 	 @GetMapping("/item_detail")
@@ -33,14 +34,19 @@ public class item_controller {
 	      return "item/item_detail"; 
 	 }
 	    	
+	 //주문목록 , 검색창 핸들링 
 	 @GetMapping("/item_list")
-	 public String itemList(Model m) {
-		   List<item_list_DTO> itemlist = service.item_select(); // 목록 조회
-		   //System.out.println(itemlist);
-	        m.addAttribute("itemlist", itemlist);       // Thymeleaf에 전달
-	        return "item/item_list";  // → templates/item/item_list.html
-	    }
+	 public String itemList(Model m,
+			 @RequestParam(name = "keyword", required = false) String keyword) {
+		
 
+		
+		    List<item_list_DTO> result = service.item_search(keyword);
+		    m.addAttribute("itemlist", result);
+		   m.addAttribute("keyword", keyword); // 검색어 유지용
+		    return "item/item_list";
+		}
+	 
 	@GetMapping("/item_modify")
 	public String item_modify() {
 	    return "item/item_modify"; 
