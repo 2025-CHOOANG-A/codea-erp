@@ -9,15 +9,33 @@ import java.util.Optional;
 @Mapper
 public interface RefreshTokenMapper {
 
+    /**
+     * Refresh Token 저장
+     */
     int insert(RefreshToken refreshToken);
 
-    Optional<RefreshToken> findByEmpId(@Param("empId") Long empId); // Long 타입으로 변경
+    /**
+     * EMP_ID로 Refresh Token 조회
+     */
+    Optional<RefreshToken> findByEmpId(@Param("empId") Long empId);
 
-    Optional<RefreshToken> findByToken(@Param("token") String token); // 토큰 값으로 조회
+    /**
+     * Refresh Token 문자열로 조회
+     */
+    Optional<RefreshToken> findByToken(@Param("token") String token);
 
+    /**
+     * Refresh Token 수정 (토큰 값 갱신 시 사용)
+     */
     int update(RefreshToken refreshToken);
 
-    int deleteByEmpId(@Param("empId") Long empId); // Long 타입으로 변경
+    /**
+     * EMP_ID 기준으로 Refresh Token 삭제
+     */
+    int deleteByEmpId(@Param("empId") Long empId);
 
-    int deleteByToken(@Param("token") String token); // 토큰 값으로 삭제 (만료 시 등)
+    /**
+     * 토큰 문자열 기준으로 Refresh Token 삭제 (만료 등)
+     */
+    int deleteByToken(@Param("token") String token);
 }
