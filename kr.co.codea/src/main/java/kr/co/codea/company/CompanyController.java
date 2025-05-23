@@ -2,6 +2,8 @@ package kr.co.codea.company;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,10 +14,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.annotation.Resource;
+
 @Controller
 @RequestMapping("/company")
 public class CompanyController {
-
+	Logger log = LoggerFactory.getLogger(this.getClass());
+	
+	@Resource(name="cdn_model")
+	cdn_model cdn_model;
+	
 	@Autowired
 	private CompanyService cs; //@Service의 class 로드
 	
@@ -41,21 +49,42 @@ public class CompanyController {
     
     @PostMapping("/modifydo")
     public String CompanyModifydo(@ModelAttribute CompanyDTO dto,
-    	    @RequestParam("compImg") MultipartFile compImg,
-    	    @RequestParam("bizImg") MultipartFile bizImg) {
+    	    @RequestParam("compImgFile") MultipartFile compImgFile,
+    	    @RequestParam("bizImgFile") MultipartFile bizImgFile,
+    	    @RequestParam("originCompImg") String originCompImg,
+    	    @RequestParam("originBizImg") String originBizImg) {
     	try {
-    		
-    		if (!compImg.isEmpty()) {
-    			String originalFileName = compImg.getOriginalFilename(); // 파일 이름만
-    			dto.setCompImg(originalFileName); // 그냥 파일명만 저장 (경로 필요)
-    		}
-    		if (!bizImg.isEmpty()) {
-    			String originalFileName = bizImg.getOriginalFilename(); // 파일 이름만
-    			dto.setBizImg(originalFileName); // 그냥 파일명만 저장 (경로 필요)
-    		}
-    		if (dto.getCompId() == null) {
+    		/*
+            if (dto.getCompImgFile() != null && !dto.getCompImgFile().isEmpty()) {
+                String originalFileName = dto.getCompImgFile().getOriginalFilename();
+                dto.setCompImg(originalFileName);
+            }
+            if (dto.getBizImgFile() != null && !dto.getBizImgFile().isEmpty()) {
+                String originalFileName = dto.getBizImgFile().getOriginalFilename();
+                dto.setBizImg(originalFileName);
+            }
+            */
+            // 회사 로고 이미지 처리
+            if (compImgFile != null && !compImgFile.isEmpty()) {
+                String fileName = compImgFile.getOriginalFilename();
+                dto.setCompImg(fileName);
+                //cdn_model.cdn_ftp(compImgFile); //FTP실행시 풀면됨
+            } else {
+                dto.setCompImg(originCompImg); // 기존 파일 유지
+            }
+
+            // 사업자등록증 이미지 처리
+            if (bizImgFile != null && !bizImgFile.isEmpty()) {
+                String fileName = bizImgFile.getOriginalFilename();
+                dto.setBizImg(fileName);
+                //cdn_model.cdn_ftp(bizImgFile);
+            } else {
+                dto.setBizImg(originBizImg); // 기존 파일 유지
+            }
+            
+    		if (dto.getCompId() == null || dto.getCompId() == 0) {
     			int result = this.cs.insertCompany(dto); // INSERT        		
-    			if(result>0) {
+    			if(result > 0) {
     				System.out.println("insert 성공");
     			}else {
     				System.out.println("insert 실패");
@@ -69,41 +98,26 @@ public class CompanyController {
     				System.out.println("update 실패");
     			}
     		}
+    		/*
+    		try {
+    			boolean Fileresult1 = this.cdn_model.cdn_ftp(compImgFile);
+    			boolean Fileresult2 = this.cdn_model.cdn_ftp(bizImgFile);
+    			if(Fileresult1 == true && Fileresult2 == true) {
+    				this.log.info("저장완료");
+    			}
+    			else {
+    				this.log.info("저장실패");
+    			}
+    		}catch(Exception e) {
+    			this.log.info(e.toString());
+    		}finally {
+    			
+    		}*/
+    		
     	}
     	catch(Exception e) {
     		System.out.println(e);
     	}
-        return "company/company_detail"; // templates/company/company_modify.html
+        return "redirect:/company/detail"; // templates/company/company_modify.html
     }
-    /*
-    @PostMapping("/modifydo")
-    public String CompanyModifydo(@ModelAttribute CompanyDTO dto,
-    	    @RequestParam("compImg") MultipartFile compImg,
-    	    @RequestParam("bizImg") MultipartFile bizImg) {
-        if (!compImg.isEmpty()) {
-            String filePath = saveFile(compImg); // 파일 저장 후 경로 반환
-            dto.setCompImg(filePath);
-        }
-        if (!bizImg.isEmpty()) {
-            String filePath = saveFile(bizImg);
-            dto.setBizImg(filePath);
-        }
-        if (dto.getCompId() == null) {
-        	int result = this.cs.insertCompany(dto); // INSERT        		
-        	if(result>0) {
-        		System.out.println("insert 성공");
-        	}else {
-        		System.out.println("insert 실패");
-        	}
-        } else {
-        	int result = this.cs.updateCompany(dto); // UPDATE        		
-        	if(result>0) {
-        		System.out.println("update 성공");
-        	}
-        	else {
-        		System.out.println("update 실패");
-        	}
-        }
-        return "company/company_detail"; // templates/company/company_modify.html
-    }*/
 }
