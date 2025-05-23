@@ -1,13 +1,10 @@
 <div th:fragment="view">
-  <body>
     <main class="main-content">
       <div class="container">
         <h2 class="mb-4 fw-semibold">사업장 정보 작성</h2>
-        <form id="companyForm" autocomplete="off">
+        <form id="companyForm" method="POST" autocomplete="off" action="/company/modifydo"  enctype="multipart/form-data">
           <div class="table-responsive">
-            <table
-              class="table table-bordered align-middle company-table bg-white"
-            >
+            <table class="table table-bordered align-middle company-table bg-white">
               <tbody>
                 <tr>
                   <th scope="row">회사 로고</th>
@@ -15,205 +12,116 @@
                     <input
                       type="file"
                       class="form-control"
-                      name="logo"
+                      name="compImg"
                       accept="image/*"
-                      required
                     />
+                    <!-- 기존 이미지 표시 (있을 때) -->
+                    <div th:if="${dto.compImg != null}">
+                      <img th:src="@{${dto.compImg}}" alt="회사로고" style="max-height:60px;" />
+                    </div>
                   </td>
                 </tr>
                 <tr>
                   <th scope="row">회사명 <span class="text-danger">*</span></th>
                   <td>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="company_name"
-                      required
-                    />
+                    <input type="text" class="form-control" name="compName"
+                      th:value="${dto.compName}" required />
                   </td>
-                  <th scope="row">
-                    대표자명 <span class="text-danger">*</span>
-                  </th>
+                  <th scope="row">대표자명 <span class="text-danger">*</span></th>
                   <td>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="ceo_name"
-                      required
-                    />
+                    <input type="text" class="form-control" name="ceoName"
+                      th:value="${dto.ceoName}" required />
                   </td>
                 </tr>
                 <tr>
-                  <th scope="row">
-                    법인/개인 <span class="text-danger">*</span>
-                  </th>
+                  <th scope="row">법인/개인 <span class="text-danger">*</span></th>
                   <td>
                     <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        type="radio"
-                        name="type"
-                        id="corporate"
-                        value="법인"
-                        required
-                      />
-                      <label class="form-check-label" for="corporate"
-                        >법인</label
-                      >
+                      <input class="form-check-input" type="radio" name="compType"
+                        id="corporate" value="법인" th:checked="${dto.compType == '법인'}" required />
+                      <label class="form-check-label" for="corporate">법인</label>
                     </div>
                     <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        type="radio"
-                        name="type"
-                        id="individual"
-                        value="개인"
-                        required
-                      />
-                      <label class="form-check-label" for="individual"
-                        >개인</label
-                      >
+                      <input class="form-check-input" type="radio" name="compType"
+                        id="individual" value="개인" th:checked="${dto.compType == '개인'}" required />
+                      <label class="form-check-label" for="individual">개인</label>
                     </div>
                   </td>
                   <th scope="row">법인등록번호</th>
                   <td>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="corporate_number"
-                      id="corporateNumber"
-                      placeholder="법인 선택 시 입력"
-                      disabled
-                    />
+                    <input type="text" class="form-control" name="corpNo" id="corporateNumber"
+                      placeholder="법인 선택 시 입력" th:value="${dto.corpNo}" />
                   </td>
                 </tr>
                 <tr>
-                  <th scope="row">
-                    사업자등록번호 <span class="text-danger">*</span>
-                  </th>
+                  <th scope="row">사업자등록번호 <span class="text-danger">*</span></th>
                   <td>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="biz_number"
-                      required
-                    />
+                    <input type="text" class="form-control" name="bizNo"
+                      th:value="${dto.bizNo}" required />
                   </td>
-                  <th scope="row">
-                    사업자등록증 <span class="text-danger">*</span>
-                  </th>
+                  <th scope="row">사업자등록증 <span class="text-danger">*</span></th>
                   <td>
-                    <input
-                      type="file"
-                      class="form-control"
-                      name="biz_license"
-                      accept="image/*,application/pdf"
-                      required
-                    />
+                    <input type="file" class="form-control" name="bizImg"
+                      accept="image/*,application/pdf" />
+                    <!-- 기존 파일 표시 -->
+                    <div th:if="${dto.bizImg != null}">
+                      <img th:src="@{${dto.bizImg}}" alt="사업자등록증" style="max-height:60px;" />
+                    </div>
                   </td>
                 </tr>
                 <tr>
                   <th scope="row">업태 <span class="text-danger">*</span></th>
                   <td>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="biz_type"
-                      required
-                    />
+                    <input type="text" class="form-control" name="bizCond"
+                      th:value="${dto.bizCond}" required />
                   </td>
                   <th scope="row">업종 <span class="text-danger">*</span></th>
                   <td>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="biz_item"
-                      required
-                    />
+                    <input type="text" class="form-control" name="bizType"
+                      th:value="${dto.bizType}" required />
                   </td>
                 </tr>
                 <tr>
                   <th scope="row">주소 <span class="text-danger">*</span></th>
                   <td>
                     <div class="input-group mb-2">
-                      <input
-                        type="text"
-                        class="form-control"
-                        name="address"
-                        id="address"
-                        placeholder="주소 검색 버튼을 클릭하세요"
-                        readonly
-                        required
-                      />
-                      <button
-                        type="button"
-                        class="btn btn-outline-secondary"
-                        onclick="execDaumPostcode()"
-                      >
-                        주소검색
-                      </button>
+                      <input type="text" class="form-control" name="address"
+                        id="address" placeholder="주소 검색 버튼을 클릭하세요"
+                        th:value="${dto.address}" readonly required />
+                      <button type="button" class="btn btn-outline-secondary"
+                        onclick="execDaumPostcode()">주소검색</button>
                     </div>
                   </td>
-                  <th scope="row">
-                    상세주소 <span class="text-danger">*</span>
-                  </th>
+                  <th scope="row">상세주소 <span class="text-danger">*</span></th>
                   <td>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="address_detail"
-                      required
-                    />
+                    <input type="text" class="form-control" name="addressDetail"
+                      th:value="${dto.addressDetail}" required />
                   </td>
                 </tr>
                 <tr>
-                  <th scope="row">
-                    우편번호 <span class="text-danger">*</span>
-                  </th>
+                  <th scope="row">우편번호 <span class="text-danger">*</span></th>
                   <td colspan="3">
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="zipcode"
-                      id="zipcode"
-                      readonly
-                      required
-                    />
+                    <input type="text" class="form-control" name="postCode"
+                      id="zipcode" th:value="${dto.postCode}" readonly required />
                   </td>
                 </tr>
                 <tr>
-                  <th scope="row">
-                    대표번호 <span class="text-danger">*</span>
-                  </th>
+                  <th scope="row">대표번호 <span class="text-danger">*</span></th>
                   <td>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="tel"
-                      required
-                    />
+                    <input type="text" class="form-control" name="tel"
+                      th:value="${dto.tel}" required />
                   </td>
-                  <th scope="row">
-                    팩스번호 <span class="text-danger">*</span>
-                  </th>
+                  <th scope="row">팩스번호 <span class="text-danger">*</span></th>
                   <td>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="fax"
-                      required
-                    />
+                    <input type="text" class="form-control" name="fax"
+                      th:value="${dto.fax}" required />
                   </td>
                 </tr>
                 <tr>
                   <th scope="row">이메일 <span class="text-danger">*</span></th>
                   <td colspan="3">
-                    <input
-                      type="email"
-                      class="form-control"
-                      name="email"
-                      required
-                    />
+                    <input type="email" class="form-control" name="mail"
+                      th:value="${dto.mail}" required />
                   </td>
                 </tr>
               </tbody>
@@ -221,16 +129,10 @@
           </div>
           <div class="text-end mt-4">
             <button type="submit" class="btn btn-primary px-4">저장</button>
-            <button
-              type="button"
-              class="btn btn-secondary px-4 ms-2"
-              onclick="window.history.back()"
-            >
-              취소
-            </button>
+            <button type="button" class="btn btn-secondary px-4 ms-2"
+              onclick="window.history.back()">취소</button>
           </div>
         </form>
       </div>
     </main>
-  </body>
 </div>

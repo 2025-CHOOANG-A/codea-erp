@@ -1,35 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="kr.co.codea.mapper.auth.RefreshTokenMapper">
-   <!-- 토큰 저장 -->
-    <insert id="insertRefreshToken" parameterType="kr.co.codea.auth.dto.RefreshToken">
-        INSERT INTO REFRESH_TOKEN (EMP_ID, TOKEN, EXPIRATION, CREATED_AT)
-        VALUES (#{empId}, #{token}, #{expiration}, SYSDATE)
-    </insert>
+<mapper namespace="kr.co.codea.auth.mapper.RefreshTokenMapper">
 
-    <!-- 토큰 조회 -->
-    <select id="findByUserId" resultType="kr.co.codea.auth.dto.RefreshToken">
-        SELECT RT_ID, EMP_ID, TOKEN, EXPIRATION, CREATED_AT, UPDATED_AT
-        FROM REFRESH_TOKEN
-        WHERE EMP_ID = (
-            SELECT EMP_ID FROM EMPLOYEE WHERE EMP_USER_ID = #{empUserId}
-        )
+    <select id="findByEmpId" parameterType="long" resultType="kr.co.codea.auth.dto.RefreshToken">
+        SELECT
+            RT_ID        as rtId,
+            EMP_ID       as empId,
+            TOKEN        as token,
+            EXPIRATION   as expiration,
+            CREATED_AT   as createdAt,
+            UPDATED_AT   as updatedAt
+        FROM
+            REFRESH_TOKEN  WHERE EMP_ID = #{empId}
     </select>
 
-    <!-- 토큰 삭제 -->
-    <delete id="deleteByUserId">
-        DELETE FROM REFRESH_TOKEN
-        WHERE EMP_ID = (
-            SELECT EMP_ID FROM EMPLOYEE WHERE EMP_USER_ID = #{empUserId}
-        )
+    <select id="findByToken" parameterType="string" resultType="kr.co.codea.auth.dto.RefreshToken">
+        SELECT
+            RT_ID        as rtId,
+            EMP_ID       as empId,
+            TOKEN        as token,
+            EXPIRATION   as expiration,
+            CREATED_AT   as createdAt,
+            UPDATED_AT   as updatedAt
+        FROM REFRESH_TOKEN
+        WHERE TOKEN = #{tokenValue} </select>
+
+    <insert id="insert" parameterType="kr.co.codea.auth.dto.RefreshToken">
+        INSERT INTO ERP.REFRESH_TOKEN (
+            EMP_ID,
+            TOKEN,
+            EXPIRATION,
+            CREATED_AT,
+            UPDATED_AT  ) VALUES (
+            #{empId},
+            #{token},
+            #{expiration},
+            SYSTIMESTAMP, SYSTIMESTAMP)
+    </insert>
+
+    <update id="update" parameterType="kr.co.codea.auth.dto.RefreshToken">
+        UPDATE ERP.REFRESH_TOKEN
+        SET
+            TOKEN = #{token},
+            EXPIRATION = #{expiration},
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE
+            EMP_ID = #{empId} </update>
+
+    <delete id="deleteByEmpId" parameterType="long">
+        DELETE FROM ERP.REFRESH_TOKEN
+        WHERE EMP_ID = #{empId}
     </delete>
 
-    <!-- 토큰 갱신 -->
-    <update id="updateRefreshToken" parameterType="kr.co.codea.auth.dto.RefreshToken">
-        UPDATE REFRESH_TOKEN
-        SET TOKEN = #{token},
-            EXPIRATION = #{expiration},
-            UPDATED_AT = SYSDATE
-        WHERE EMP_ID = #{empId}
-    </update>
+    <delete id="deleteByToken" parameterType="string">
+        DELETE FROM ERP.REFRESH_TOKEN
+        WHERE TOKEN = #{tokenValue} </delete>
+
 </mapper>
