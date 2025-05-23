@@ -4,12 +4,9 @@
     <link rel="stylesheet" th:href="@{/css/storage_list.css}" />
 </th:block>
 
-
-    <!-- Main Content -->
     <main class="content">
       <div class="container">
         <h2 class="mb-4">창고 목록</h2>
-        <!-- Filter/Search Bar -->
         <form id="filterForm" class="filter-bar">
           <select
             id="categoryFilter"
@@ -30,13 +27,10 @@
             th:value="${searchDto.keyword}"
           />
           <select id="sortName" class="form-select" aria-label="정렬">
-<!--             <option value="asc">창고명 가나다순</option>
-            <option value="desc">창고명 역순</option> -->
-          </select>
+</select>
           <button id="searchBtn" type="submit" class="btn btn-primary">검색</button>
         </form>
 
-        <!-- Table -->
         <div class="table-responsive">
           <table
             id="warehouseTable"
@@ -76,15 +70,13 @@
           </table>
         </div>
 
-        <!-- Table Footer: Paging & Add/Delete Button -->
         <div class="table-footer-row">
           <nav>
             <ul id="pagination" class="pagination justify-content-center mb-0">
-              <!-- JS로 페이징 렌더링 -->
-            </ul>
+              </ul>
           </nav>
           <div>
-            <a href="#" class="btn btn-success add-btn">등록</a>
+            <a th:href="@{/storage/write}" class="btn btn-success add-btn">등록</a>
             <button type="button" class="btn btn-outline-danger delete-btn">
               삭제
             </button>
@@ -93,7 +85,6 @@
       </div>
     </main>
 
-    <!-- Modal for Detail View -->
     <div
       class="modal fade"
       id="detailModal"

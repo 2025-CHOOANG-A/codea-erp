@@ -1,205 +1,167 @@
-// js/storage_write.js
+// searchBtn과 filterForm은 전역 스코프에서 접근 가능하도록 선언
+const searchBtn = document.getElementById("searchBtn");
+const filterForm = document.getElementById("filterForm");
 
-// 커스텀 알림 모달 표시 함수 (alert() 대체)
-function showCustomAlert(message) {
-    const modalBody = document.getElementById('customAlertModalBody');
-    if (modalBody) {
-        modalBody.textContent = message;
-        const customAlertModal = new bootstrap.Modal(document.getElementById('customAlertModal'));
-        customAlertModal.show();
+// 검색 버튼 클릭 이벤트 리스너
+if (searchBtn) {
+    searchBtn.addEventListener("click", function() {
+        submitSearchForm();
+    });
+}
+
+// 검색 제출 함수
+function submitSearchForm() {
+    if (filterForm) {
+        filterForm.action = "/storage"; // 올바른 URL
+        filterForm.method = "GET";
+        filterForm.submit();
     } else {
-        console.warn("customAlertModalBody 요소를 찾을 수 없습니다. 메시지: " + message);
+        console.error("Error: filterForm not found.");
     }
 }
 
-// 커스텀 확인 모달 표시 함수 (confirm() 대체)
-function showCustomConfirm(message) {
-    return new Promise((resolve) => {
-        const modalBody = document.getElementById('customConfirmModalBody');
-        const customConfirmModalElement = document.getElementById('customConfirmModal');
-
-        if (modalBody && customConfirmModalElement) {
-            modalBody.textContent = message;
-            const customConfirmModal = new bootstrap.Modal(customConfirmModalElement);
-
-            const okBtn = document.getElementById('confirmOkBtn');
-            const cancelBtn = document.getElementById('confirmCancelBtn');
-
-            // 기존 이벤트 리스너 제거 (중복 호출 방지)
-            okBtn.onclick = null;
-            cancelBtn.onclick = null;
-
-            okBtn.onclick = () => {
-                customConfirmModal.hide();
-                resolve(true);
-            };
-            cancelBtn.onclick = () => {
-                customConfirmModal.hide();
-                resolve(false);
-            };
-
-            customConfirmModal.show();
-        } else {
-            console.warn("customConfirmModalBody 또는 customConfirmModal 요소를 찾을 수 없습니다. 기본 confirm 사용.");
-            resolve(confirm(message));
-        }
+// Sidebar toggle (기존 코드 유지)
+const sidebar = document.getElementById("sidebar");
+const sidebarToggle = document.getElementById("sidebarToggle");
+if (sidebarToggle) {
+    sidebarToggle.addEventListener("click", () => {
+        if (sidebar) sidebar.classList.toggle("collapsed");
     });
 }
 
-// Daum 우편번호 검색 함수 (client_write.html에서 가져옴)
-function searchPostcode() {
-    new daum.Postcode({
-        oncomplete: function(data) {
-            var addr = ''; // 주소 변수
-            var extraAddr = ''; // 참고항목 변수
+function handleResize() {
+    if (window.innerWidth < 992) {
+        if (sidebar) sidebar.classList.add("collapsed");
+    } else {
+        if (sidebar) sidebar.classList.remove("collapsed");
+    }
+}
+window.addEventListener("resize", handleResize);
+handleResize();
 
-            // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-            if (data.userSelectedType === 'R') { // 도로명 주소를 선택 했을경우
-                addr = data.roadAddress;
-            } else { // 지번 주소를 선택 했을경우(J)
-                addr = data.jibunAddress;
-            }
 
-            // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
-            if(data.userSelectedType === 'R'){
-                // 법정동명이 있을 경우 추가한다. (법정리는 제외)
-                // 법정동의 경우 마지막 글자가 "동" "로" "가" 인 경우만.
-                if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
-                    extraAddr += data.bname;
-                }
-                // 건물명이 있고, 공동주택일 경우 추가한다.
-                if(data.buildingName !== '' && data.apartment === 'Y'){
-                    extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-                }
-                // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
-                if(extraAddr !== ''){
-                    extraAddr = ' (' + extraAddr + ')';
-                }
-                // 조합된 참고항목을 상세주소 필드에 넣는다.
-                document.getElementById('addressDetail').value = extraAddr; // id로 변경
+
+// "상세 보기" 모달을 위한 함수 (AJAX로 상세 정보 가져오기)
+async function showDetail(whId) {
+    if (!whId) {
+        console.error("Error: whId is missing for detail view.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/storage/${whId}`); 
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                alert("창고 상세 정보를 찾을 수 없습니다.");
             } else {
-                document.getElementById('addressDetail').value = ''; // id로 변경
+                alert("창고 상세 정보를 가져오는 데 실패했습니다: " + response.statusText);
             }
-
-            // 우편번호와 주소 정보를 해당 필드에 넣는다.
-            document.getElementById('postCode').value = data.zonecode; // id로 변경
-            document.getElementById('address').value = addr; // id로 변경
-            // 커서를 상세주소 필드로 이동한다.
-            document.getElementById('addressDetail').focus(); // id로 변경
-
-            // 유효성 검사 피드백 제거
-            document.getElementById('postCode').classList.remove('is-invalid');
-            if (document.getElementById('postCode').nextElementSibling && document.getElementById('postCode').nextElementSibling.classList.contains('invalid-feedback')) {
-                 document.getElementById('postCode').nextElementSibling.style.display = 'none';
-            }
-            document.getElementById('address').classList.remove('is-invalid');
-            if (document.getElementById('address').nextElementSibling && document.getElementById('address').nextElementSibling.classList.contains('invalid-feedback')) {
-                document.getElementById('address').nextElementSibling.style.display = 'none';
-            }
+            return;
         }
-    }).open();
-}
 
-// 사이드바 토글 함수 (client_write.html에서 가져옴)
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const content = document.getElementById('mainContent');
-    if (sidebar) sidebar.classList.toggle('active'); // client_write.html에서는 'active' 클래스 사용
-    if (content) content.classList.toggle('shifted'); // mainContent에도 shifted 클래스 토글
-}
+        const item = await response.json(); // JSON 응답 파싱
 
-// 창고 등록 처리 함수 (storage_write.html 폼에 맞춰 수정)
-async function registerWarehouse() {
-    const warehouseForm = document.getElementById("warehouseForm");
-    const formMessageDiv = document.getElementById("formMessage");
+        // 모달 내용 설정
+        const modalBody = document.getElementById("modalDetailBody");
+        modalBody.innerHTML = `
+            <tr><th>창고 ID</th><td>${item.whId || '-'}</td></tr>
+            <tr><th>창고 코드</th><td>${item.whCode || '-'}</td></tr>
+            <tr><th>창고명</th><td>${item.whName || '-'}</td></tr>
+            <tr><th>주소</th><td>${item.address || '-'}</td></tr>
+            <tr><th>상세 주소</th><td>${item.addressDetail || '-'}</td></tr>
+            <tr><th>우편번호</th><td>${item.postCode || '-'}</td></tr>
+            <tr><th>전화번호</th><td>${item.tel || '-'}</td></tr>
+            <tr><th>담당자 사번</th><td>${item.empNo || '-'}</td></tr>
+            <tr><th>담당자 명</th><td>${item.empName || '-'}</td></tr>
+            <tr><th>비고</th><td>${item.remark || '-'}</td></tr>
+        `;
+        
+        // Bootstrap 모달 인스턴스 생성 및 표시
+        const detailModal = new bootstrap.Modal(document.getElementById("detailModal"));
+        detailModal.show();
 
-    if (!warehouseForm) {
-        console.error("Error: warehouseForm not found.");
-        return;
-    }
-
-    formMessageDiv.innerHTML = ''; // 이전 메시지 지우기
-
-    const requiredFields = [
-        "whCode",
-        "whName",
-        "postCode",
-        "address",
-        "addressDetail",
-        "empName",
-        "empNo",
-        "tel",
-    ];
-    let valid = true;
-    let firstInvalid = null;
-
-    // 각 필수 필드에 대해 유효성 검사 수행
-    requiredFields.forEach((id) => {
-        const el = document.getElementById(id);
-        const feedback = el.nextElementSibling; // invalid-feedback div (input-group 뒤에 있을 수 있으므로 변경)
-
-        if (!el.value.trim()) { // 값이 비어있거나 공백만 있는 경우
-            el.classList.add("is-invalid"); // 유효하지 않음 스타일 추가
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.style.display = 'block'; // 피드백 표시
-            }
-            if (!firstInvalid) firstInvalid = el;
-            valid = false;
-        } else {
-            el.classList.remove("is-invalid"); // 유효함 스타일 제거
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.style.display = 'none'; // 피드백 숨김
-            }
-        }
-    });
-
-    // 유효성 검사 실패 시
-    if (!valid) {
-        formMessageDiv.innerHTML = '<div class="alert alert-danger" role="alert">필수 입력 항목을 모두 입력해 주세요.</div>';
-        if (firstInvalid) firstInvalid.focus();
-        return;
-    }
-
-    // 제출 확인
-    const confirmed = await showCustomConfirm("창고 정보를 등록하시겠습니까?");
-    if (!confirmed) {
-        return; // 사용자가 취소한 경우
-    }
-
-    // 실제 서버 전송 로직 (fetch API 등 사용)
-    // 현재는 데모용 메시지 표시 및 리다이렉션으로 대체
-    formMessageDiv.innerHTML = '<div class="alert alert-success" role="alert">창고 정보가 성공적으로 등록되었습니다.</div>';
-    showCustomAlert("창고 정보가 등록되었습니다.");
-    setTimeout(() => {
-        // location.href = '/storage'; // 성공 후 이동할 페이지
-        console.log("창고 정보 등록 성공 (데모)");
-        // 실제로는 폼을 제출하거나 AJAX 요청을 보냅니다.
-        // warehouseForm.submit();
-    }, 1000);
-}
-
-// 취소 처리 함수 (client_write.html에서 가져옴)
-async function go_cancel() {
-    const confirmed = await showCustomConfirm("등록을 취소하시겠습니까?");
-    if (confirmed) {
-        location.href = '/storage'; // 취소 시 이동할 페이지 (client_write.html의 /client 대신 /storage로 변경)
+    } catch (error) {
+        console.error("Error fetching storage detail:", error);
+        alert("창고 상세 정보를 가져오는 중 오류가 발생했습니다.");
     }
 }
 
-// DOMContentLoaded 이벤트 리스너
+
+
+// DOMContentLoaded 이벤트 리스너 내부 정리
 document.addEventListener("DOMContentLoaded", () => {
-    // 폼 제출 이벤트 리스너
-    const warehouseForm = document.getElementById("warehouseForm");
-    if (warehouseForm) {
-        warehouseForm.addEventListener("submit", function(event) {
-            event.preventDefault(); // 기본 폼 제출 방지
-            registerWarehouse();
+    // 폼 제출 시 기본 동작 방지 (submitSearchForm에서 직접 제출)
+    if (filterForm) {
+        filterForm.addEventListener("submit", function (e) {
+            e.preventDefault(); // 기본 제출 방지
+            submitSearchForm(); // 직접 제출 함수 호출
+        });
+    }
+	
+	// "상세 보기" 버튼 클릭 이벤트 (클래스 이름 'detail-btn'으로 변경됨)
+	    document.querySelector("#warehouseTable tbody")
+	        .addEventListener("click", function (e) {
+	            // 클릭된 요소가 'detail-btn' 클래스를 가지고 있는지 확인
+	            if (e.target.classList.contains("detail-btn")) {
+	                const whId = e.target.dataset.whId; // data-wh-id 속성 값 가져오기
+	                showDetail(whId); // <-- 여기에서 showDetail 함수를 호출합니다!
+	            }
+
+	            // 'name-link' 클릭 이벤트 (HTML에서 사용되지 않는다면 제거)
+	            if (e.target.classList.contains("name-link")) {
+	                const id = e.target.dataset.id;
+	                const type = e.target.dataset.type;
+	                // handleNameClick(id, type); // 함수 호출
+	                alert((type === "name" ? "창고명" : "담당자명") + " 페이지로 이동: " + id); // 직접 alert
+	            }
+	        });
+
+	
+	
+
+    // 전체 선택 체크박스
+    const selectAllCheckbox = document.getElementById("selectAll");
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener("change", function (e) {
+            const checkboxes = document.querySelectorAll(
+                '#warehouseTable tbody input[type="checkbox"]'
+            );
+            checkboxes.forEach((cb) => (cb.checked = e.target.checked));
         });
     }
 
-    // 취소 버튼 이벤트 리스너
-    const cancelBtn = document.getElementById("cancelBtn");
-    if (cancelBtn) {
-        cancelBtn.addEventListener("click", go_cancel);
+    // "등록" 버튼 클릭 이벤트 (페이지 이동)
+    const addBtn = document.querySelector(".add-btn");
+    if (addBtn) {
+        addBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            alert("등록 페이지로 이동합니다. (실제 URL로 변경 필요)");
+            // 예시: location.href = "/storage/register";
+        });
     }
+
+    // "삭제" 버튼 클릭 이벤트 (서버 연동 필요)
+    const deleteBtn = document.querySelector(".delete-btn");
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", function () {
+            const checked = Array.from(
+                document.querySelectorAll(
+                    '#warehouseTable tbody input[type="checkbox"]:checked'
+                )
+            );
+            if (checked.length === 0) {
+                alert("삭제할 항목을 선택하세요.");
+                return;
+            }
+            if (confirm("정말 삭제하시겠습니까?")) {
+                alert("선택된 항목을 삭제합니다. (서버 연동 로직 여기에 구현)");
+                // 예시: 삭제할 ID들을 수집하여 fetch API로 DELETE 요청
+                // const idsToDelete = checked.map((cb) => cb.dataset.id);
+                // fetch('/api/storages/delete', { method: 'POST', body: JSON.stringify(idsToDelete), headers: { 'Content-Type': 'application/json' } })
+                //    .then(response => { if (response.ok) location.reload(); else alert('삭제 실패'); });
+            }
+        });
+    }
+
 });

@@ -63,16 +63,16 @@ INSERT INTO WAREHOUSE (
     REMARK,
     TEL,
     POST_CODE,
-    EMP_NO,
+    EMP_NO
 ) VALUES (
-	whCode,
-	whName,
-	address,
-	addressDetail,
-	remark,
-	tel,
-	postCode,
-	empNo
-);
+	#{whCode},
+	#{whName},
+	#{address},
+	#{addressDetail},
+	#{remark},
+	#{tel},
+	#{postCode},
+	#{empNo}
+)
 </insert>
 </mapper>
