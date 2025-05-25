@@ -10,8 +10,3 @@
 	padding: 2rem 1rem 1rem 1rem;
 	transition: margin-left 0.3s;
 }
-
-/* 추가: 재고 상세 정보 제목 아래 여백 */
-.card-header .mb-0 {
-	margin-top: 0.5rem !important;
-}
