@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface InventoryMapper {
-	public List<InventoryDTO> inv_list();	// 목록 페이지
+	public List<InventoryDTO> inv_list(@Param("itemType") String itemType, @Param("field") String field, @Param("keyword") String keyword);	// 목록 페이지
 	
 	public InventoryDTO inv_detail(@Param("inventoryId") int inventoryId);	// 상세 페이지
 	
@@ -17,7 +17,21 @@ public interface InventoryMapper {
 	
 	public List<InventoryDTO> inv_sea_emp(@Param("empName") String empName);	// 등록 및 수정 페이지 담당자 검색
 	
-	public int inv_in_qty(@Param("itemId") int itemId, @Param("whId") int whId);	// 입고 예정 수량
+	public Integer in_qty_pur(@Param("itemId") int itemId, @Param("whId") int whId);	// 원자재 입고 수량
 	
-	public int inv_out_qty(@Param("itemId") int itemId, @Param("whId") int whId);	// 출고 예정 수량
+	public Integer out_qty_pur(@Param("itemId") int itemId, @Param("whId") int whId);	// 원자재 출고 수량
+	
+	public Integer in_qty_pro(@Param("itemId") int itemId, @Param("whId") int whId);	// 완제품 입고 수량
+	
+	public Integer out_qty_pro(@Param("itemId") int itemId, @Param("whId") int whId);	// 완제품 출고 수량
+	
+	public Integer inv_in_qty(@Param("itemId") int itemId, @Param("whId") int whId);	// 입고 예정 수량
+	
+	public Integer inv_out_qty(@Param("itemId") int itemId, @Param("whId") int whId);	// 출고 예정 수량
+	
+	public InventoryDTO in_data(@Param("itemId") int itemId, @Param("whId") int whId, @Param("itemType") String itemType);	// 입고 수량 및 단가
+	
+	public InventoryDTO inv_avg_cost(@Param("itemId") int itemId, @Param("whId") int whId);	// 기존 평균 단가
+	
+	public int inv_insert(InventoryDTO dto);	// 재고 등록
 }

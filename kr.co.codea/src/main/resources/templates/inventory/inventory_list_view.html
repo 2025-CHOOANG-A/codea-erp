@@ -3,32 +3,31 @@
 <!-- Main Content -->
 <div class="main-content" id="mainContent">
 	<div class="container-fluid py-4">
-		<!-- Filter & Search -->
+		<!-- 분류 및 검색 -->
 		<div class="row mb-3 align-items-end">
 			<div class="col-auto filter-group">
 				<div class="btn-group" role="group" aria-label="분류 필터">
-					<button type="button" class="btn btn-outline-primary active" data-filter="전체">전체</button>
-					<button type="button" class="btn btn-outline-primary" data-filter="자재">자재</button>
-					<button type="button" class="btn btn-outline-primary" data-filter="완제품">완제품</button>
+					<a th:href="@{/inventory/list(field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.isEmpty(itemType)} ? ' active' : ''">전체</a>
+					<a th:href="@{/inventory/list(itemType='원자재', field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(itemType, '원자재')} ? ' active' : ''">원자재</a>
+					<a th:href="@{/inventory/list(itemType='완제품', field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(itemType, '완제품')} ? ' active' : ''">완제품</a>
 				</div>
 			</div>
 			<div class="col-auto search-form">
-				<form class="row gx-2 gy-1 align-items-end" id="searchForm" autocomplete="off">
+				<form class="row gx-2 gy-1 align-items-end" autocomplete="off">
+					<input type="hidden" name="itemType" th:value="${itemType}">
 					<div class="col-auto">
-						<select class="form-select" id="searchField" name="field">
-							<option value="재고번호">재고 번호</option>
-							<option value="제품코드">제품 코드</option>
-							<option value="제품명">제품명</option>
-							<option value="제품구분">제품 구분</option>
-							<option value="창고코드">창고 코드</option>
-							<option value="재고창고">재고 창고</option>
-							<option value="창고명">창고명</option>
-							<option value="담당자코드">담당자 코드</option>
-							<option value="담당자명">담당자명</option>
+						<select class="form-select" name="field">
+							<option value="inventoryCode" th:selected="${field} == 'inventoryCode'">재고 번호</option>
+							<option value="itemCode" th:selected="${field} == 'itemCode'">제품 코드</option>
+							<option value="itemName" th:selected="${field} == 'itemName'">제품명</option>
+							<option value="whCode" th:selected="${field} == 'whCode'">창고 코드</option>
+							<option value="whName" th:selected="${field} == 'whName'">창고명</option>
+							<option value="empNo" th:selected="${field} == 'empNo'">담당자 코드</option>
+							<option value="empName" th:selected="${field} == 'empName'">담당자명</option>
 						</select>
 					</div>
 					<div class="col-auto">
-						<input type="text" class="form-control" id="searchInput" name="keyword" placeholder="Search..." style="min-width:160px;">
+						<input type="text" class="form-control" name="keyword" th:value="${keyword}" placeholder="Search..." style="min-width:160px;">
 					</div>
 					<div class="col-auto">
 						<button type="submit" class="btn btn-primary">검색</button>
@@ -71,6 +70,21 @@
 								<td>[[${n.whCode}]]</td>	<!-- 창고 코드 -->
 								<td>[[${n.empName}]]</td>	<!-- 담당자명 -->
 							</tr>
+							
+							<!-- 결과가 없을 때 -->
+							<tr th:if="${#lists.isEmpty(list)}">
+								<td colspan="11" class="text-center text-muted">
+									<span th:if="${!#strings.isEmpty(keyword)}">
+										검색 결과가 없습니다. 검색 조건을 확인하세요.
+									</span>
+									<span th:if="${#strings.isEmpty(keyword) and !#strings.isEmpty(itemType)}">
+										해당 분류에 등록된 데이터가 없습니다.
+									</span>
+									<span th:if="${#strings.isEmpty(keyword) and #strings.isEmpty(itemType)}">
+										현재 등록된 재고 데이터가 없습니다.
+									</span>
+								</td>
+							</tr>
 						</tbody>
 					</table>
 				</div>
@@ -79,6 +93,9 @@
 		
 		<!-- Pagination & Register Button -->
 		<div class="row align-items-center">
+			<div th:if="${!#strings.isEmpty(keyword)}" class="col-auto">
+				<a th:href="@{/inventory/list}" class="btn btn-secondary">전체 목록</a>
+			</div>
 			<div class="col text-center">
 				<nav>
 					<ul class="pagination justify-content-center my-2" id="pagination">
@@ -87,7 +104,7 @@
 				</nav>
 			</div>
 			<div class="col-auto ms-auto">
-				<a href="#" class="btn btn-success" id="registerBtn">등록</a>
+				<a href="/inventory/write" class="btn btn-success" id="inv_add">등록</a>
 			</div>
 		</div>
 	</div>

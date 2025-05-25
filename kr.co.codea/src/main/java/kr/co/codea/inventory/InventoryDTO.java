@@ -7,8 +7,11 @@ import lombok.Data;
 @Data
 @Repository("InventoryDTO")
 public class InventoryDTO {
-	// 자동 증가값, 제품 코드, 창고 코드, 보유 재고, 입고될 수량, 출고될 수량, 평균 단가 -> inventoryId
-	int inventoryId, itemId, whId, currentQty, expectedQty, allocatedQty, averageCost;
+	// 자동 증가값, 제품 코드, 창고 코드, 보유 재고, 입고될 수량, 출고될 수량
+	int inventoryId, itemId, whId, currentQty, expectedQty, allocatedQty;
+	
+	// 평균 단가
+	double averageCost;
 	
 	// 재고 번호, 담당자 사원 번호, 비고, 최초 등록 시각, 최종 업데이트 시각
 	String inventoryCode, empNo, remark, createdAt, updatedAt;
@@ -21,4 +24,10 @@ public class InventoryDTO {
 	
 	// 창고 주소, 창고 상세주소
 	String address, addressDetail;
+	
+	// 수량
+	int quantity;
+	
+	// 입고 단가
+	double itemUnitCost;
 }
