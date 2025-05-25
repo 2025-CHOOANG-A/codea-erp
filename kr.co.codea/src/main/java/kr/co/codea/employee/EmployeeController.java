@@ -5,153 +5,266 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import kr.co.codea.auth.dto.UserDetailsDto;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication; // 필요시 추가
-import org.springframework.security.core.context.SecurityContextHolder; // 필요시 추가
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 @Controller
-@RequestMapping("/employee") // 기본 경로를 "/employee"로 설정
+@RequestMapping("/employee")
 @RequiredArgsConstructor
 public class EmployeeController {
-	private final EmployeeService employeeService; 
 
+    private final EmployeeService employeeService;
+
+    /** 사원 목록 조회 */
     @GetMapping
     public String listEmployees(Model model) {
-    	List<EmployeeDto> employees = employeeService.getAllEmployeesForList();
-    	 model.addAttribute("employees", employees);
+        List<EmployeeDto> employees = employeeService.getAllEmployeesForList();
+        model.addAttribute("employees", employees);
         return "employee/employee_list";
     }
 
+    /** 신규 사원 등록 폼 요청 */
     @GetMapping("/new")
-    //@PreAuthorize("hasRole('ROLE_ADMIN')") //ADMIN 역할만 이 메소드 호출 가능
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showRegistrationForm(Model model) {
-
+        EmployeeDto employeeDto = new EmployeeDto();
+        employeeDto.setEmpStatus(true); // 기본값 설정
+        model.addAttribute("employeeDto", employeeDto);
         return "employee/employee_write";
     }
 
+    /** 신규 사원 등록 처리 */
     @PostMapping("/register")
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String registerEmployee() {
-    	return "employee/employee_write";
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public String registerEmployee(@Valid @ModelAttribute("employeeDto") EmployeeDto employeeDto,
+                                   BindingResult bindingResult,
+                                   @RequestParam("confirmPassword") String confirmPassword,
+                                   RedirectAttributes redirectAttributes,
+                                   Model model) {
+
+        // 비밀번호 확인 일치 검사
+        if (employeeDto.getEmpPw() != null && !employeeDto.getEmpPw().equals(confirmPassword)) {
+            bindingResult.rejectValue("empPw", "password.mismatch", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+        }
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("employeeDto", employeeDto);
+            if (bindingResult.hasGlobalErrors()) {
+                model.addAttribute("errorMessage", bindingResult.getGlobalError().getDefaultMessage());
+            }
+            return "employee/employee_write";
+        }
+
+        try {
+            employeeService.registerEmployee(employeeDto);
+            redirectAttributes.addFlashAttribute("successMessage", "사원(사번: " + employeeDto.getEmpNo() + ") 등록 완료");
+            return "redirect:/employee";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("employeeDto", employeeDto);
+            model.addAttribute("errorMessage", e.getMessage());
+            return "employee/employee_write";
+        } catch (Exception e) {
+            model.addAttribute("employeeDto", employeeDto);
+            model.addAttribute("errorMessage", "사원 등록 중 오류 발생: " + e.getMessage());
+            return "employee/employee_write";
+        }
     }
 
-    /* 사원 상세 정보 조회 */
+    /** 사원 상세 정보 조회 */
     @GetMapping("/{empId}")
     public String viewEmployee(@PathVariable("empId") Long empId, Model model, RedirectAttributes redirectAttributes) {
-        log.info("EmployeeController: GET /employee/{} (viewEmployee) called", empId);
-
         Optional<EmployeeDetailViewModel> viewModelOpt = employeeService.getEmployeeDetailForView(empId);
-        log.info("EmployeeController: employeeService.getEmployeeDetailForView({}) returned: {}", empId, viewModelOpt.isPresent() ? "ViewModel Present" : "Optional Empty");
 
-        return viewModelOpt.map(viewModel -> { // viewModel은 EmployeeDetailViewModel 타입
-            log.info("EmployeeController: ViewModel is present. generalInfo: {}, accountInfo: {}",
-                    (viewModel.getGeneralInfo() != null ? "Present" : "null"),
-                    (viewModel.getAccountInfo() != null ? "Present" : "null"));
-
-            // ViewModel의 isEditableBy 메서드를 호출하여 수정 가능 여부 판단
+        return viewModelOpt.map(viewModel -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             boolean canEdit = viewModel.isEditableBy(authentication);
             model.addAttribute("canEdit", canEdit);
-            log.info("EmployeeController: 수정 가능 여부 (canEdit) from ViewModel: {}", canEdit);
-
-            // --- 나머지 모델 설정 로직은 동일 ---
-            if (viewModel.getGeneralInfo() != null) {
-                log.info("EmployeeController: viewModel.generalInfo.empId = {}", viewModel.getGeneralInfo().getEmpId());
-                log.info("EmployeeController: viewModel.generalInfo.empName = {}", viewModel.getGeneralInfo().getEmpName());
-            }
-            // ... (accountInfo 로그 등) ...
-            model.addAttribute("employeeView", viewModel); // employeeView는 계속 모델에 추가
-            // ... (pageTitle 설정 등) ...
-
+            model.addAttribute("employeeView", viewModel);
             return "employee/employee_detail";
-        }).orElseGet(() -> {
-            // ... (기존 redirect 로직) ...
-            return "redirect:/employee";
-        });
+        }).orElse("redirect:/employee");
     }
 
+    /** 사원 정보 수정 폼 요청 */
     @GetMapping("/{empId}/edit")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or (#empId == authentication.principal.empId)")
-    public String showEditForm(@PathVariable("empId") Long empId, Model model, Authentication authentication) {
-        log.info("EmployeeController: GET /employee/{}/edit (showEditForm) called for empId: {}", empId);
-
+    public String showEditForm(@PathVariable("empId") Long empId,
+                               Model model,
+                               Authentication authentication,
+                               RedirectAttributes redirectAttributes) {
         Optional<EmployeeDetailViewModel> viewModelOpt = employeeService.getEmployeeDetailForView(empId);
         if (viewModelOpt.isEmpty()) {
-            log.warn("No EmployeeDetailViewModel found for empId: {}. Redirecting.", empId);
+            redirectAttributes.addFlashAttribute("errorMessage", "사원 정보를 찾을 수 없습니다. (ID: " + empId + ")");
             return "redirect:/employee";
         }
+
         EmployeeDetailViewModel employeeView = viewModelOpt.get();
-        EmployeeDto formBackingDto = new EmployeeDto(); // 새 DTO 인스턴스
+        EmployeeDto formBackingDto = new EmployeeDto();
 
         if (employeeView.getGeneralInfo() != null) {
-            EmployeeDto generalInfo = employeeView.getGeneralInfo();
-            formBackingDto.setEmpId(generalInfo.getEmpId()); // <<--- empId 설정
-            formBackingDto.setEmpNo(generalInfo.getEmpNo());
-            formBackingDto.setEmpName(generalInfo.getEmpName());
-            formBackingDto.setEmail(generalInfo.getEmail());
-            formBackingDto.setHp(generalInfo.getHp());
-            formBackingDto.setEmpDept(generalInfo.getEmpDept());
-            formBackingDto.setEmpPosition(generalInfo.getEmpPosition());
-            formBackingDto.setTel(generalInfo.getTel());
-            formBackingDto.setEmpImg(generalInfo.getEmpImg()); // 이미지 경로도 설정
-        } else {
-            // generalInfo가 null인 경우는 서비스 로직상 거의 없지만, 방어적으로 처리
-            log.warn("employeeView.generalInfo is null for empId: {}", empId);
-            // 이 경우 formBackingDto.empId가 설정되지 않아 문제가 될 수 있습니다.
-            // 하지만 "cannot be found on null" 오류는 formBackingDto 자체가 null이라는 의미입니다.
+            formBackingDto = employeeView.getGeneralInfo(); // 필요한 값만 복사
         }
 
-        model.addAttribute("employeeDto", formBackingDto); // 모델에 "employeeDto" 이름으로 추가
-        log.info("Added to model - employeeDto: {}", formBackingDto);
+        model.addAttribute("employeeDto", formBackingDto);
+        model.addAttribute("currentAdminCode", employeeView.getAccountInfo() != null ? employeeView.getAccountInfo().getAdminCode() : "");
+        model.addAttribute("currentEmpStatus", employeeView.getAccountInfo() != null && employeeView.getAccountInfo().isEnabled());
 
-
-        if (employeeView.getAccountInfo() != null) {
-            model.addAttribute("currentAdminCode", employeeView.getAccountInfo().getAdminCode());
-            model.addAttribute("currentEmpStatus", employeeView.getAccountInfo().isEnabled());
-        } else {
-            model.addAttribute("currentAdminCode", "");
-            model.addAttribute("currentEmpStatus", true);
+        boolean isAdmin = false;
+        boolean isEditingSelf = false;
+        if (authentication != null && authentication.isAuthenticated()) {
+            isAdmin = authentication.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetailsDto currentUser) {
+                isEditingSelf = currentUser.getEmpId() != null && currentUser.getEmpId().equals(empId);
+            }
         }
 
-        boolean isAdmin = authentication.getAuthorities().stream()
-                              .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
         model.addAttribute("isAdmin", isAdmin);
-        log.info("Added to model - isAdmin: {}", isAdmin);
-
-        UserDetailsDto currentUserPrincipal = (UserDetailsDto) authentication.getPrincipal();
-        boolean isEditingSelf = currentUserPrincipal.getEmpId().equals(empId);
         model.addAttribute("isEditingSelf", isEditingSelf);
-        log.info("Added to model - isEditingSelf: {}", isEditingSelf);
-        
-        // pageTitle은 하드코딩하므로 아래 라인은 제거하거나 주석 처리
-        // String pageTitleEmpName = formBackingDto.getEmpName() != null ? formBackingDto.getEmpName() : "사원";
-        // model.addAttribute("pageTitle", pageTitleEmpName + " 정보 수정");
+        model.addAttribute("pageTitle", (formBackingDto.getEmpName() != null ? formBackingDto.getEmpName() : "사원") + " 정보 수정");
 
         return "employee/employee_modify";
     }
 
+    /** 사원 정보 수정 처리 */
     @PostMapping("/{empId}/edit")
-    // @PreAuthorize("hasRole('ROLE_ADMIN') or #empId == authentication.principal.empId")
-    public String updateEmployee() {
-    	return "employee/employee_modify";
+    public String updateEmployee(@PathVariable("empId") Long empId,
+                                 @ModelAttribute("employeeDto") EmployeeDto employeeDto,
+                                 BindingResult bindingResult,
+                                 RedirectAttributes redirectAttributes,
+                                 Model model,
+                                 @RequestParam(value = "adminCode", required = false) String adminCode,
+                                 @RequestParam(value = "empStatus", required = false) String empStatusStr,
+                                 @RequestParam(value = "newPassword", required = false) String newPassword,
+                                 @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
+                                 Authentication authentication) {
+
+        employeeDto.setEmpId(empId); // ID 명시적 설정
+
+        if (bindingResult.hasErrors()) {
+            populateEditFormModel(empId, model, authentication, employeeDto);
+            model.addAttribute("errorMessage", "입력 값에 오류가 있습니다.");
+            return "employee/employee_modify";
+        }
+
+        try {
+            boolean isAdmin = false;
+            boolean isEditingSelf = false;
+            Long currentUserId = null;
+
+            if (authentication != null && authentication.isAuthenticated()) {
+                isAdmin = authentication.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+                Object principal = authentication.getPrincipal();
+                if (principal instanceof UserDetailsDto user) {
+                    currentUserId = user.getEmpId();
+                    isEditingSelf = currentUserId != null && currentUserId.equals(empId);
+                }
+            }
+
+            // 관리자만 adminCode 및 empStatus 변경 가능
+            if (isAdmin) {
+                employeeDto.setAdminRoleUpdateIntent(true);
+                employeeDto.setAdminCode((adminCode != null && !adminCode.isEmpty()) ? adminCode : null);
+                if (empStatusStr != null) {
+                    employeeDto.setEmpStatus(Boolean.parseBoolean(empStatusStr));
+                }
+            } else {
+                employeeDto.setAdminRoleUpdateIntent(false);
+            }
+
+            // 비밀번호 변경 조건 확인
+            if (newPassword != null && !newPassword.trim().isEmpty()) {
+                if (isAdmin || isEditingSelf) {
+                    if (!newPassword.equals(confirmPassword)) {
+                        populateEditFormModel(empId, model, authentication, employeeDto);
+                        model.addAttribute("errorMessage", "새 비밀번호와 확인이 일치하지 않습니다.");
+                        return "employee/employee_modify";
+                    }
+                    if (newPassword.length() < 8) {
+                        populateEditFormModel(empId, model, authentication, employeeDto);
+                        model.addAttribute("errorMessage", "새 비밀번호는 최소 8자 이상이어야 합니다.");
+                        return "employee/employee_modify";
+                    }
+
+                    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+                    employeeDto.setEmpPw(passwordEncoder.encode(newPassword));
+                } else {
+                    employeeDto.setEmpPw(null); // 권한 없음 → 비밀번호 변경 무시
+                }
+            } else {
+                employeeDto.setEmpPw(null); // 변경 없음 → null
+            }
+
+            employeeService.updateEmployee(employeeDto, authentication);
+            redirectAttributes.addFlashAttribute("successMessage", "사원 정보가 성공적으로 수정되었습니다.");
+            return "redirect:/employee/" + empId;
+
+        } catch (Exception e) {
+            populateEditFormModel(empId, model, authentication, employeeDto);
+            model.addAttribute("errorMessage", "사원 정보 수정 중 오류 발생: " + e.getMessage());
+            return "employee/employee_modify";
+        }
     }
 
-    // 사원 삭제
+    /** 수정 폼 렌더링 시 필요한 모델 속성 설정용 헬퍼 */
+    private void populateEditFormModel(Long empId, Model model, Authentication authentication, EmployeeDto submittedDto) {
+        model.addAttribute("employeeDto", submittedDto);
+
+        boolean isAdmin = false;
+        boolean isEditingSelf = false;
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            isAdmin = authentication.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetailsDto user) {
+                isEditingSelf = user.getEmpId() != null && user.getEmpId().equals(empId);
+            }
+        }
+
+        model.addAttribute("isAdmin", isAdmin);
+        model.addAttribute("isEditingSelf", isEditingSelf);
+        model.addAttribute("pageTitle", (submittedDto.getEmpName() != null ? submittedDto.getEmpName() : "사원") + " 정보 수정");
+
+        Optional<EmployeeDetailViewModel> viewModelOpt = employeeService.getEmployeeDetailForView(empId);
+        if (viewModelOpt.isPresent()) {
+            EmployeeDetailViewModel viewModel = viewModelOpt.get();
+            model.addAttribute("currentAdminCode", viewModel.getAccountInfo() != null ? viewModel.getAccountInfo().getAdminCode() : "");
+            model.addAttribute("currentEmpStatus", viewModel.getAccountInfo() != null && viewModel.getAccountInfo().isEnabled());
+
+            if (submittedDto.getEmpImg() == null && viewModel.getGeneralInfo() != null) {
+                submittedDto.setEmpImg(viewModel.getGeneralInfo().getEmpImg());
+            }
+        } else {
+            model.addAttribute("currentAdminCode", "");
+            model.addAttribute("currentEmpStatus", true);
+        }
+    }
+
+    /** 사원 삭제 처리 */
     @PostMapping("/{empId}/delete")
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String deleteEmployee() {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public String deleteEmployee(@PathVariable("empId") Long empId,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            employeeService.deleteEmployee(empId);
+            redirectAttributes.addFlashAttribute("successMessage", "사원 정보(ID: " + empId + ") 삭제 완료");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "사원 삭제 중 오류 발생");
+        }
         return "redirect:/employee";
     }
 }

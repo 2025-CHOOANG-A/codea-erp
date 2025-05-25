@@ -246,8 +246,8 @@
             <ul class="pagination mb-0" id="pagination">
               </ul>
           </nav>
-          <a  th:href="@{/employee/new}" class="btn btn-primary ms-2" id="addBtn">추가</a>
-          <!-- sec:authorize="hasRole('ADMIN')" -->
+          <a  th:href="@{/employee/new}" sec:authorize="hasRole('ADMIN')" class="btn btn-primary ms-2" id="addBtn">추가</a>
+          
         </div>
       </div>
     </div>
