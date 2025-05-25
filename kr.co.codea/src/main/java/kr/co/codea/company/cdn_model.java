@@ -3,9 +3,9 @@ package kr.co.codea.company;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPClientConfig;
+//import org.apache.commons.net.ftp.FTP;
+//import org.apache.commons.net.ftp.FTPClient;
+//import org.apache.commons.net.ftp.FTPClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +14,7 @@ import jakarta.annotation.Resource;
 
 @Repository("cdn_model")
 public class cdn_model {
+	/*
 	//FTP정보를 외부에서 수정 못하도록 final 사용
 	final String user ="erp";
 	final String pass = "choongang";
@@ -35,9 +36,9 @@ public class cdn_model {
 		try {
 			
 			//UUID 사용시
-		/*	String ext = originalName.substring(originalName.lastIndexOf("."));
+			String ext = originalName.substring(originalName.lastIndexOf("."));
 			String uuid = UUID.randomUUID().toString();
-			String new_file = uuid + ext; */
+			String new_file = uuid + ext; 
 			String new_file = files.getOriginalFilename();
 			this.fc = new FTPClient();
 			this.fc.setControlEncoding("utf-8");
@@ -79,7 +80,8 @@ public class cdn_model {
 		        fc.disconnect();
 		    }
 		}
+		
 		return this.result;
 	}
-	
+	*/
 }
