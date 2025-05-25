@@ -49,8 +49,9 @@ async function showDetail(whId) {
     }
 
     try {
-        const response = await fetch(`/api/storage/${whId}`); 
-        
+        // 창고 상세 정보를 가져오는 API 호출 (JSON 데이터를 반환)
+        const response = await fetch(`/storage/api/${whId}`);
+
         if (!response.ok) {
             if (response.status === 404) {
                 alert("창고 상세 정보를 찾을 수 없습니다.");
@@ -74,19 +75,23 @@ async function showDetail(whId) {
             <tr><th>전화번호</th><td>${item.tel || '-'}</td></tr>
             <tr><th>담당자 사번</th><td>${item.empNo || '-'}</td></tr>
             <tr><th>담당자 명</th><td>${item.empName || '-'}</td></tr>
+			<tr><th>담당자 전화번호</th><td>${item.empTel || '-'}</td></tr>
             <tr><th>비고</th><td>${item.remark || '-'}</td></tr>
+			<tr><td colspan="2" class="text-center">
+			    <a href="/storage/${item.whId}/edit" class="btn btn-dark mt-3">
+			        <i class="bi bi-pencil me-1"></i> 창고 정보 수정
+			    </a>
+			</td></tr>
         `;
-        
+
         // Bootstrap 모달 인스턴스 생성 및 표시
         const detailModal = new bootstrap.Modal(document.getElementById("detailModal"));
         detailModal.show();
-
     } catch (error) {
-        console.error("Error fetching storage detail:", error);
+        console.error("Failed to fetch warehouse detail:", error);
         alert("창고 상세 정보를 가져오는 중 오류가 발생했습니다.");
     }
 }
-
 
 
 // DOMContentLoaded 이벤트 리스너 내부 정리
@@ -99,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 	
-	// "상세 보기" 버튼 클릭 이벤트 (클래스 이름 'detail-btn'으로 변경됨)
+	// "상세 보기" 버튼 클릭 이벤트
 	    document.querySelector("#warehouseTable tbody")
 	        .addEventListener("click", function (e) {
 	            // 클릭된 요소가 'detail-btn' 클래스를 가지고 있는지 확인
@@ -136,12 +141,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (addBtn) {
         addBtn.addEventListener("click", function (e) {
             e.preventDefault();
-            alert("등록 페이지로 이동합니다. (실제 URL로 변경 필요)");
-            // 예시: location.href = "/storage/register";
+            location.href = "/storage/write";
         });
     }
 
-    // "삭제" 버튼 클릭 이벤트 (서버 연동 필요)
+    // "삭제" 버튼 클릭 이벤트 
     const deleteBtn = document.querySelector(".delete-btn");
     if (deleteBtn) {
         deleteBtn.addEventListener("click", function () {
@@ -156,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             if (confirm("정말 삭제하시겠습니까?")) {
                 alert("선택된 항목을 삭제합니다. (서버 연동 로직 여기에 구현)");
-                // 예시: 삭제할 ID들을 수집하여 fetch API로 DELETE 요청
+                //DELETE
                 // const idsToDelete = checked.map((cb) => cb.dataset.id);
                 // fetch('/api/storages/delete', { method: 'POST', body: JSON.stringify(idsToDelete), headers: { 'Content-Type': 'application/json' } })
                 //    .then(response => { if (response.ok) location.reload(); else alert('삭제 실패'); });
