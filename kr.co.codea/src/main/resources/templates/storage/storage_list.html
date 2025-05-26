@@ -4,14 +4,11 @@
     <link rel="stylesheet" th:href="@{/css/storage_list.css}" />
 </th:block>
 
-
-    <!-- Main Content -->
     <main class="content">
       <div class="container">
         <h2 class="mb-4">창고 목록</h2>
-        <!-- Filter/Search Bar -->
         <form id="filterForm" class="filter-bar">
-          <select
+<!--           <select
             id="categoryFilter"
             class="form-select"
             aria-label="분류 선택"
@@ -19,7 +16,7 @@
             <option value="all">전체</option>
             <option value="customer">고객사</option>
             <option value="supplier">구매처</option>
-          </select>
+          </select> -->
           <input
             type="text"
             name="keyword"
@@ -29,14 +26,11 @@
             maxlength="20"
             th:value="${searchDto.keyword}"
           />
-          <select id="sortName" class="form-select" aria-label="정렬">
-<!--             <option value="asc">창고명 가나다순</option>
-            <option value="desc">창고명 역순</option> -->
-          </select>
+<!--           <select id="sortName" class="form-select" aria-label="정렬">
+</select> -->
           <button id="searchBtn" type="submit" class="btn btn-primary">검색</button>
         </form>
 
-        <!-- Table -->
         <div class="table-responsive">
           <table
             id="warehouseTable"
@@ -44,7 +38,7 @@
           >
             <thead class="table-light">
               <tr>
-                <th scope="col"><input type="checkbox" id="selectAll" /></th>
+             	 <th scope="col">NO</th>
                 <th scope="col">창고 코드</th>
                 <th scope="col">창고명</th>
                 <th scope="col">창고 주소</th>
@@ -58,18 +52,17 @@
 			 <td colspan="7" class="text-center text-secondary">데이터가 없습니다.</td>
            </tr>
            	<th:block th:unless="${storage.isEmpty()}">
-			<tr th:each="list, i : ${storage}">
+				<tr th:each="list, i : ${storage}">
 				<td th:text="${i.size - i.index}"></td>
 				<td th:text="${list.whCode}"></td>
 				<td th:text="${list.whName}"></td>
 				<td th:text="${list.address}"></td>
 				<td th:text="${list.empName}"></td>
 				<td th:text="${list.remark}"></td>
-			<td>
-			<span th:unless="${list.remark}">-</span>
-			 <button type="button" class="btn btn-outline-secondary btn-sm btn-remark"
-			 th:data-wh-id="${list.whId}" th:text="'상세 보기'"></button>
-			</td>
+				<td>
+				    <span th:unless="${list.remark}">-</span> <button type="button" class="btn btn-outline-secondary btn-sm detail-btn"
+				     th:data-wh-id="${list.whId}" th:text="'상세 보기'"></button>
+				</td>
 			</tr>
 			</th:block>
            
@@ -77,15 +70,13 @@
           </table>
         </div>
 
-        <!-- Table Footer: Paging & Add/Delete Button -->
         <div class="table-footer-row">
           <nav>
             <ul id="pagination" class="pagination justify-content-center mb-0">
-              <!-- JS로 페이징 렌더링 -->
-            </ul>
+              </ul>
           </nav>
           <div>
-            <a href="#" class="btn btn-success add-btn">등록</a>
+            <a th:href="@{/storage/write}" class="btn btn-success add-btn">등록</a>
             <button type="button" class="btn btn-outline-danger delete-btn">
               삭제
             </button>
@@ -94,7 +85,6 @@
       </div>
     </main>
 
-    <!-- Modal for Detail View -->
     <div
       class="modal fade"
       id="detailModal"

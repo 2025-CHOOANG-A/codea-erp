@@ -1,0 +1,143 @@
+/* css/storage_write.css */
+
+/* client_write.html의 body 스타일을 포함 */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh; /* 추가: 뷰포트 높이만큼 최소 높이 설정 */
+    background: #f8f9fa; /* 추가: 밝은 회색 배경 */
+}
+
+/* client_write.html의 sidebar 스타일을 포함 */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px; /* 초기에는 화면 밖으로 숨김 */
+    width: 250px;
+    height: 100%;
+    background-color: #343a40;
+    color: white;
+    overflow-y: auto; /* 스크롤바 처리 */
+    padding: 1rem 1rem 2rem;
+    z-index: 1050;
+    transition: left 0.3s ease;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+.sidebar h5, .sidebar .section-title {
+    font-size: 14px;
+    color: #adb5bd;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar a {
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 4px 0;
+    font-size: 15px;
+}
+
+.sidebar a:hover {
+    text-decoration: underline;
+}
+
+.menu-header {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 1rem;
+}
+
+/* client_write.html의 top-bar 스타일을 포함 */
+.top-bar {
+    height: 60px;
+    background-color: white;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: black;
+    box-shadow: 0 2px 4px rgba(0,0,0,.08); /* 추가: 그림자 효과 */
+    position: sticky; /* 추가: 스크롤 시 상단에 고정 */
+    top: 0;
+    z-index: 1000;
+}
+
+.menu-icon {
+    font-size: 24px;
+    cursor: pointer;
+    color: black;
+    background: none;
+    border: none;
+}
+
+.close-icon {
+    font-size: 20px;
+    color: white;
+    background: none;
+    border: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+/* client_write.html의 main-content 스타일을 포함 */
+.main-content {
+    padding: 2rem;
+    transition: margin-left 0.3s ease;
+    margin-left: 0; /* 기본 마진 없음 (사이드바 숨김 상태) */
+}
+
+.main-content.shifted {
+    margin-left: 250px; /* 사이드바 활성화 시 마진 이동 */
+}
+
+/* client_write.html의 테이블 스타일을 포함 */
+.table th, .table td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* client_write.html의 버튼 그룹 스타일을 포함 */
+.btn-group-bottom {
+    margin-top: 1rem;
+    text-align: right;
+}
+
+/* client_write.html의 읽기 전용 input 스타일을 포함 */
+.form-control[readonly] {
+    background-color: #e9ecef !important; /* Bootstrap 기본보다 살짝 진하게 */
+    color: #212529 !important;
+}
+
+/* 필수 입력 항목 표시 (별표) */
+.form-required {
+    color: #dc3545; /* 빨간색 */
+    margin-left: 0.25rem;
+}
+
+/* 폼 레이블 볼드 처리 */
+.form-label {
+    font-weight: bold;
+    margin-bottom: 0.5rem; /* Bootstrap 기본 마진과 조화 */
+}
+
+/* input-group 내 버튼의 마진 조정 */
+.input-group .btn {
+    margin-left: 0; /* Bootstrap input-group 내에서는 추가 마진 필요 없음 */
+}
+
+/* invalid-feedback가 항상 보이도록 하는 규칙 제거 */
+/* .invalid-feedback {
+    display: block;
+} */
+
+/* 폼 테이블 배경색 */
+.table-bordered tbody {
+    background: #fafbfc;
+}

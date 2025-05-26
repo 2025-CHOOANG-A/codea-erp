@@ -13,26 +13,23 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * JWT 토큰 생성, 파싱, 검증 및 인증 객체 생성 기능 제공
+ * JWT 토큰 생성, 파싱, 검증, 인증 객체 생성 기능 제공
  */
 @Slf4j
 @Component
 public class JwtProvider {
 
-    private static final String AUTHORITIES_KEY = "auth";         // 권한 정보 클레임 키
-    private static final String EMP_ID_KEY = "emp_id";            // 직원 ID 클레임 키
-    private static final String EMP_NAME_KEY = "emp_name";        // 직원 이름 클레임 키
+    private static final String AUTHORITIES_KEY = "auth";      // 권한 클레임 키
+    private static final String EMP_ID_KEY = "emp_id";         // 직원 ID 클레임 키
+    private static final String EMP_NAME_KEY = "emp_name";     // 직원 이름 클레임 키
 
-    private final Key key;                         // 서명용 키
-    private final long accessTokenExpirationMillis;   // Access Token 유효 기간
-    private final long refreshTokenExpirationMillis;  // Refresh Token 유효 기간
+    private final Key key;                         // JWT 서명용 키
+    private final long accessTokenExpirationMillis;   // Access Token 유효시간 (ms)
+    private final long refreshTokenExpirationMillis;  // Refresh Token 유효시간 (ms)
 
     public JwtProvider(JwtProperties jwtProperties) {
         this.key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
@@ -41,159 +38,128 @@ public class JwtProvider {
     }
 
     /**
-     * 인증 정보를 바탕으로 Access Token 생성
+     * 인증 정보(Authentication) 기반으로 Access Token 생성
      */
     public String createAccessToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        long now = (new Date()).getTime();
-        Date validity = new Date(now + this.accessTokenExpirationMillis);
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + this.accessTokenExpirationMillis);
 
-        String empUserIdForSubject = authentication.getName();
-        Long empIdForClaim = null;
-        String empNameForClaim = null;
+        String subject = authentication.getName(); // 보통 EMP_USER_ID
+        Long empId = null;
+        String empName = null;
 
-        // principal이 UserDetailsDto인 경우, 추가 정보 추출
-        if (authentication.getPrincipal() instanceof UserDetailsDto) {
-            UserDetailsDto principalDto = (UserDetailsDto) authentication.getPrincipal();
-            empIdForClaim = principalDto.getEmpId();
-            empNameForClaim = principalDto.getEmpName();
+        if (authentication.getPrincipal() instanceof UserDetailsDto principal) {
+            empId = principal.getEmpId();
+            empName = principal.getEmpName();
         }
 
         JwtBuilder builder = Jwts.builder()
-                .setSubject(empUserIdForSubject)
+                .setSubject(subject)
                 .claim(AUTHORITIES_KEY, authorities);
 
-        if (empIdForClaim != null) {
-            builder.claim(EMP_ID_KEY, empIdForClaim);
-        }
+        if (empId != null) builder.claim(EMP_ID_KEY, empId);
+        if (StringUtils.hasText(empName)) builder.claim(EMP_NAME_KEY, empName);
 
-        if (StringUtils.hasText(empNameForClaim)) {
-            builder.claim(EMP_NAME_KEY, empNameForClaim);
-        }
-
-        return builder.setIssuedAt(new Date())
-                .setExpiration(validity)
+        return builder
+                .setIssuedAt(now)
+                .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     /**
-     * 인증 정보를 바탕으로 Refresh Token 생성
+     * 인증 정보 기반으로 Refresh Token 생성
      */
     public String createRefreshToken(Authentication authentication) {
-        long now = (new Date()).getTime();
-        Date validity = new Date(now + this.refreshTokenExpirationMillis);
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + this.refreshTokenExpirationMillis);
 
-        String empUserIdForSubject = authentication.getName();
-        Long empIdForClaim = null;
+        String subject = authentication.getName(); // 보통 EMP_USER_ID
+        Long empId = null;
 
-        if (authentication.getPrincipal() instanceof UserDetailsDto) {
-            empIdForClaim = ((UserDetailsDto) authentication.getPrincipal()).getEmpId();
+        if (authentication.getPrincipal() instanceof UserDetailsDto principal) {
+            empId = principal.getEmpId();
         }
 
-        JwtBuilder builder = Jwts.builder()
-                .setSubject(empUserIdForSubject);
+        JwtBuilder builder = Jwts.builder().setSubject(subject);
+        if (empId != null) builder.claim(EMP_ID_KEY, empId);
 
-        if (empIdForClaim != null) {
-            builder.claim(EMP_ID_KEY, empIdForClaim);
-        }
-
-        return builder.setIssuedAt(new Date())
-                .setExpiration(validity)
+        return builder
+                .setIssuedAt(now)
+                .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     /**
-     * 토큰에서 인증 정보 추출 → Authentication 객체 생성
+     * JWT에서 Authentication 객체를 생성
+     * - SecurityContext에 저장될 인증 정보 구성
      */
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
 
-        Object authoritiesClaim = claims.get(AUTHORITIES_KEY);
-        Collection<? extends GrantedAuthority> authorities = new ArrayList<>();
-
-        if (authoritiesClaim != null && StringUtils.hasText(authoritiesClaim.toString())) {
-            authorities = Arrays.stream(authoritiesClaim.toString().split(","))
-                    .map(String::trim)
-                    .filter(auth -> !auth.isEmpty())
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
-        } else {
-            // log.warn("No '{}' claim found in token or claim is empty for subject: {}. Setting empty authorities.",
-            //         AUTHORITIES_KEY, claims.getSubject());
-        }
-
-        String empUserIdFromSubject = claims.getSubject();
-        Long empIdFromClaim = claims.get(EMP_ID_KEY, Long.class);
-        String empNameFromClaim = claims.get(EMP_NAME_KEY, String.class);
+        Collection<? extends GrantedAuthority> authorities = Optional.ofNullable(claims.get(AUTHORITIES_KEY))
+                .map(Object::toString)
+                .map(str -> Arrays.stream(str.split(","))
+                        .map(String::trim)
+                        .filter(auth -> !auth.isEmpty())
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
 
         UserDetails principal = UserDetailsDto.builder()
-                .empUserId(empUserIdFromSubject)
-                .empId(empIdFromClaim)
-                .empName(empNameFromClaim)
+                .empUserId(claims.getSubject())
+                .empId(claims.get(EMP_ID_KEY, Long.class))
+                .empName(claims.get(EMP_NAME_KEY, String.class))
                 .authorities(authorities)
                 .empStatus(true)
                 .build();
-
-        // log.debug("Authentication object created from token. Principal: empUserId={}, empId={}, empName={}, authorities={}",
-        //         ((UserDetailsDto) principal).getEmpUserId(),
-        //         ((UserDetailsDto) principal).getEmpId(),
-        //         ((UserDetailsDto) principal).getEmpName(),
-        //         principal.getAuthorities());
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
     /**
-     * 토큰에서 사용자 ID(subject) 추출
+     * 토큰에서 사용자 ID(subject)를 추출
      */
     public String getUserIdFromToken(String token) {
         try {
             return parseClaims(token).getSubject();
         } catch (JwtException | IllegalArgumentException e) {
-            // log.warn("Failed to extract user ID (subject) from token: {}. Token: {}", e.getMessage(), tokenAbbreviated(token));
             return null;
         }
     }
 
     /**
-     * 토큰에서 emp_id(Long) 추출
+     * 토큰에서 직원 ID(emp_id) 추출
      */
     public Long getEmpIdAsLongFromToken(String token) {
         try {
-            Claims claims = parseClaims(token);
-            return claims.get(EMP_ID_KEY, Long.class);
+            return parseClaims(token).get(EMP_ID_KEY, Long.class);
         } catch (JwtException | IllegalArgumentException e) {
-            // log.warn("Failed to extract emp_id (Long) from token: {}. Token: {}", e.getMessage(), tokenAbbreviated(token));
             return null;
         }
     }
 
     /**
-     * JWT 유효성 검사
+     * 토큰 유효성 검증
      */
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            // log.warn("Invalid JWT signature. Token: [{}], Message: {}", tokenAbbreviated(token), e.getMessage());
-        } catch (ExpiredJwtException e) {
-            // log.warn("Expired JWT token. Token: [{}], Message: {}", tokenAbbreviated(token), e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            // log.warn("Unsupported JWT token. Token: [{}], Message: {}", tokenAbbreviated(token), e.getMessage());
-        } catch (IllegalArgumentException e) {
-            // log.warn("JWT token compact of handler are invalid. Token: [{}], Message: {}", tokenAbbreviated(token), e.getMessage());
+        } catch (SecurityException | MalformedJwtException | ExpiredJwtException |
+                 UnsupportedJwtException | IllegalArgumentException e) {
+            return false;
         }
-        return false;
     }
 
     /**
-     * JWT 파싱하여 Claims 반환 (만료된 토큰도 Claims 추출 가능)
+     * JWT 문자열을 Claims 객체로 파싱
+     * - 만료된 토큰도 클레임 추출 가능
      */
     private Claims parseClaims(String token) {
         try {
@@ -203,8 +169,7 @@ public class JwtProvider {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (ExpiredJwtException e) {
-            // log.warn("Token already expired during parsing claims. Subject: {}. Message: {}", e.getClaims().getSubject(), e.getMessage());
-            return e.getClaims();
+            return e.getClaims(); // 만료된 토큰도 claims는 꺼낼 수 있음
         }
     }
 
@@ -217,7 +182,7 @@ public class JwtProvider {
     }
 
     /**
-     * 긴 토큰 문자열을 앞뒤로만 잘라 로그에 간단히 출력하기 위한 유틸
+     * 로그 출력 시 긴 토큰을 앞/뒤 일부만 보여주기 위한 유틸
      */
     private String tokenAbbreviated(String token) {
         if (token != null && token.length() > 20) {
