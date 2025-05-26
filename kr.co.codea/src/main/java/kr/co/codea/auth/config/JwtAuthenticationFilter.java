@@ -14,12 +14,22 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component // SecurityConfig에서 @Bean으로 등록하면 생략 가능
+/**
+ * JWT 인증 필터
+ * - 요청이 들어올 때마다 JWT 토큰을 검사하고, 인증 정보를 SecurityContext에 설정한다.
+ * - 이 필터는 Spring Security의 OncePerRequestFilter를 상속받아 모든 요청마다 한 번만 실행된다.
+ */
+@Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    // HTTP 요청 헤더명
     public static final String AUTHORIZATION_HEADER = "Authorization";
+
+    // Bearer 접두사
     public static final String BEARER_PREFIX = "Bearer ";
+
+    // accessToken 쿠키명
     public static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
 
     private final JwtProvider jwtProvider;
@@ -28,67 +38,54 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        // 요청에서 JWT 추출
         String jwt = resolveToken(request);
 
-        // [로그] 요청에서 추출한 JWT 출력
- //       System.out.println("JWT 추출 결과: " + jwt + " (요청 경로: " + request.getRequestURI() + ")");
+        // 토큰이 존재하고 유효할 경우
+        if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
 
-        if (StringUtils.hasText(jwt)) {
-            boolean isValidToken = jwtProvider.validateToken(jwt);
+            // 토큰으로부터 Authentication 객체 생성
+            Authentication authentication = jwtProvider.getAuthentication(jwt);
 
-            // [로그] JWT 유효성 결과 출력
-//            System.out.println("JWT 유효성 검증 결과: " + isValidToken);
-
-            if (isValidToken) {
-                Authentication authentication = jwtProvider.getAuthentication(jwt);
-
-                if (authentication != null) {
-                    // [로그] 생성된 Authentication 정보 출력
-//                    System.out.println("인증 정보 생성 완료: 사용자명=" + authentication.getName()
-//                            + ", 인증 여부=" + authentication.isAuthenticated());
-
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                } else {
-                    // [로그] 인증 객체 생성 실패
-//                    System.out.println("인증 객체 생성 실패: jwtProvider.getAuthentication() == null");
-                }
+            // 인증 객체가 유효할 경우 SecurityContext에 설정
+            if (authentication != null) {
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-        } else {
-            // [로그] JWT가 요청에 존재하지 않거나 비어 있음
-//            System.out.println("JWT 미존재 또는 빈 값 (요청 경로: " + request.getRequestURI() + ")");
         }
 
+        // 다음 필터로 요청 전달
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * 요청에서 JWT 토큰을 추출한다.
+     * 1. Authorization 헤더에서 추출 (우선순위)
+     * 2. accessToken 쿠키에서 추출 (헤더가 없는 경우)
+     *
+     * @param request HTTP 요청 객체
+     * @return 추출된 JWT 토큰 문자열 또는 null
+     */
     private String resolveToken(HttpServletRequest request) {
-        // 1. Authorization 헤더에서 토큰 추출
+        // 1. Authorization 헤더에서 "Bearer {token}" 형식으로 추출
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-//        System.out.println("Authorization 헤더 값: " + bearerToken);
-
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-//            System.out.println("Bearer 토큰 형식 확인됨. 헤더에서 토큰 반환.");
             return bearerToken.substring(BEARER_PREFIX.length());
         }
 
-        // 2. accessToken 쿠키에서 토큰 추출
+        // 2. accessToken 쿠키에서 추출
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (ACCESS_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
-                    String tokenFromCookie = cookie.getValue();
-//                    System.out.println("accessToken 쿠키 값: " + tokenFromCookie);
-
-                    if (StringUtils.hasText(tokenFromCookie)) {
-//                        System.out.println("쿠키에서 토큰 반환.");
-                        return tokenFromCookie;
+                    String token = cookie.getValue();
+                    if (StringUtils.hasText(token)) {
+                        return token;
                     }
                 }
             }
         }
 
-        // [로그] 토큰 추출 실패
-//        System.out.println("'" + ACCESS_TOKEN_COOKIE_NAME + "' 쿠키 없음 또는 값 비어 있음.");
+        // 유효한 토큰이 없을 경우 null 반환
         return null;
     }
 }

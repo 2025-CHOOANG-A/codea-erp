@@ -30,4 +30,16 @@ public class StorageServiceimp implements StorageService {
 		return mapper.insertStorageList(dto);
 	}
 
+
+	@Override
+	public List<StorageDTO> searchEmpNo(String query) {
+		return mapper.searchEmpNo(query);
+	}
+	
+	@Override
+	public int updateStorage(StorageDTO dto) {
+		return mapper.updateStorage(dto);
+	}
+
+
 }

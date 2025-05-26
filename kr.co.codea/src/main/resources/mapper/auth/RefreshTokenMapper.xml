@@ -2,42 +2,50 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.auth.mapper.RefreshTokenMapper">
 
+    <!-- 사원 ID로 리프레시 토큰 조회 -->
     <select id="findByEmpId" parameterType="long" resultType="kr.co.codea.auth.dto.RefreshToken">
         SELECT
-            RT_ID        as rtId,
-            EMP_ID       as empId,
-            TOKEN        as token,
-            EXPIRATION   as expiration,
-            CREATED_AT   as createdAt,
-            UPDATED_AT   as updatedAt
-        FROM
-            REFRESH_TOKEN  WHERE EMP_ID = #{empId}
+            RT_ID       AS rtId,
+            EMP_ID      AS empId,
+            TOKEN       AS token,
+            EXPIRATION  AS expiration,
+            CREATED_AT  AS createdAt,
+            UPDATED_AT  AS updatedAt
+        FROM REFRESH_TOKEN
+        WHERE EMP_ID = #{empId}
     </select>
 
+    <!-- 토큰 값으로 리프레시 토큰 조회 -->
     <select id="findByToken" parameterType="string" resultType="kr.co.codea.auth.dto.RefreshToken">
         SELECT
-            RT_ID        as rtId,
-            EMP_ID       as empId,
-            TOKEN        as token,
-            EXPIRATION   as expiration,
-            CREATED_AT   as createdAt,
-            UPDATED_AT   as updatedAt
+            RT_ID       AS rtId,
+            EMP_ID      AS empId,
+            TOKEN       AS token,
+            EXPIRATION  AS expiration,
+            CREATED_AT  AS createdAt,
+            UPDATED_AT  AS updatedAt
         FROM REFRESH_TOKEN
-        WHERE TOKEN = #{token} </select>
+        WHERE TOKEN = #{token}
+    </select>
 
+    <!-- 리프레시 토큰 등록 -->
     <insert id="insert" parameterType="kr.co.codea.auth.dto.RefreshToken">
         INSERT INTO ERP.REFRESH_TOKEN (
             EMP_ID,
             TOKEN,
             EXPIRATION,
             CREATED_AT,
-            UPDATED_AT  ) VALUES (
+            UPDATED_AT
+        ) VALUES (
             #{empId},
             #{token},
             #{expiration},
-            SYSTIMESTAMP, SYSTIMESTAMP)
+            SYSTIMESTAMP,
+            SYSTIMESTAMP
+        )
     </insert>
 
+    <!-- 리프레시 토큰 갱신 (토큰 및 만료일 업데이트) -->
     <update id="update" parameterType="kr.co.codea.auth.dto.RefreshToken">
         UPDATE ERP.REFRESH_TOKEN
         SET
@@ -45,15 +53,19 @@
             EXPIRATION = #{expiration},
             UPDATED_AT = SYSTIMESTAMP
         WHERE
-            EMP_ID = #{empId} </update>
+            EMP_ID = #{empId}
+    </update>
 
+    <!-- 사원 ID로 리프레시 토큰 삭제 -->
     <delete id="deleteByEmpId" parameterType="long">
         DELETE FROM ERP.REFRESH_TOKEN
         WHERE EMP_ID = #{empId}
     </delete>
 
+    <!-- 토큰 값으로 리프레시 토큰 삭제 -->
     <delete id="deleteByToken" parameterType="string">
         DELETE FROM ERP.REFRESH_TOKEN
-        WHERE TOKEN = #{token} </delete>
+        WHERE TOKEN = #{token}
+    </delete>
 
 </mapper>

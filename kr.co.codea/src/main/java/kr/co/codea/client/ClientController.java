@@ -84,7 +84,7 @@ public class ClientController {
 	 }
     
     
-    
+    //거래처 업데이트
     @PutMapping("/client/{id}")
     @ResponseBody // JSON 응답을 위해 @ResponseBody 사용
     public ResponseEntity<?> updateClient(@PathVariable("id") Integer id, @RequestBody ClientDTO clientDTO) {

@@ -10,6 +10,38 @@ JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
 JOIN WAREHOUSE C ON A.WH_ID = C.WH_ID
 JOIN EMPLOYEE D ON A.EMP_NO = D.EMP_NO
 JOIN COMMON_CODE E ON B.UNIT_CODE = E.CODE_ID
+<where>
+	<if test="itemType != null and itemType != ''">
+		B.ITEM_TYPE = #{itemType}
+	</if>
+	
+	<if test="field != null and keyword != null and keyword != ''">
+		<choose>
+			<when test = "field.equals('inventoryCode')">
+				AND A.INVENTORY_CODE LIKE '%' || #{keyword} || '%'
+			</when>
+			<when test = "field.equals('itemCode')">
+				AND B.ITEM_CODE LIKE '%' || #{keyword} || '%'
+			</when>
+			<when test = "field.equals('itemName')">
+				AND B.ITEM_NAME LIKE '%' || #{keyword} || '%'
+			</when>
+			<when test = "field.equals('whCode')">
+				AND C.WH_CODE LIKE '%' || #{keyword} || '%'
+			</when>
+			<when test = "field.equals('whName')">
+				AND C.WH_NAME LIKE '%' || #{keyword} || '%'
+			</when>
+			<when test = "field.equals('empNo')">
+				AND D.EMP_NO LIKE '%' || #{keyword} || '%'
+			</when>
+			<when test = "field.equals('empName')">
+				AND D.EMP_NAME LIKE '%' || #{keyword} || '%'
+			</when>
+		</choose>
+	</if>
+</where>
+ORDER BY A.INVENTORY_CODE DESC
 </select>
 
 <!-- 상세 페이지 -->
@@ -25,7 +57,7 @@ WHERE INVENTORY_ID = #{inventoryId}
 
 <!-- 등록 및 페이지 제품 검색 -->
 <select id="inv_sea_item" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT A.ITEM_CODE, A.ITEM_NAME, A.ITEM_TYPE, A.SPEC, B.CODE
+SELECT A.ITEM_ID, A.ITEM_CODE, A.ITEM_NAME, A.ITEM_TYPE, A.SPEC, B.CODE
 FROM ITEM A
 JOIN COMMON_CODE B ON A.UNIT_CODE = B.CODE_ID
 WHERE A.ITEM_NAME LIKE '%' || #{itemName} || '%'
@@ -33,7 +65,7 @@ WHERE A.ITEM_NAME LIKE '%' || #{itemName} || '%'
 
 <!-- 등록 및 수정 페이지 창고 검색 -->
 <select id="inv_sea_wh" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT WH_CODE, WH_NAME, ADDRESS, ADDRESS_DETAIL
+SELECT WH_ID, WH_CODE, WH_NAME, ADDRESS, ADDRESS_DETAIL
 FROM WAREHOUSE
 WHERE WH_NAME LIKE '%' || #{whName} || '%'
 </select>
@@ -42,31 +74,81 @@ WHERE WH_NAME LIKE '%' || #{whName} || '%'
 <select id="inv_sea_emp" resultType="kr.co.codea.inventory.InventoryDTO">
 SELECT EMP_NO, EMP_NAME, HP
 FROM EMPLOYEE
-WHERE EMP_NAME LIKE '%' || '홍길동' || '%'
+WHERE EMP_NAME LIKE '%' || #{empName} || '%'
 </select>
 
 <!-- 입고 수량 자동 입력 -->
 <select id="inv_in_qty" resultType="int">
-SELECT QUANTITY FROM (
-SELECT I.QUANTITY FROM INOUT I
-WHERE I.INOUT_TYPE = 21 AND I.ITEM_ID = #{itemId} AND I.WH_ID = #{whId}
-ORDER BY I.INOUT_TIME DESC)
-WHERE ROWNUM = 1
+SELECT COALESCE(QUANTITY, 0)
+FROM INOUT
+WHERE INOUT_TYPE = 21 AND ITEM_ID = #{itemId} AND WH_ID = #{whId}
+ORDER BY INOUT_TIME DESC
+FETCH FIRST 1 ROWS ONLY
 </select>
 
 <!-- 출고 수량 자동 입력 -->
 <select id="inv_out_qty" resultType="int">
-SELECT QUANTITY FROM (
-SELECT I.QUANTITY FROM INOUT I
-WHERE I.INOUT_TYPE = 24 AND I.ITEM_ID = #{itemId} AND I.WH_ID = #{whId}
-ORDER BY I.INOUT_TIME DESC)
-WHERE ROWNUM = 1
+SELECT COALESCE(QUANTITY, 0)
+FROM INOUT
+WHERE INOUT_TYPE = 24 AND ITEM_ID = #{itemId} AND WH_ID = #{whId}
+ORDER BY INOUT_TIME DESC
+FETCH FIRST 1 ROWS ONLY
+</select>
+
+<!-- 보유 재고 수량 -->
+<!-- 원자재 입고 수량 -->
+<select id="in_qty_pur" resultType="int">
+SELECT COALESCE(SUM(QUANTITY), 0)
+FROM INOUT
+WHERE INOUT_TYPE = 23 AND ITEM_ID = #{itemId} AND WH_ID = #{whId}
+</select>
+
+<!-- 원자재 출고 수량 -->
+<select id="out_qty_pur" resultType="int">
+SELECT COALESCE(SUM(QUANTITY), 0)
+FROM INOUT
+WHERE INOUT_TYPE = 26 AND ITEM_ID = #{itemId} AND WH_ID = #{whId}
+</select>
+
+<!-- 완재품 입고 수량 -->
+<select id="in_qty_pro" resultType="int">
+SELECT COALESCE(SUM(QUANTITY), 0)
+FROM INOUT
+WHERE INOUT_TYPE = 22 AND ITEM_ID = #{itemId} AND WH_ID = #{whId}
+</select>
+
+<!-- 완재품 출고 수량 -->
+<select id="out_qty_pro" resultType="int">
+SELECT COALESCE(SUM(QUANTITY), 0)
+FROM INOUT
+WHERE INOUT_TYPE = 25 AND ITEM_ID = #{itemId} AND WH_ID = #{whId}
+</select>
+<!-- 보유 재고 수량 -->
+
+<!-- 입고 수량 및 단가 -->
+<select id="in_data" resultType="kr.co.codea.inventory.InventoryDTO">
+SELECT QUANTITY, ITEM_UNIT_COST
+FROM INOUT
+WHERE INOUT_TYPE = 
+<choose>
+	<when test="itemType == '원자재'">22</when>
+	<when test="itemType == '완제품'">23</when>
+</choose>
+AND ITEM_ID = #{itemId} AND WH_ID = #{whId}
+</select>
+
+<!-- 기존 평균 단가 -->
+<select id="inv_avg_cost" resultType="kr.co.codea.inventory.InventoryDTO">
+SELECT AVERAGE_COST, CURRENT_QTY
+FROM INVENTORY
+WHERE ITEM_ID = #{itemId} AND WH_ID = #{whId}
+FETCH FIRST 1 ROWS ONLY
 </select>
 
 <!-- 등록 페이지 저장 -->
-<insert id="inv_write" parameterType="kr.co.codea.inventory.InventoryDTO">
-INSERT INTO INVENTORY
-VALUES (#{ITEM_ID},#{WH_ID},#{CURRENT_QTY},#{EXPECTED_QTY},#{ALLOCATED_QTY},#{AVERAGE_COST},#{EMP_NO},#{REMARK},SYSDATE)
+<insert id="inv_insert" parameterType="kr.co.codea.inventory.InventoryDTO">
+INSERT INTO INVENTORY (ITEM_ID, WH_ID, CURRENT_QTY, EXPECTED_QTY, ALLOCATED_QTY, AVERAGE_COST, EMP_NO, REMARK, CREATED_AT) 
+VALUES (#{itemId}, #{whId}, #{currentQty}, #{expectedQty}, #{allocatedQty}, #{averageCost}, #{empNo}, #{remark}, SYSDATE)
 </insert>
 
 </mapper>

@@ -8,7 +8,7 @@
       <div class="container">
         <h2 class="mb-4">창고 목록</h2>
         <form id="filterForm" class="filter-bar">
-          <select
+<!--           <select
             id="categoryFilter"
             class="form-select"
             aria-label="분류 선택"
@@ -16,7 +16,7 @@
             <option value="all">전체</option>
             <option value="customer">고객사</option>
             <option value="supplier">구매처</option>
-          </select>
+          </select> -->
           <input
             type="text"
             name="keyword"
@@ -26,8 +26,8 @@
             maxlength="20"
             th:value="${searchDto.keyword}"
           />
-          <select id="sortName" class="form-select" aria-label="정렬">
-</select>
+<!--           <select id="sortName" class="form-select" aria-label="정렬">
+</select> -->
           <button id="searchBtn" type="submit" class="btn btn-primary">검색</button>
         </form>
 
