@@ -4,17 +4,30 @@
 <mapper namespace="kr.co.codea.item.item_mapper">
 
 <!-- insert -->
-<!-- 제품정보 -->
-
+<!-- 제품등록 -->
+ <!-- 1. ITEM 테이블 INSERT -->
   <insert id="insert_item" parameterType="kr.co.codea.item.itemDTO">
   INSERT INTO ITEM (
-        ITEM_CODE, ITEM_NAME, ITEM_TYPE, ITEM_CAT_L, 
-        ITEM_CAT_S, UNIT_CODE, SPEC, REMARK
+      ITEM_CODE, ITEM_NAME, ITEM_TYPE,
+      ITEM_CAT_L, ITEM_CAT_S, UNIT_CODE,
+      SPEC, REMARK, LEAD_TIME, BP_CODE, PRICE
     ) VALUES (
-        #{itemCode}, #{itemName}, #{itemType}, #{itemCatL}, #{itemCatS},
-       #{unitCode},#{spec}, #{reMark}
+      #{itemCode}, #{itemName}, #{itemType},
+      #{itemCatL}, #{itemCatS}, #{unitCode},
+      #{spec}, #{remark}, #{leadTime}, #{bpCode}, #{price}
     )
 </insert>
+
+ <!-- 2. PARTNER_ITEM 테이블에 판매가 INSERT -->
+  <insert id="partner_price" parameterType="kr.co.codea.item.itemDTO">
+    INSERT INTO PARTNER_ITEM (
+      ITEM_ID, BP_ID, PRICE_TYPE, PRICE,
+      PRICE_DATE, CREATED_AT, LEAD_TIME
+    ) VALUES (
+      #{itemId}, #{bpId}, '판매가', #{price},
+      SYSDATE, SYSDATE, #{leadTime}
+    )
+  </insert>
 
 <!-- 거래처 추가   -->
   <insert id="insert_partner" parameterType="kr.co.codea.item.itemDTO">
@@ -109,7 +122,6 @@ LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
 </select>
 
 <!-- 단위뽑기
-
   c.CODE_DESC AS UNIT_NAME =>별명 잡음(단위이름)
  -->
 <select  id="unitcode_list" resultType="itemDTO">
@@ -117,7 +129,6 @@ LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
   FROM COMMON_CODE
   WHERE CODE_TYPE = 'UNIT_CODE'
 </select>
-
 
 <!-- resultMap -->
 <resultMap id="itemListResultMap" type="kr.co.codea.item.itemDTO">
@@ -141,10 +152,19 @@ LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
     <result property="itemCatLName" column="ITEM_CAT_L_NAME"/>
     <result property="itemCatSName" column="ITEM_CAT_S_NAME"/>
     
-     <result property="categoryId" column="CATEGORY_ID"/>
+    <result property="categoryId" column="CATEGORY_ID"/>
      
-   <result property="codeId" column="CODE_ID" />
-  <result property="codeDesc" column="CODE_DESC" />
+    <result property="codeId" column="CODE_ID"/>
+    <result property="codeDesc" column="CODE_DESC"/>
     
+    <result property="codeDesc" column="CODE_DESC"/>
+   
+    <result property="itemId" column="ITEM_ID"/>
+    <result property="itemType" column="ITEM_TYPE"/>
+    <result property="leadTime" column="LEAD_TIME"/>
+    <result property="createdAt" column="CREATED_AT"/>
+  
+  
+   
 </resultMap>
 </mapper>

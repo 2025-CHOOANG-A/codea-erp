@@ -87,8 +87,8 @@
 	     const code = this.dataset.code;
 	     const phone = this.dataset.phone;
 
-	     document.getElementById("bpCode").value = name;
-	     document.getElementById("clientCode").value = code;
+	     document.getElementById("bpName").value = name;
+	     document.getElementById("bpCode").value = code;
 	     document.getElementById("Tel").value = phone;
 	     // 모달 닫기 로직
 	     const modalEl = document.getElementById("clientSearchModal");
@@ -101,4 +101,4 @@
 	     }
 	   });
 	 });
-	 */
+	*/
