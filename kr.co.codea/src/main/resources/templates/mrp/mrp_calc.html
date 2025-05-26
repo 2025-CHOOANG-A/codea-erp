@@ -2,313 +2,715 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <title>자재소요량 계산</title>
+    <title>자재소요량계산 | CodeA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <style>
       body {
-        font-family: "Segoe UI", sans-serif;
-        overflow-x: hidden;
+        min-height: 100vh;
+        background: #f8f9fa;
       }
-
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: -250px;
-        width: 250px;
-        height: 100%;
-        background-color: #343a40;
-        color: white;
-        overflow-y: scroll;
-        overflow-y: auto;
-        padding: 1rem 1rem 2rem;
-        z-index: 1050;
-        transition: left 0.3s ease;
+      .main-content {
+        padding: 2rem 2.5vw 2rem 2.5vw;
       }
-
-      .sidebar.active {
-        left: 0;
+      .table-responsive {
+        overflow-x: auto;
       }
-
-      .sidebar h5,
-      .sidebar .section-title {
-        font-size: 14px;
-        color: #adb5bd;
-        margin-top: 1.5rem;
-        margin-bottom: 0.5rem;
+      .table thead th {
+        white-space: nowrap;
+        background: #f1f3f5;
+        font-weight: 600;
+        font-size: 1rem;
+        border-bottom: 2px solid #dee2e6;
       }
-
-      .sidebar a {
-        display: block;
-        color: white;
-        text-decoration: none;
-        padding: 4px 0;
-        font-size: 15px;
+      .table tbody td {
+        vertical-align: middle;
+        white-space: nowrap;
+        font-size: 0.98rem;
       }
-
-      .sidebar a:hover {
+      .table .name-link {
         text-decoration: underline;
+        color: inherit;
+        cursor: pointer;
       }
-
-      .menu-header {
-        font-weight: bold;
-        font-size: 18px;
-        margin-bottom: 1rem;
+      .table .name-link:hover {
+        color: #0d6efd;
       }
-
-      .top-bar {
-        height: 60px;
-        background-color: white;
-        padding: 0 1rem;
+      .table-footer {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        color: black;
+        justify-content: flex-end;
+        margin-top: 1.2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
       }
-
-      .menu-icon {
-        font-size: 24px;
-        cursor: pointer;
-        color: black;
-        background: none;
-        border: none;
+      .pagination {
+        margin-bottom: 0;
       }
-
-      .close-icon {
-        font-size: 20px;
-        color: white;
-        background: none;
-        border: none;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        cursor: pointer;
+      .add-btn {
+        min-width: 90px;
       }
-
-      .main-content {
-        padding: 2rem;
-        transition: margin-left 0.3s ease;
+      .delete-btn {
+        min-width: 90px;
+        margin-left: 0.5rem;
       }
-
-      .main-content.shifted {
-        margin-left: 250px;
+      .modal-content {
+        border-radius: 0.7rem;
       }
-
-      .table th,
-      .table td {
-        vertical-align: middle;
-        text-align: center;
+      .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
       }
-
-      .btn-group-bottom {
+      .filter-bar .form-control {
+        min-width: 140px;
+        max-width: 220px;
+      }
+      @media (max-width: 767.98px) {
+        .main-content {
+          padding: 1rem 0.5rem;
+        }
+        .filter-bar .form-control {
+          width: 100%;
+          min-width: 0;
+          max-width: 100%;
+        }
+      }
+      #requirementResult {
+        margin-top: 2rem;
+        background: #fff;
+        border-radius: 0.7rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        padding: 1.5rem 1rem;
+        display: block;
+      }
+      #requirementResult h5 {
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+      #requirementResult table {
+        margin-bottom: 0;
+      }
+      .requirement-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
         margin-top: 1rem;
-        text-align: right;
-      }
-
-      .input[readonly].form-control {
-        background-color: #fff !important;
-        color: #212529 !important;
+        gap: 1rem;
       }
     </style>
   </head>
   <body>
-    <div class="sidebar" id="sidebar">
-      <button class="close-icon" onclick="toggleSidebar()">&times;</button>
-      <div class="menu-header">메뉴</div>
-      <div class="section-title">기준정보관리</div>
-      <a href="#">사업장관리</a>
-      <a href="#">거래처관리</a>
-      <a href="#">창고관리</a>
-      <a href="#">제품관리</a>
-      <a href="#">품목관리</a>
-      <a href="#">사원관리</a>
-      <a href="#">공지사항</a>
-      <div class="section-title">구매영업관리</div>
-      <a href="#">발주관리</a>
-      <a href="#">주문관리</a>
-      <a href="#">출고관리</a>
-      <a href="#">자재소요량계산</a>
-      <div class="section-title">자재관리</div>
-      <a href="#">입고관리</a>
-      <a href="#">재고관리</a>
-      <div class="section-title">생산관리</div>
-      <a href="#">생산계획</a>
-    </div>
-    <div class="top-bar">
-      <button class="menu-icon" onclick="toggleSidebar()">&#9776;</button>
-      <h3 class="fw-bold m-0">CodeA</h3>
-      <div></div>
-    </div>
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+      <h2 class="mb-4 fw-bold">자재소요량 계산</h2>
+      <!-- Filter Bar -->
+      <form
+        class="filter-bar mb-3"
+        id="filterForm"
+        autocomplete="off"
+        onsubmit="return false;"
+      >
+        <input type="date" class="form-control" id="startDate" />
+        <span>~</span>
+        <input type="date" class="form-control" id="endDate" />
+        <button type="button" class="btn btn-outline-primary" id="searchBtn">
+          검색
+        </button>
+      </form>
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0" id="planTable">
+          <thead>
+            <tr>
+              <th style="width: 40px">
+                <input type="checkbox" id="checkAll" />
+              </th>
+              <th>계획번호</th>
+              <th>제품코드</th>
+              <th>제품명</th>
+              <th>규격</th>
+              <th>단가</th>
+              <th>계획수량</th>
+              <th>생산시작일</th>
+              <th>생산종료일</th>
+              <th>생산 일수</th>
+              <th>비고</th>
+              <th>소요량계산</th>
+            </tr>
+          </thead>
+          <tbody id="planTableBody"></tbody>
+        </table>
+      </div>
+      <!-- Table Footer: Paging -->
+      <div class="table-footer mt-3">
+        <nav>
+          <ul class="pagination mb-0" id="pagination"></ul>
+        </nav>
+      </div>
+      <!-- 소요량 계산 결과 -->
+      <div id="requirementResult">
+        <h5>소요량 계산 결과</h5>
+        <div id="requirementList"></div>
+        <div class="requirement-footer">
+          <nav>
+            <ul class="pagination mb-0" id="requirementPagination"></ul>
+          </nav>
+        </div>
+      </div>
+    </main>
+    <!-- 비고 내용 확인 Modal -->
     <div
-      class="main-content"
-      id="mainContent"
-      style="max-width: 900px; margin: 40px auto 0 auto"
+      class="modal fade"
+      id="remarkModal"
+      tabindex="-1"
+      aria-labelledby="remarkModalLabel"
+      aria-hidden="true"
     >
-      <h4 class="fw-bold mb-4">▣ 자재소요량 계산</h4>
-      <div class="mb-4">
-        <h5 class="fw-bold mb-3">BOM 상세</h5>
-        <div class="table-responsive">
-          <table
-            class="table table-bordered align-middle mb-0"
-            style="background: #fafbfc"
-          >
-            <tbody>
-              <tr>
-                <th class="bg-light text-end" style="width: 180px">BOM 코드</th>
-                <td>BOM2024061001</td>
-                <th class="bg-light text-end" style="width: 180px">
-                  제품 코드
-                </th>
-                <td>P1001</td>
-              </tr>
-              <tr>
-                <th class="bg-light text-end">제품 명</th>
-                <td>고강도 볼트</td>
-                <th class="bg-light text-end">규격</th>
-                <td>M10x50</td>
-              </tr>
-              <tr>
-                <th class="bg-light text-end">단위(EA)</th>
-                <td>EA</td>
-                <th class="bg-light text-end">생산수량</th>
-                <td>
-                  <div class="input-group" style="max-width: 200px">
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="prodQty"
-                      value="100"
-                    />
-                    <button
-                      class="btn btn-primary"
-                      type="button"
-                      onclick="calcMrp()"
-                    >
-                      계산
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th class="bg-light text-end">자재소요량</th>
-                <td id="mrpQty" colspan="3">400</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div>
-        <h5 class="fw-bold mb-3">자재 목록</h5>
-        <div class="table-responsive">
-          <table
-            class="table table-bordered align-middle"
-            style="background: #fafbfc"
-          >
-            <thead>
-              <tr>
-                <th class="bg-light">자재 코드</th>
-                <th class="bg-light">자재 명</th>
-                <th class="bg-light">규격</th>
-                <th class="bg-light">단위(EA)</th>
-                <th class="bg-light">단가</th>
-                <th class="bg-light">수량</th>
-                <th class="bg-light">총 금액</th>
-              </tr>
-            </thead>
-            <tbody id="matList">
-              <tr>
-                <td>M2001</td>
-                <td>강철 원재료</td>
-                <td>SS400</td>
-                <td>EA</td>
-                <td>200</td>
-                <td>200</td>
-                <td>40,000</td>
-              </tr>
-              <tr>
-                <td>M2002</td>
-                <td>너트</td>
-                <td>M10</td>
-                <td>EA</td>
-                <td>50</td>
-                <td>100</td>
-                <td>5,000</td>
-              </tr>
-              <tr>
-                <td>M2003</td>
-                <td>와셔</td>
-                <td>M10</td>
-                <td>EA</td>
-                <td>30</td>
-                <td>100</td>
-                <td>3,000</td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="remarkModalLabel">비고 내용</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="닫기"
+            ></button>
+          </div>
+          <div class="modal-body" id="remarkModalBody"></div>
         </div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      function toggleSidebar() {
-        const sidebar = document.getElementById("sidebar");
-        const content = document.getElementById("mainContent");
-        sidebar.classList.toggle("active");
-        content.classList.toggle("shifted");
-      }
+      // Sample data
+      let planData = [
+        {
+          id: "PLN20240601",
+          code: "P-1001",
+          name: "스마트워치",
+          spec: "블랙/42mm",
+          price: 120000,
+          qty: 500,
+          start: "2024-06-10",
+          end: "2024-06-15",
+          days: 6,
+          remark: "특수 부품 필요",
+        },
+        {
+          id: "PLN20240602",
+          code: "P-1002",
+          name: "무선이어폰",
+          spec: "화이트/케이스포함",
+          price: 85000,
+          qty: 300,
+          start: "2024-06-12",
+          end: "2024-06-14",
+          days: 3,
+          remark: "",
+        },
+        {
+          id: "PLN20240603",
+          code: "M-2001",
+          name: "배터리셀",
+          spec: "3.7V/2000mAh",
+          price: 1500,
+          qty: 2000,
+          start: "2024-06-11",
+          end: "2024-06-13",
+          days: 3,
+          remark: "고온보관",
+        },
+        {
+          id: "PLN20240604",
+          code: "P-1003",
+          name: "스마트밴드",
+          spec: "핑크/38mm",
+          price: 65000,
+          qty: 400,
+          start: "2024-06-15",
+          end: "2024-06-18",
+          days: 4,
+          remark: "",
+        },
+        {
+          id: "PLN20240605",
+          code: "M-2002",
+          name: "실리콘밴드",
+          spec: "블루/38mm",
+          price: 700,
+          qty: 1500,
+          start: "2024-06-13",
+          end: "2024-06-15",
+          days: 3,
+          remark: "",
+        },
+        {
+          id: "PLN20240606",
+          code: "P-1004",
+          name: "블루투스스피커",
+          spec: "그레이/5W",
+          price: 43000,
+          qty: 250,
+          start: "2024-06-16",
+          end: "2024-06-19",
+          days: 4,
+          remark: "방수 테스트 필요",
+        },
+        {
+          id: "PLN20240607",
+          code: "M-2003",
+          name: "PCB보드",
+          spec: "4층/소형",
+          price: 3200,
+          qty: 800,
+          start: "2024-06-17",
+          end: "2024-06-20",
+          days: 4,
+          remark: "",
+        },
+        {
+          id: "PLN20240608",
+          code: "P-1005",
+          name: "스마트램프",
+          spec: "화이트/LED",
+          price: 39000,
+          qty: 180,
+          start: "2024-06-18",
+          end: "2024-06-21",
+          days: 4,
+          remark: "",
+        },
+        {
+          id: "PLN20240609",
+          code: "M-2004",
+          name: "알루미늄케이스",
+          spec: "실버/중형",
+          price: 2100,
+          qty: 600,
+          start: "2024-06-19",
+          end: "2024-06-22",
+          days: 4,
+          remark: "외주 가공",
+        },
+        {
+          id: "PLN20240610",
+          code: "P-1006",
+          name: "스마트체중계",
+          spec: "블랙/디지털",
+          price: 67000,
+          qty: 120,
+          start: "2024-06-20",
+          end: "2024-06-24",
+          days: 5,
+          remark: "",
+        },
+        {
+          id: "PLN20240611",
+          code: "P-1007",
+          name: "스마트온도계",
+          spec: "화이트/센서포함",
+          price: 29000,
+          qty: 90,
+          start: "2024-06-22",
+          end: "2024-06-25",
+          days: 4,
+          remark: "센서 재고 확인",
+        },
+        {
+          id: "PLN20240612",
+          code: "M-2005",
+          name: "센서모듈",
+          spec: "온습도/소형",
+          price: 1800,
+          qty: 700,
+          start: "2024-06-23",
+          end: "2024-06-26",
+          days: 4,
+          remark: "",
+        },
+      ];
 
-      // 샘플 계산 함수 (실제 로직에 맞게 수정 필요)
-      function calcMrp() {
-        const qty = parseInt(document.getElementById("prodQty").value, 10) || 0;
-        // 예시: 1개 생산시 자재소요량 4개, 강철:2, 너트:1, 와셔:1
-        document.getElementById("mrpQty").innerText = qty * 4;
+      // 소요량 계산 결과 데이터
+      let requirementData = [];
 
-        // 자재별 수량 및 금액 계산
-        const matList = [
-          {
-            code: "M2001",
-            name: "강철 원재료",
-            spec: "SS400",
-            unit: "EA",
-            price: 200,
-            per: 2,
-          },
-          {
-            code: "M2002",
-            name: "너트",
-            spec: "M10",
-            unit: "EA",
-            price: 50,
-            per: 1,
-          },
-          {
-            code: "M2003",
-            name: "와셔",
-            spec: "M10",
-            unit: "EA",
-            price: 30,
-            per: 1,
-          },
-        ];
-        let html = "";
-        matList.forEach((mat) => {
-          const cnt = qty * mat.per;
-          const total = cnt * mat.price;
-          html += `<tr>
-                    <td>${mat.code}</td>
-                    <td>${mat.name}</td>
-                    <td>${mat.spec}</td>
-                    <td>${mat.unit}</td>
-                    <td>${mat.price}</td>
-                    <td>${cnt}</td>
-                    <td>${total.toLocaleString()}</td>
-                </tr>`;
+      // Paging
+      const ROWS_PER_PAGE = 10;
+      let currentPage = 1;
+      let filteredData = planData;
+
+      // 소요량 결과 페이징
+      const REQUIREMENT_ROWS_PER_PAGE = 10;
+      let requirementCurrentPage = 1;
+
+      function filterData() {
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        filteredData = planData.filter((row) => {
+          let match = true;
+          if (startDate && row.start < startDate) match = false;
+          if (endDate && row.end > endDate) match = false;
+          return match;
         });
-        document.getElementById("matList").innerHTML = html;
+        currentPage = 1;
+        renderTable();
+        renderPagination();
+        renderRequirementResult();
       }
+      document
+        .getElementById("searchBtn")
+        .addEventListener("click", filterData);
+
+      // Render table
+      function renderTable() {
+        const tbody = document.getElementById("planTableBody");
+        tbody.innerHTML = "";
+        const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
+        const endIdx = startIdx + ROWS_PER_PAGE;
+        const pageData = filteredData.slice(startIdx, endIdx);
+        pageData.forEach((row) => {
+          const tr = document.createElement("tr");
+          // 소요량 계산 결과에 이미 있으면 버튼 비활성화
+          const alreadyCalculated = requirementData.some(
+            (r) => r.id === row.id
+          );
+          tr.innerHTML = `
+                                                <td><input type="checkbox" class="row-check"></td>
+                                                <td>${row.id}</td>
+                                                <td>${row.code}</td>
+                                                <td><a href="#" class="name-link" data-name="${
+                                                  row.name
+                                                }">${row.name}</a></td>
+                                                <td>${row.spec}</td>
+                                                <td>${row.price.toLocaleString()}</td>
+                                                <td>${row.qty.toLocaleString()}</td>
+                                                <td>${row.start}</td>
+                                                <td>${row.end}</td>
+                                                <td>${row.days}</td>
+                                                <td>
+                                                        ${
+                                                          row.remark
+                                                            ? `<button type="button" class="btn btn-outline-secondary btn-sm remark-btn" data-remark="${row.remark}">내용 확인</button>`
+                                                            : "<span>-</span>"
+                                                        }
+                                                </td>
+                                                <td>
+                                                        <button type="button" class="btn btn-success btn-sm requirement-calc-btn" data-id="${
+                                                          row.id
+                                                        }" ${
+            alreadyCalculated ? "disabled" : ""
+          }>계산하기</button>
+                                                </td>
+                                        `;
+          tbody.appendChild(tr);
+        });
+        // 체크박스 전체선택 비활성화
+        document.getElementById("checkAll").checked = false;
+      }
+
+      // Render pagination
+      function renderPagination() {
+        const totalPages = Math.ceil(filteredData.length / ROWS_PER_PAGE);
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        // Prev
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item" + (currentPage === 1 ? " disabled" : "");
+        prevLi.innerHTML = `<a class="page-link" href="#" aria-label="이전"><span aria-hidden="true">&laquo;</span></a>`;
+        prevLi.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (currentPage > 1) {
+            currentPage--;
+            renderTable();
+            renderPagination();
+          }
+        });
+        pagination.appendChild(prevLi);
+
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+        if (startPage > 1) {
+          const firstLi = document.createElement("li");
+          firstLi.className = "page-item";
+          firstLi.innerHTML = `<a class="page-link" href="#">1</a>`;
+          firstLi.addEventListener("click", (e) => {
+            e.preventDefault();
+            currentPage = 1;
+            renderTable();
+            renderPagination();
+          });
+          pagination.appendChild(firstLi);
+
+          if (startPage > 2) {
+            const dotsLi = document.createElement("li");
+            dotsLi.className = "page-item disabled";
+            dotsLi.innerHTML = `<span class="page-link">...</span>`;
+            pagination.appendChild(dotsLi);
+          }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          const li = document.createElement("li");
+          li.className = "page-item" + (i === currentPage ? " active" : "");
+          li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+          li.addEventListener("click", (e) => {
+            e.preventDefault();
+            currentPage = i;
+            renderTable();
+            renderPagination();
+          });
+          pagination.appendChild(li);
+        }
+
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            const dotsLi = document.createElement("li");
+            dotsLi.className = "page-item disabled";
+            dotsLi.innerHTML = `<span class="page-link">...</span>`;
+            pagination.appendChild(dotsLi);
+          }
+          const lastLi = document.createElement("li");
+          lastLi.className = "page-item";
+          lastLi.innerHTML = `<a class="page-link" href="#">${totalPages}</a>`;
+          lastLi.addEventListener("click", (e) => {
+            e.preventDefault();
+            currentPage = totalPages;
+            renderTable();
+            renderPagination();
+          });
+          pagination.appendChild(lastLi);
+        }
+
+        // Next
+        const nextLi = document.createElement("li");
+        nextLi.className =
+          "page-item" + (currentPage === totalPages ? " disabled" : "");
+        nextLi.innerHTML = `<a class="page-link" href="#" aria-label="다음"><span aria-hidden="true">&raquo;</span></a>`;
+        nextLi.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) {
+            currentPage++;
+            renderTable();
+            renderPagination();
+          }
+        });
+        pagination.appendChild(nextLi);
+      }
+
+      // 체크박스 전체선택 비활성화
+      document
+        .getElementById("checkAll")
+        .addEventListener("change", function () {
+          document
+            .querySelectorAll(".row-check")
+            .forEach((cb) => (cb.checked = this.checked));
+        });
+
+      // Modal for remark
+      let remarkModal;
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("remark-btn")) {
+          const remark = e.target.getAttribute("data-remark");
+          document.getElementById("remarkModalBody").textContent = remark;
+          if (!remarkModal) {
+            remarkModal = new bootstrap.Modal(
+              document.getElementById("remarkModal")
+            );
+          }
+          remarkModal.show();
+        }
+        if (e.target.classList.contains("name-link")) {
+          e.preventDefault();
+          alert(`${e.target.dataset.name} 상세 페이지로 이동`);
+        }
+        // 소요량 계산하기 버튼
+        if (e.target.classList.contains("requirement-calc-btn")) {
+          const planId = e.target.getAttribute("data-id");
+          // 이미 계산된 항목은 추가하지 않음
+          if (!requirementData.some((r) => r.id === planId)) {
+            const plan = planData.find((r) => r.id === planId);
+            if (plan) {
+              requirementData.push({
+                ...plan,
+                calcDate: new Date(),
+              });
+              renderTable();
+              renderRequirementResult();
+            }
+          }
+        }
+        // 소요량 결과 확인 버튼
+        if (e.target.classList.contains("requirement-confirm-btn")) {
+          const planId = e.target.getAttribute("data-id");
+          if (confirm("정말 확인 처리하시겠습니까?")) {
+            // 소요량 결과에서 삭제
+            requirementData = requirementData.filter(
+              (row) => row.id !== planId
+            );
+            renderTable();
+            renderRequirementResult();
+          }
+        }
+      });
+
+      // 소요량 계산 결과 렌더링 (페이징 포함)
+      function renderRequirementResult() {
+        const resultDiv = document.getElementById("requirementResult");
+        const listDiv = document.getElementById("requirementList");
+        const paginationDiv = document.getElementById("requirementPagination");
+        // 계산된 항목 = requirementData
+        const calculatedPlans = requirementData;
+        const totalPages = Math.ceil(
+          calculatedPlans.length / REQUIREMENT_ROWS_PER_PAGE
+        );
+        if (requirementCurrentPage > totalPages)
+          requirementCurrentPage = totalPages || 1;
+        const startIdx =
+          (requirementCurrentPage - 1) * REQUIREMENT_ROWS_PER_PAGE;
+        const endIdx = startIdx + REQUIREMENT_ROWS_PER_PAGE;
+        const pageData = calculatedPlans.slice(startIdx, endIdx);
+
+        let html = `<table class="table table-bordered table-sm align-middle">
+                                        <thead>
+                                                <tr>
+                                                        <th>계획번호</th>
+                                                        <th>제품코드</th>
+                                                        <th>제품명</th>
+                                                        <th>계획수량</th>
+                                                        <th>계산일시</th>
+                                                        <th>상태</th>
+                                                        <th>확인</th>
+                                                </tr>
+                                        </thead>
+                                        <tbody>
+                                `;
+        if (pageData.length === 0) {
+          html += `<tr><td colspan="7" class="text-center">데이터가 없습니다</td></tr>`;
+        } else {
+          pageData.forEach((row) => {
+            html += `<tr>
+                                                        <td>${row.id}</td>
+                                                        <td>${row.code}</td>
+                                                        <td>${row.name}</td>
+                                                        <td>${row.qty.toLocaleString()}</td>
+                                                        <td>${
+                                                          row.calcDate
+                                                            ? row.calcDate.toLocaleString()
+                                                            : new Date().toLocaleString()
+                                                        }</td>
+                                                        <td><span class="text-success fw-bold">계산완료</span></td>
+                                                        <td>
+                                                                <button type="button" class="btn btn-outline-danger btn-sm requirement-confirm-btn" data-id="${
+                                                                  row.id
+                                                                }">확인</button>
+                                                        </td>
+                                                </tr>`;
+          });
+        }
+        html += `</tbody></table>`;
+        listDiv.innerHTML = html;
+
+        // 페이징 렌더링
+        paginationDiv.innerHTML = "";
+        if (totalPages > 1) {
+          // Prev
+          const prevLi = document.createElement("li");
+          prevLi.className =
+            "page-item" + (requirementCurrentPage === 1 ? " disabled" : "");
+          prevLi.innerHTML = `<a class="page-link" href="#" aria-label="이전"><span aria-hidden="true">&laquo;</span></a>`;
+          prevLi.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (requirementCurrentPage > 1) {
+              requirementCurrentPage--;
+              renderRequirementResult();
+            }
+          });
+          paginationDiv.appendChild(prevLi);
+
+          let startPage = Math.max(1, requirementCurrentPage - 2);
+          let endPage = Math.min(totalPages, startPage + 4);
+          if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+          if (startPage > 1) {
+            const firstLi = document.createElement("li");
+            firstLi.className = "page-item";
+            firstLi.innerHTML = `<a class="page-link" href="#">1</a>`;
+            firstLi.addEventListener("click", (e) => {
+              e.preventDefault();
+              requirementCurrentPage = 1;
+              renderRequirementResult();
+            });
+            paginationDiv.appendChild(firstLi);
+
+            if (startPage > 2) {
+              const dotsLi = document.createElement("li");
+              dotsLi.className = "page-item disabled";
+              dotsLi.innerHTML = `<span class="page-link">...</span>`;
+              paginationDiv.appendChild(dotsLi);
+            }
+          }
+
+          for (let i = startPage; i <= endPage; i++) {
+            const li = document.createElement("li");
+            li.className =
+              "page-item" + (i === requirementCurrentPage ? " active" : "");
+            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            li.addEventListener("click", (e) => {
+              e.preventDefault();
+              requirementCurrentPage = i;
+              renderRequirementResult();
+            });
+            paginationDiv.appendChild(li);
+          }
+
+          if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+              const dotsLi = document.createElement("li");
+              dotsLi.className = "page-item disabled";
+              dotsLi.innerHTML = `<span class="page-link">...</span>`;
+              paginationDiv.appendChild(dotsLi);
+            }
+            const lastLi = document.createElement("li");
+            lastLi.className = "page-item";
+            lastLi.innerHTML = `<a class="page-link" href="#">${totalPages}</a>`;
+            lastLi.addEventListener("click", (e) => {
+              e.preventDefault();
+              requirementCurrentPage = totalPages;
+              renderRequirementResult();
+            });
+            paginationDiv.appendChild(lastLi);
+          }
+
+          // Next
+          const nextLi = document.createElement("li");
+          nextLi.className =
+            "page-item" +
+            (requirementCurrentPage === totalPages ? " disabled" : "");
+          nextLi.innerHTML = `<a class="page-link" href="#" aria-label="다음"><span aria-hidden="true">&raquo;</span></a>`;
+          nextLi.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (requirementCurrentPage < totalPages) {
+              requirementCurrentPage++;
+              renderRequirementResult();
+            }
+          });
+          paginationDiv.appendChild(nextLi);
+        }
+      }
+
+      // Initial render
+      renderTable();
+      renderPagination();
+      renderRequirementResult();
     </script>
   </body>
 </html>

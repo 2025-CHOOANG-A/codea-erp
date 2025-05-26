@@ -1,25 +1,30 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.auth.mapper.EmployeeMapper">
 
+    <!-- 로그인 ID(EMP_USER_ID)로 사용자 정보 조회 -->
     <select id="findByLoginId" parameterType="string" resultType="kr.co.codea.auth.dto.UserDetailsDto">
         SELECT
-            EMP_ID        as empId,
-            EMP_USER_ID   as empUserId,
-            EMP_NAME      as empName,
-            EMP_PW        as empPw,
-            EMP_STATUS    as empStatus,
-            ADMIN_CODE    as adminCode
+            EMP_ID       AS empId,
+            EMP_USER_ID  AS empUserId,
+            EMP_NAME     AS empName,
+            EMP_PW       AS empPw,
+            EMP_STATUS   AS empStatus,
+            ADMIN_CODE   AS adminCode
         FROM EMPLOYEE
-        WHERE EMP_USER_ID = #{loginId} </select>
+        WHERE EMP_USER_ID = #{loginId}
+    </select>
 
+    <!-- 사원 ID(EMP_ID)로 사용자 정보 조회 -->
     <select id="findByEmpId" parameterType="long" resultType="kr.co.codea.auth.dto.UserDetailsDto">
         SELECT
-            EMP_ID        as empId,
-            EMP_USER_ID   as empUserId,
-            EMP_NAME      as empName,
-            EMP_PW        as empPw,
-            EMP_STATUS    as empStatus,
-            ADMIN_CODE    as adminCode
+            EMP_ID       AS empId,
+            EMP_USER_ID  AS empUserId,
+            EMP_NAME     AS empName,
+            EMP_PW       AS empPw,
+            EMP_STATUS   AS empStatus,
+            ADMIN_CODE   AS adminCode
         FROM EMPLOYEE
-        WHERE EMP_ID = #{empId} </select>
+        WHERE EMP_ID = #{empId}
+    </select>
+
 </mapper>

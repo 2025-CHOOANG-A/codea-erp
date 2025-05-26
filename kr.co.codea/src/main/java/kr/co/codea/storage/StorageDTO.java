@@ -18,8 +18,10 @@ public class StorageDTO {
 	private String remark;
 	private String empNo;
 	
-	//조인
+	//조
 	private String empName;
+	private String empTel;
+
 
 	
 	//검색관련
