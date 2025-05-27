@@ -5,6 +5,34 @@
 
 <mapper namespace="kr.co.codea.productplan.ProductPlanMapper">
 
+
+
+
+<!--생산계획 생성  -->
+<insert id="insertProductPlan">
+INSERT INTO PRODUCTION_PLAN 
+(ITEM_CODE,START_DATE,DUE_DATE,PLAN_QTY,EMP_NO,REMARK)
+VALUES (
+#{itemCode},#{startDate, jdbcType=DATE},#{dueDate, jdbcType=DATE},#{planQty},#{empNo},#{remark}
+)
+</insert>
+
+
+<!--아이템 코드 조회 api  -->
+      <select id="searchItem" resultType="kr.co.codea.productplan.ProductPlanDTO">
+        SELECT
+            ITEM_CODE, ITEM_NAME FROM
+            ITEM  <where>
+            <if test="query != null and !query.isEmpty()">
+                (LOWER(ITEM_CODE) LIKE '%' || LOWER(#{query}) || '%' OR
+                 LOWER(ITEM_NAME) LIKE '%' || LOWER(#{query}) || '%')
+            </if>
+        </where>
+        ORDER BY ITEM_NAME ASC
+    </select>
+
+
+<!-- 생산계획 조회 -->
     <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
 SELECT
 	    PP.PLAN_ID,
