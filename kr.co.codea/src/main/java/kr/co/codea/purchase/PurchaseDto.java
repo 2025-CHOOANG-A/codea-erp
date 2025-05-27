@@ -1,20 +1,43 @@
 package kr.co.codea.purchase;
 
 import java.util.Date;
+import java.util.List;
 
 import lombok.Data;
 
 @Data
 public class PurchaseDto {
-	private int purchaseId;        // 발주 ID (PURCHASE_HEADER.PURCHASE_ID)
-    private String purchaseCode;   // 발주 코드 (PURCHASE_HEADER.PURCHASE_CODE)
-    private Date orderDate;        // 발주일 (PURCHASE_HEADER.ORDER_DATE)
-    private String supplierName;   // 공급처명 (JOIN된 BUSINESS_PARTNER.BP_NAME)
-    private double totalAmount;  // 총 발주금액 (PURCHASE_DETAIL 합산 계산 결과)
-    private String status;         // 발주상태 (PURCHASE_HEADER.STATUS)
-    private String employeeName;   // 담당자명 (JOIN된 EMPLOYEE.EMP_NAME)
-    private Date createdAt;        // 등록일 (PURCHASE_HEADER.CREATED_AT)
-    private String remark;         // 비고 (PURCHASE_HEADER.REMARK)
-    
-    
+
+    // 발주 헤더 정보
+    private int purchaseId;
+    private String purchaseCode;
+    private Date orderDate;
+    private int bpId;
+    private String supplierName;
+    private double totalAmount;
+    private String status;
+    private int empId;
+    private String employeeName;
+    private Date createdAt;
+    private String remark;
+
+    // 발주 상세 항목 리스트
+    private List<PurchaseDetail> detailList;
+
+    // 내부 클래스 (혹은 별도 클래스로 관리 가능)
+    @Data
+    public static class PurchaseDetail {
+        private int purchaseDetailId;
+        private int itemId;
+        private String itemCode;
+        private String itemName;
+        private String spec;
+        private int orderQty;
+        private double unitPrice;
+        private double amount;
+        private Date requiredDeliveryDate;
+        private String remark;
+        private String unitCode;   // 'EA', 'BOX' 등
+        private String unitName;   // '개', '박스' 등
+    }
 }

@@ -3,11 +3,14 @@ package kr.co.codea.purchase;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -66,4 +69,16 @@ public class PurchaseController {
 
         return "purchase/purchase_list";
     }
+    
+ // 발주 상세 정보 조회
+    @GetMapping("/{purchaseId}")
+    public String getPurchaseDetail(@PathVariable("purchaseId") int purchaseId, Model model) {
+        PurchaseDto purchase = purchaseService.getPurchaseDetail(purchaseId);
+        if (purchase == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "발주 정보를 찾을 수 없습니다.");
+        }
+        model.addAttribute("purchase", purchase);
+        return "purchase/purchase_detail";
+    }
+    
 }

@@ -2,60 +2,106 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.purchase.PurchaseMapper">
 
-    <select id="selectPurchaseList" resultType="kr.co.codea.purchase.PurchaseDto">
-        SELECT *
-        FROM (
-            SELECT InnerQuery.*, ROWNUM AS rn FROM (
-                SELECT
-                    PURCHASE_ID,
-                    PURCHASE_CODE,
-                    ORDER_DATE,
-                    SUPPLIER_NAME,
-                    TOTAL_AMOUNT,
-                    STATUS,
-                    EMPLOYEE_NAME,
-                    CREATED_AT,
-                    REMARK
-                FROM
-                    V_PURCHASE_LIST
-                WHERE 1 = 1
-                <if test="keyword != null and keyword != ''">
-                    AND (SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
-                    OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%')
-                </if>
-                <if test="status != null and status != ''">
-                    AND STATUS = #{status}
-                </if>
-                <if test="startDate != null and startDate != ''">
-                    AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-                </if>
-                <if test="endDate != null and endDate != ''">
-                    AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-                </if>
-                ORDER BY ORDER_DATE DESC, PURCHASE_ID DESC
-            ) InnerQuery
-            WHERE ROWNUM &lt;= #{endRowForQuery} )
-        WHERE rn &gt; #{startRowForQuery} </select>
+	<select id="selectPurchaseList"
+		resultType="kr.co.codea.purchase.PurchaseDto">
+		SELECT *
+		FROM (
+		SELECT InnerQuery.*, ROWNUM AS rn FROM (
+		SELECT
+		PURCHASE_ID,
+		PURCHASE_CODE,
+		ORDER_DATE,
+		SUPPLIER_NAME,
+		TOTAL_AMOUNT,
+		STATUS,
+		EMPLOYEE_NAME,
+		CREATED_AT,
+		REMARK
+		FROM
+		V_PURCHASE_LIST
+		WHERE 1 = 1
+		<if test="keyword != null and keyword != ''">
+			AND (SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
+			OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%')
+		</if>
+		<if test="status != null and status != ''">
+			AND STATUS = #{status}
+		</if>
+		<if test="startDate != null and startDate != ''">
+			AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="endDate != null and endDate != ''">
+			AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		</if>
+		ORDER BY ORDER_DATE DESC, PURCHASE_ID DESC
+		) InnerQuery
+		WHERE ROWNUM &lt;= #{endRowForQuery} )
+		WHERE rn &gt; #{startRowForQuery}
+	</select>
 
-    <select id="countPurchaseList" resultType="int">
-        SELECT COUNT(*)
-        FROM V_PURCHASE_LIST
-        WHERE 1 = 1
-        <if test="keyword != null and keyword != ''">
-            AND (
-            SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
-            OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%'
-            )
-        </if>
-        <if test="status != null and status != ''">
-            AND STATUS = #{status}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-        </if>
-        <if test="endDate != null and endDate != ''">
-            AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-        </if>
-    </select>
+	<select id="countPurchaseList" resultType="int">
+		SELECT COUNT(*)
+		FROM V_PURCHASE_LIST
+		WHERE 1 = 1
+		<if test="keyword != null and keyword != ''">
+			AND (
+			SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
+			OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%'
+			)
+		</if>
+		<if test="status != null and status != ''">
+			AND STATUS = #{status}
+		</if>
+		<if test="startDate != null and startDate != ''">
+			AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="endDate != null and endDate != ''">
+			AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		</if>
+	</select>
 
+	<!-- 발주 헤더 정보 조회 -->
+	<select id="selectPurchaseHeader"
+		resultType="kr.co.codea.purchase.PurchaseDto">
+		SELECT
+		PURCHASE_ID,
+		PURCHASE_CODE,
+		ORDER_DATE,
+		BP_ID,
+		SUPPLIER_NAME,
+		TOTAL_AMOUNT,
+		STATUS,
+		EMP_ID,
+		EMPLOYEE_NAME,
+		CREATED_AT,
+		REMARK
+		FROM V_PURCHASE_LIST
+		WHERE PURCHASE_ID = #{purchaseId}
+	</select>
+
+	<!-- 발주 상세 항목 목록 조회 -->
+	<select id="selectPurchaseDetails"
+		resultType="kr.co.codea.purchase.PurchaseDto$PurchaseDetail">
+		SELECT
+		d.PURCHASE_DETAIL_ID,
+		d.PURCHASE_ID,
+		d.ITEM_ID,
+		i.ITEM_CODE,
+		i.ITEM_NAME,
+		i.SPEC,
+		d.ORDER_QTY,
+		d.UNIT_PRICE,
+		d.ORDER_QTY * d.UNIT_PRICE AS AMOUNT,
+		d.REQUIRED_DELIVERY_DATE,
+		d.REMARK,
+		i.UNIT_CODE,
+		cc.CODE_DESC AS UNIT_NAME
+		FROM PURCHASE_DETAIL d
+		JOIN ITEM i ON d.ITEM_ID = i.ITEM_ID
+		LEFT JOIN COMMON_CODE cc
+		ON i.UNIT_CODE = cc.CODE_ID
+		AND cc.CODE_TYPE = 'UNIT_CODE'
+		WHERE d.PURCHASE_ID = #{purchaseId}
+		ORDER BY d.PURCHASE_DETAIL_ID
+	</select>
 </mapper>
