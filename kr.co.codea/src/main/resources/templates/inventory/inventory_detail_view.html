@@ -99,7 +99,7 @@
 				</table>
 				<div class="d-flex justify-content-end gap-2">
 					<a th:href="@{/inventory/list}" class="btn btn-outline-secondary">목록</a>
-					<a href="#" class="btn btn-primary">수정</a>
+					<a th:href="@{/inventory/modify(inventoryId=${detail.inventoryId})}" class="btn btn-primary">수정</a>
 				</div>
 			</div>
 		</div>

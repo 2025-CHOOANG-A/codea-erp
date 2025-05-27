@@ -33,5 +33,13 @@ public interface InventoryMapper {
 	
 	public InventoryDTO inv_avg_cost(@Param("itemId") int itemId, @Param("whId") int whId);	// 기존 평균 단가
 	
+	public Integer inv_check(@Param("itemId") int itemId, @Param("whId") int whId);	// 재고 중복 체크
+	
+	public Integer inout_check(@Param("itemId") int itemId, @Param("whId") int whId);	// 입출고 중복 체크
+	
 	public int inv_insert(InventoryDTO dto);	// 재고 등록
+	
+	public InventoryDTO inv_mod(@Param("inventoryId") int inventoryId);	// 수정 페이지
+	
+	public int inv_update(InventoryDTO dto);	// 재고 수정
 }
