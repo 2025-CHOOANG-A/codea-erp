@@ -28,5 +28,9 @@ public class ProductPlanDTO {
     
     //검색관련
     private String keyword;
+    
+    //ui
+    private String empName;
+
 
 }

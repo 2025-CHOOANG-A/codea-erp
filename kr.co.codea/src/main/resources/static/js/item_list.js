@@ -1,4 +1,3 @@
-
       // Sidebar toggle
       const sidebar = document.getElementById("sidebar");
       const sidebarOpenBtn = document.getElementById("sidebarOpenBtn");

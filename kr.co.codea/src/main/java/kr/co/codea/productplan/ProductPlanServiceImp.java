@@ -17,4 +17,14 @@ public class ProductPlanServiceImp implements ProductPlanService {
 		return mapper.ProductPlanList(dto);
 	}
 
+	@Override
+	public int insertProductPlan(ProductPlanDTO dto) {
+		return mapper.insertProductPlan(dto);
+	}
+
+	@Override
+	public List<ProductPlanDTO> searchItem(String query) {
+		return mapper.searchItem(query);
+	}
+
 }
