@@ -64,30 +64,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager)
             throws Exception {
-
+    	
         http.csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationManager(authenticationManager)
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authz -> authz
                 // ADMIN 전용 경로
-                //.requestMatchers("/notice/**", "/employee/new", "/employee/register", "/employee/{empId}/delete")
-                //.hasRole("ADMIN")
+                .requestMatchers("/notice/**", "/employee/new", "/employee/register", "/employee/{empId}/delete")
+                .hasRole("ADMIN")
 
                 // 인증 없이 접근 가능한 공개 경로
-                //.requestMatchers(
-                //        "/", "/login", "/auth/login", "/auth/reissue", "/favicon.ico", "/.well-known/**", "/error",
-                //        "/css/**", "/js/**", "/images/**", "/webjars/**"
-                //).permitAll()
+                .requestMatchers(
+                        "/", "/login", "/auth/login", "/auth/reissue", "/favicon.ico", "/.well-known/**", "/error",
+                        "/css/**", "/js/**", "/images/**", "/webjars/**"
+                ).permitAll()
 
                 // 인증 필요 경로 (일반 사용자 접근 가능)
-                //.requestMatchers("/index", "/employee").authenticated()
+                .requestMatchers("/index", "/employee").authenticated()
 
                 // 나머지 모든 요청은 인증 필요
-                //.anyRequest().authenticated()
-                .anyRequest().permitAll()
-            )
-            .formLogin(form -> form.loginPage("/login").permitAll());
+                .anyRequest().authenticated()
+                //.anyRequest().permitAll()
+            );
+            //.formLogin(form -> form.loginPage("/login").permitAll());
 
         return http.build();
     }

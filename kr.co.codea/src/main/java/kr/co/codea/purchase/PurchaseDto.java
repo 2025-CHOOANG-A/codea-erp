@@ -15,4 +15,6 @@ public class PurchaseDto {
     private String employeeName;   // 담당자명 (JOIN된 EMPLOYEE.EMP_NAME)
     private Date createdAt;        // 등록일 (PURCHASE_HEADER.CREATED_AT)
     private String remark;         // 비고 (PURCHASE_HEADER.REMARK)
+    
+    
 }
