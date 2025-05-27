@@ -30,4 +30,13 @@ public class InventoryDTO {
 	
 	// 입고 단가
 	double itemUnitCost;
+	
+	// 로그 ID, 변경 전 보유 수량, 변경 후 보유 수량
+	int logId, beforeQty, afterQty;
+	
+	// 변경 전 평균 단가, 변경 후 평균 단가
+	double beforeCost, afterCost;
+	
+	// 변경 사유, 변경 일자
+	String reason, editDate;
 }

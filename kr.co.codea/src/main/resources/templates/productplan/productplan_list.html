@@ -6,7 +6,15 @@
 
     <main class="content">
       <div class="container">
-        <h2 class="mb-4">생산 계획 조회</h2>
+        <h2 class="mb-4">생산 계획</h2>
+
+        <div class="flex justify-end gap-2 mb-3">
+            <button type="button" class="btn btn-primary work-order-btn">작업 지시 생성</button>
+            <button type="button" class="btn btn-primary work-order-btn">작업 지시 취소</button>
+            <button type="button" class="btn btn-primary mrp-calc-btn">자재 소요량 계산</button>
+        </div>
+        <hr class="mb-4">
+
         <form id="filterForm" class="filter-bar flex flex-wrap items-center gap-3 mb-4 p-3 border rounded-md shadow-sm bg-white">
                               <div class="flex items-center gap-2">
                      <label for="startDate" class="text-sm text-gray-700 whitespace-nowrap">검색:</label>
@@ -55,7 +63,7 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <label for="empNo" class="text-sm text-gray-700 whitespace-nowrap">담당자 사번:</label>
+            <label for="empNo" class="text-sm text-gray-700 whitespace-nowrap">담당자 :</label>
             <input
               type="text"
               name="empNo"
@@ -131,9 +139,10 @@
               </ul>
           </nav>
           <div class="flex gap-2">
-            <a th:href="@{/productionplan/write}" class="btn btn-success add-btn">등록</a>
+          
+            <a href="#" class="btn btn-primary add-btn" data-bs-toggle="modal" data-bs-target="#productionPlanRegisterModal">생산 계획 등록</a>
             <button type="button" class="btn btn-outline-danger delete-btn">
-              선택 삭제
+              선택된 계획 삭제
             </button>
           </div>
         </div>
@@ -164,6 +173,104 @@
         </div>
       </div>
     </div>
+    
+    <!--생산계획등록 모달 -->
+<div class="modal fade" id="productionPlanRegisterModal" tabindex="-1" aria-labelledby="productionPlanRegisterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productionPlanRegisterModalLabel">생산 계획 등록</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+      <div class="modal-body">
+        <form id="productionPlanForm">
+          <div class="mb-3">
+            <label for="itemCode" class="form-label">품목</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="itemNameDisplay" placeholder="선택된 품목명" readonly>
+                <input type="hidden" id="itemCode" name="itemCode">
+                <button class="btn btn-primary" type="button" id="openItemSearchInputBtn">품목 검색</button>
+            </div>
+          </div>
+
+          <div id="itemSearchSection" class="card card-body mb-3" style="display: none;">
+              <div class="input-group mb-3">
+                  <input type="text" class="form-control" id="itemSearchInput" placeholder="품목명 또는 품목 코드 입력">
+                  <button class="btn btn-primary" type="button" id="executeItemSearchBtn">검색</button>
+              </div>
+              <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                  <table class="table table-hover table-sm">
+                      <thead>
+                          <tr>
+                              <th>품목명</th>
+                              <th>품목 코드</th>
+                              <th>선택</th>
+                          </tr>
+                      </thead>
+                      <tbody id="itemSearchResults">
+                          <tr><td colspan="3" class="text-center text-secondary">검색 결과가 없습니다.</td></tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+          <div class="mb-3">
+            <label for="planQty" class="form-label">계획 수량</label>
+            <input type="number" class="form-control" id="planQty" name="planQty" required>
+          </div>
+          <div class="mb-3">
+            <label for="startDate" class="form-label">생산계획시작일</label>
+            <input type="date" class="form-control" id="startDate" name="startDate" required>
+          </div>
+          <div class="mb-3">
+            <label for="endDate" class="form-label">생산완료계획일</label>
+            <input type="date" class="form-control" id="endDate" name="endDate" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">담당자</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="empNameDisplay" placeholder="선택된 사원명" readonly>
+                <input type="hidden" id="empNo" name="empNo">
+                <button class="btn btn-primary" type="button" id="openEmployeeSearchInputBtn">사원 검색</button>
+            </div>
+          </div>
+
+          <div id="employeeSearchSection" class="card card-body mb-3" style="display: none;">
+              <div class="input-group mb-3">
+                  <input type="text" class="form-control" id="employeeSearchInput" placeholder="사원명 또는 사번 입력">
+                  <button class="btn btn-primary" type="button" id="executeEmployeeSearchBtn">검색</button>
+              </div>
+              <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                  <table class="table table-hover table-sm">
+                      <thead>
+                          <tr>
+                              <th>사원명</th>
+                              <th>사번</th>
+                              <th>선택</th>
+                          </tr>
+                      </thead>
+                      <tbody id="employeeSearchResults">
+                          <tr><td colspan="3" class="text-center text-secondary">검색 결과가 없습니다.</td></tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+          
+           <div class="mb-3">
+            <label for="remark" class="form-label">비고</label>
+            <input type="text" class="form-control" id="remark" name="remark">
+          </div>
+          
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">등록</button>
+            <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">취소</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+    
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-   <script th:src="@{/js/production_plan_list.js}"></script>
+   <script th:src="@{/js/productplan_list.js}"></script>
 </div>

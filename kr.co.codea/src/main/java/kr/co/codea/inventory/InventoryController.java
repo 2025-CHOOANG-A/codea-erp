@@ -81,6 +81,15 @@ public class InventoryController {
 		return currentQty;
 	}
 	
+	@GetMapping("/writeCk")
+	@ResponseBody
+	public String inv_check(@RequestParam(name="itemId") int itemId,
+			@RequestParam(name="whId") int whId) {	// 중복 체크
+		String msg = this.dao.check(itemId, whId);
+		
+		return msg;
+	}
+	
 	@GetMapping("/write")
 	public String writePage() {	// 재고 등록 페이지
 		
@@ -113,7 +122,10 @@ public class InventoryController {
 	}
 	
 	@GetMapping("/modify")
-	public String modifyPage() {	// 재고 수정 페이지
+	public String modifyPage(@RequestParam("inventoryId") int inventoryId, Model m) {	// 재고 수정 페이지
+		InventoryDTO mod = this.dao.inv_mod(inventoryId);
+		m.addAttribute("mod", mod);
+		
     	return "inventory/inventory_modify"; // templates/receiving/receiving_detail.html
 	}
 }
