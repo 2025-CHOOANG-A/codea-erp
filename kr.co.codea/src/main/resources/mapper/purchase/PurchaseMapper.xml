@@ -2,65 +2,60 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.purchase.PurchaseMapper">
 
-	<select id="selectPurchaseList"
-		resultType="kr.co.codea.purchase.PurchaseDto">
-		SELECT
-		PURCHASE_ID,
-		PURCHASE_CODE,
-		ORDER_DATE,
-		SUPPLIER_NAME,
-		TOTAL_AMOUNT,
-		STATUS,
-		EMPLOYEE_NAME,
-		CREATED_AT,
-		REMARK
-		FROM
-		V_PURCHASE_LIST
-		WHERE 1 = 1
+    <select id="selectPurchaseList" resultType="kr.co.codea.purchase.PurchaseDto">
+        SELECT *
+        FROM (
+            SELECT InnerQuery.*, ROWNUM AS rn FROM (
+                SELECT
+                    PURCHASE_ID,
+                    PURCHASE_CODE,
+                    ORDER_DATE,
+                    SUPPLIER_NAME,
+                    TOTAL_AMOUNT,
+                    STATUS,
+                    EMPLOYEE_NAME,
+                    CREATED_AT,
+                    REMARK
+                FROM
+                    V_PURCHASE_LIST
+                WHERE 1 = 1
+                <if test="keyword != null and keyword != ''">
+                    AND (SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
+                    OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%')
+                </if>
+                <if test="status != null and status != ''">
+                    AND STATUS = #{status}
+                </if>
+                <if test="startDate != null and startDate != ''">
+                    AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+                </if>
+                <if test="endDate != null and endDate != ''">
+                    AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+                </if>
+                ORDER BY ORDER_DATE DESC, PURCHASE_ID DESC
+            ) InnerQuery
+            WHERE ROWNUM &lt;= #{endRowForQuery} )
+        WHERE rn &gt; #{startRowForQuery} </select>
 
-		<if test="keyword != null and keyword != ''">
-			AND (SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
-			OR
-			EMPLOYEE_NAME LIKE '%' || #{keyword} || '%')
-		</if>
-
-		<if test="status != null and status != ''">
-			AND STATUS = #{status}
-		</if>
-
-		<if test="startDate != null and startDate != ''">
-			AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-		</if>
-		<if test="endDate != null and endDate != ''">
-			AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-		</if>
-
-		ORDER BY ORDER_DATE DESC, PURCHASE_ID DESC
-	</select>
-
-
-	<select id="countPurchaseList" resultType="int">
-		SELECT COUNT(*)
-		FROM V_PURCHASE_LIST
-		WHERE 1 = 1
-
-		<if test="keyword != null and keyword != ''">
-			AND (
-			SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
-			OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%'
-			)
-		</if>
-
-		<if test="status != null and status != ''">
-			AND STATUS = #{status}
-		</if>
-
-		<if test="startDate != null and startDate != ''">
-			AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-		</if>
-		<if test="endDate != null and endDate != ''">
-			AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-		</if>
-	</select>
+    <select id="countPurchaseList" resultType="int">
+        SELECT COUNT(*)
+        FROM V_PURCHASE_LIST
+        WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+            AND (
+            SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
+            OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%'
+            )
+        </if>
+        <if test="status != null and status != ''">
+            AND STATUS = #{status}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+        </if>
+    </select>
 
 </mapper>

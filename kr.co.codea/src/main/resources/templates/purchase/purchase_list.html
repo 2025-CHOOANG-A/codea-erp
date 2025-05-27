@@ -153,13 +153,14 @@ body {
 
 		<form method="get" th:action="@{/purchase}" class="d-flex gap-2 mb-3">
 			<input type="text" name="keyword" class="form-control"
-				placeholder="검색어" th:value="${params['keyword']}" /> <select
-				name="status" class="form-select" th:value="${params['status']}">
-				<option value="">전체</option>
-				<option value="접수">접수</option>
-				<option value="진행중">진행중</option>
-				<option value="완료">완료</option>
-			</select> <input type="date" name="startDate" class="form-control"
+				placeholder="검색어" th:value="${params['keyword']}" />
+            <select name="status" class="form-select">
+                <option value="" th:selected="${params['status'] == null or params['status'] == ''}">전체</option>
+                <option value="접수" th:selected="${params['status'] == '접수'}">접수</option>
+                <option value="진행중" th:selected="${params['status'] == '진행중'}">진행중</option>
+                <option value="완료" th:selected="${params['status'] == '완료'}">완료</option>
+            </select>
+            <input type="date" name="startDate" class="form-control"
 				th:value="${params['startDate']}" /> <input type="date"
 				name="endDate" class="form-control" th:value="${params['endDate']}" />
 
@@ -182,7 +183,10 @@ body {
 					</tr>
 				</thead>
 				<tbody>
-					<tr th:each="purchase : ${purchaseList}">
+					<tr th:if="${#lists.isEmpty(purchaseList)}">
+                        <td colspan="8" class="text-center">조회된 발주 목록이 없습니다.</td>
+                    </tr>
+					<tr th:each="purchase : ${purchaseList}" th:if="${not #lists.isEmpty(purchaseList)}">
 						<td><a href="#" class="purchase-code-link"
 							th:attr="data-code=${purchase.purchaseCode}, data-id=${purchase.purchaseId}"
 							th:text="${purchase.purchaseCode}"
@@ -200,21 +204,39 @@ body {
 			</table>
 		</div>
 
-		<div class="d-flex justify-content-between align-items-center mt-3">
-			<nav aria-label="Page navigation">
-				<ul class="pagination pagination-sm mb-0">
-					<li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
-					<li class="page-item active"><a class="page-link" href="#">1</a></li>
-					<li class="page-item"><a class="page-link" href="#">2</a></li>
-					<li class="page-item"><a class="page-link" href="#">3</a></li>
-					<li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
-				</ul>
-			</nav>
-			<div>
-				<button class="btn btn-dark" onclick="goToPurchaseCreatePage()">발주
-					등록</button>
-			</div>
-		</div>
+		<div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages > 0}">
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${!hasPreviousPageGroup} ? 'disabled' : ''">
+                        <a class="page-link" th:href="@{/purchase(page=${previousPageGroupStart}, keyword=${params['keyword']}, status=${params['status']}, startDate=${params['startDate']}, endDate=${params['endDate']})}">&laquo;&laquo;</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled' : ''">
+                        <a class="page-link" th:href="@{/purchase(page=${currentPage - 1}, keyword=${params['keyword']}, status=${params['status']}, startDate=${params['startDate']}, endDate=${params['endDate']})}">&laquo;</a>
+                    </li>
+
+                    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}"
+                        th:classappend="${pageNumber == currentPage} ? 'active' : ''">
+                        <a class="page-link" th:href="@{/purchase(page=${pageNumber}, keyword=${params['keyword']}, status=${params['status']}, startDate=${params['startDate']}, endDate=${params['endDate']})}"
+                           th:text="${pageNumber}"></a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled' : ''">
+                        <a class="page-link" th:href="@{/purchase(page=${currentPage + 1}, keyword=${params['keyword']}, status=${params['status']}, startDate=${params['startDate']}, endDate=${params['endDate']})}">&raquo;</a>
+                    </li>
+                     <li class="page-item" th:classappend="${!hasNextPageGroup} ? 'disabled' : ''">
+                        <a class="page-link" th:href="@{/purchase(page=${nextPageGroupStart}, keyword=${params['keyword']}, status=${params['status']}, startDate=${params['startDate']}, endDate=${params['endDate']})}">&raquo;&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+            <div>
+                <button class="btn btn-dark" onclick="goToPurchaseCreatePage()">발주 등록</button>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end align-items-center mt-3" th:if="${totalPages == 0}">
+             <div>
+                <button class="btn btn-dark" onclick="goToPurchaseCreatePage()">발주 등록</button>
+            </div>
+         </div>
 	</div>
 
 	<script
@@ -229,7 +251,9 @@ body {
 
     function goToPurchaseCreatePage() {
       if (confirm('발주 등록 페이지로 이동 하시겠습니까?')) {
-        alert('발주 등록 페이지로 이동합니다. (실제 이동 경로는 수정 필요)');
+        // 실제 운영 환경에서는 아래 alert 대신 window.location.href 를 사용하세요.
+         window.location.href = '/purchase/create'; // 예시 경로
+        //alert('발주 등록 페이지로 이동합니다. (실제 이동 경로는 수정 필요)');
       }
     }
 
@@ -240,7 +264,9 @@ body {
     }
 
     function viewPurchaseDetail(purchaseCode, purchaseId) {
-      alert(purchaseCode + ' (ID: ' + purchaseId + ') 발주의 상세 페이지로 이동합니다. (실제 이동 경로는 수정 필요)');
+      // 실제 운영 환경에서는 아래 alert 대신 window.location.href 를 사용하세요.
+       window.location.href = '/purchase/detail/' + purchaseId; // 예시 경로
+      //alert(purchaseCode + ' (ID: ' + purchaseId + ') 발주의 상세 페이지로 이동합니다. (실제 이동 경로는 수정 필요)');
     }
   </script>
 </body>
