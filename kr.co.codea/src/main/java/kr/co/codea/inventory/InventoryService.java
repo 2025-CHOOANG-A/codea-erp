@@ -17,7 +17,13 @@ public interface InventoryService {
 
 	public InventoryDTO inv_dto(int itemId, int whId);	// dto 관련 메소드 (입고 예정 수량, 출고 예정 수량)
 	
-	public InventoryDTO avg_cost(int currentQty, double averageCost, int quantity, double itemUnitCost);	// 평균 단가 (기존 수량, 기존 평균 단가, 입고 수량, 입고 단가)
+	public InventoryDTO avg_cost(int currentQty, double averageCost, int itemId, int whId, String itemType);	// 평균 단가 (기존 수량, 기존 평균 단가, 입고 수량, 입고 단가)
+	
+	public String check(int itemId, int whId);	// 중복 체크
 	
 	public Integer inv_insert(InventoryDTO dto);	// 재고 등록
+	
+	public InventoryDTO inv_mod(int inventoryId);	// 수정 페이지
+	
+	public Integer inv_update(InventoryDTO dto);	// 재고 수정
 }

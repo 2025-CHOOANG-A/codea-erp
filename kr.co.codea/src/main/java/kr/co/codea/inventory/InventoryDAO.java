@@ -81,46 +81,99 @@ public class InventoryDAO implements InventoryService {
 	}
 	
 	@Override
-	public InventoryDTO avg_cost(int currentQty, double averageCost, int quantity, double itemUnitCost) {	// 평균 단가 (기존 수량, 기존 평균 단가, 입고 수량, 입고 단가)
+	public InventoryDTO avg_cost(int currentQty, double averageCost, int itemId, int whId, String itemType) {	// 평균 단가 (기존 수량, 기존 평균 단가, 입고 수량, 입고 단가)
+		InventoryDTO in_data_dto = this.mp.in_data(itemId, whId, itemType);
+		
+		int quantity = in_data_dto.getQuantity();	// 입고 수량
+		double itemUnitCost = in_data_dto.getItemUnitCost();	// 입고 단가
+		
+		int total_qty = currentQty + quantity;
+
 		InventoryDTO dto = new InventoryDTO();
 
-		int total_qty = currentQty + quantity;
-		
 		if(total_qty == 0) {
 			dto.setAverageCost(0.0);
 		}
 		else {
-			double new_cost = ((currentQty * averageCost) + (quantity * itemUnitCost)) / (currentQty + quantity);
+			double new_cost = ((currentQty * averageCost) + (quantity * itemUnitCost)) / total_qty;
 			
 			dto.setAverageCost(new_cost);
 		}
+		
+		dto.setQuantity(quantity);
+		dto.setItemUnitCost(itemUnitCost);
 		
 		return dto;
 	}
 	
 	@Override
+	public String check(int itemId, int whId) {	// 중복 체크
+		String msg = "";
+		
+		Integer inv_ck = this.mp.inv_check(itemId, whId);	// 재고
+		Integer io_ck = this.mp.inout_check(itemId, whId);	// 입출고
+		
+		if(inv_ck != null && inv_ck > 0) {	// 재고 테이블에 데이터가 있을 경우
+			msg = "exist";
+		}
+		else if(io_ck == null || io_ck == 0) {	// 입출고 테이블에 데이터가 없을 경우
+			msg = "nodata";
+		}
+		else {	// 등록 가능
+			msg = "ok";
+		}
+		
+		return msg;
+	}
+
+	@Override
 	public Integer inv_insert(InventoryDTO dto) {	// 재고 등록
 		InventoryDTO inv_avg_cost = this.mp.inv_avg_cost(dto.getItemId(), dto.getWhId());
 		
 		int cur_qty = 0;	// 기존 수량
-		double avg_cost = 0;	// 기존 평균 단위
+		double avg_cost = 0;	// 기존 평균 단가
 		
 		if(inv_avg_cost != null) {	// 기존 재고가 있으면
 			cur_qty = inv_avg_cost.getCurrentQty();
 			avg_cost = inv_avg_cost.getAverageCost();
 		}
 		
-		InventoryDTO in_data = this.mp.in_data(dto.getItemId(), dto.getWhId(), dto.getItemType());
+		InventoryDTO qty_dto = this.inv_dto(dto.getItemId(), dto.getWhId());
+		dto.setExpectedQty(qty_dto.getExpectedQty());	// 입고 예정 수량
+		dto.setAllocatedQty(qty_dto.getAllocatedQty());	// 출고 예정 수량
 		
+		InventoryDTO cost_dto = this.avg_cost(cur_qty, avg_cost, dto.getItemId(), dto.getWhId(), dto.getItemType());
+		dto.setQuantity(cost_dto.getQuantity());	// 입고 수량
+		dto.setItemUnitCost(cost_dto.getItemUnitCost());	// 입고 단가
+		dto.setAverageCost(cost_dto.getAverageCost());	// 평균 단가
+		
+		int result = this.mp.inv_insert(dto);
+		
+		return result;
+	}
+	
+	@Override
+	public InventoryDTO inv_mod(int inventoryId) {	// 수정 페이지
+		InventoryDTO mod = this.mp.inv_mod(inventoryId);
+		
+		return mod;
+	}
+	
+	@Override
+	public Integer inv_update(InventoryDTO dto) {	// 재고 수정
+		InventoryDTO inv_avg_cost = this.mp.inv_avg_cost(dto.getItemId(), dto.getWhId());
+		
+		int cur_qty = inv_avg_cost.getCurrentQty();	// 기존 수량
+		double avg_cost = inv_avg_cost.getAverageCost();	// 기존 평균 단가
 		
 		InventoryDTO qty_dto = this.inv_dto(dto.getItemId(), dto.getWhId());
 		dto.setExpectedQty(qty_dto.getExpectedQty());	// 입고 예정 수량
 		dto.setAllocatedQty(qty_dto.getAllocatedQty());	// 출고 예정 수량
 		
-		InventoryDTO cost_dto = this.avg_cost(cur_qty, avg_cost, dto.getQuantity(), dto.getItemUnitCost());
+		InventoryDTO cost_dto = this.avg_cost(cur_qty, avg_cost, dto.getItemId(), dto.getWhId(), dto.getItemType());
 		dto.setAverageCost(cost_dto.getAverageCost());	// 평균 단가
 		
-		int result = this.mp.inv_insert(dto);
+		int result = this.mp.inv_update(dto);
 		
 		return result;
 	}
