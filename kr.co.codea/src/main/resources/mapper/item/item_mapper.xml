@@ -14,85 +14,69 @@
     ) VALUES (
       #{itemCode}, #{itemName}, #{itemType},
       #{itemCatL}, #{itemCatS}, #{unitCode},
-      #{spec}, #{remark}, #{leadTime}, #{bpCode}, #{price}
+      #{spec}, #{reMark}, #{leadTime}, #{bpCode}, #{price}
     )
 </insert>
-
- <!-- 2. PARTNER_ITEM 테이블에 판매가 INSERT -->
-  <insert id="partner_price" parameterType="kr.co.codea.item.itemDTO">
-    INSERT INTO PARTNER_ITEM (
-      ITEM_ID, BP_ID, PRICE_TYPE, PRICE,
-      PRICE_DATE, CREATED_AT, LEAD_TIME
-    ) VALUES (
-      #{itemId}, #{bpId}, '판매가', #{price},
-      SYSDATE, SYSDATE, #{leadTime}
-    )
-  </insert>
-
-<!-- 거래처 추가   -->
-  <insert id="insert_partner" parameterType="kr.co.codea.item.itemDTO">
-  INSERT INTO BUSINESS_PARTNER (
-        BP_NAME, BP_CODE, TEL
-    ) VALUES (
-        #{bpName}, #{bpCode}, #{Tel}
-    )
-</insert>
-
 
 <!-- 제품목록 , 검색 조회  
  resultType="kr.co.codea.item.item_list_DTO"
+   cc.CODE AS UNIT_NAME => 단위 EA 조회하기 
+ 
 -->
 <select id="item_select"  parameterType="String"  resultMap="itemListResultMap">   
-SELECT 
-  A.ITEM_CODE,
-  A.ITEM_NAME,
-  A.ITEM_CAT_L,
-  A.ITEM_CAT_S,
-  A.SPEC,
-  A.REMARK,
-  B.INVENTORY_CODE,
-  B.CURRENT_QTY,
-  B.WH_ID,
-  C.WH_CODE,
-  D.PRICE
-FROM ITEM A
-LEFT JOIN INVENTORY B ON A.ITEM_ID = B.ITEM_ID
-LEFT JOIN WAREHOUSE C ON B.WH_ID = C.WH_ID
-LEFT JOIN (
-  SELECT *
-  FROM (
-    SELECT 
-      ITEM_ID, PRICE,
-      ROW_NUMBER() OVER (PARTITION BY ITEM_ID ORDER BY PRICE_DATE DESC) AS RN
-    FROM PARTNER_ITEM
-  )
-  WHERE RN = 1
-) D ON A.ITEM_ID = D.ITEM_ID
-
-<where>
-  <if test="keyword != null and keyword != ''">
- AND (
-      A.ITEM_NAME LIKE CONCAT('%', #{keyword}, '%')
-      OR A.ITEM_CODE LIKE CONCAT('%', #{keyword}, '%')
-      OR A.ITEM_CAT_L LIKE CONCAT('%', #{keyword}, '%')
-      OR A.ITEM_CAT_S LIKE CONCAT('%', #{keyword}, '%')
-      OR A.SPEC LIKE CONCAT('%', #{keyword}, '%')
-      OR A.REMARK LIKE CONCAT('%', #{keyword}, '%')
-      OR B.INVENTORY_CODE LIKE CONCAT('%', #{keyword}, '%')
-      OR C.WH_CODE LIKE CONCAT('%', #{keyword}, '%')
+ SELECT 
+    A.ITEM_CODE,
+    A.ITEM_NAME,
+    A.ITEM_CAT_L,
+    A.ITEM_CAT_S,
+    A.SPEC,
+    A.REMARK,
+    A.UNIT_CODE,
+    cc.CODE AS UNIT_NAME,
+    B.INVENTORY_CODE,
+    B.CURRENT_QTY,
+    B.WH_ID,
+    C.WH_CODE,
+    D.PRICE
+  FROM ITEM A
+  LEFT JOIN INVENTORY B ON A.ITEM_ID = B.ITEM_ID
+  LEFT JOIN WAREHOUSE C ON B.WH_ID = C.WH_ID
+  LEFT JOIN (
+    SELECT ITEM_ID, PRICE
+    FROM (
+      SELECT 
+        ITEM_ID, PRICE,
+        ROW_NUMBER() OVER (PARTITION BY ITEM_ID ORDER BY PRICE_DATE DESC) AS RN
+      FROM PARTNER_ITEM
     )
-</if>
-</where>
+    WHERE RN = 1
+  ) D ON A.ITEM_ID = D.ITEM_ID
+  LEFT JOIN COMMON_CODE cc ON A.UNIT_CODE = cc.CODE_ID AND cc.CODE_TYPE = 'UNIT_CODE'
+  <where>
+    <if test="keyword != null and keyword != ''">
+      AND (
+        A.ITEM_NAME LIKE CONCAT('%', #{keyword}, '%')
+        OR A.ITEM_CODE LIKE CONCAT('%', #{keyword}, '%')
+        OR A.ITEM_CAT_L LIKE CONCAT('%', #{keyword}, '%')
+        OR A.ITEM_CAT_S LIKE CONCAT('%', #{keyword}, '%')
+        OR A.SPEC LIKE CONCAT('%', #{keyword}, '%')
+        OR A.REMARK LIKE CONCAT('%', #{keyword}, '%')
+        OR B.INVENTORY_CODE LIKE CONCAT('%', #{keyword}, '%')
+        OR C.WH_CODE LIKE CONCAT('%', #{keyword}, '%')
+        OR CC.CODE LIKE CONCAT('%', #{keyword}, '%') 
+      )
+    </if>
+  </where>
 </select>
 
 <!-- 거래처 조회(비즈니스 파트너)-->
 <select id="bp_select"  parameterType="String"  resultMap="itemListResultMap">
-SELECT 
-BP_NAME, 
-BP_CODE,
-TEL
-FROM
-BUSINESS_PARTNER
+  SELECT 
+    BP_NAME, 
+    BP_CODE,
+    TEL
+  FROM BUSINESS_PARTNER
+  WHERE BP_TYPE = '고객사'
 </select>
 
 <!-- 대분류 소분류 칼럼(ITEM-CATEGORY)  -->
@@ -125,7 +109,7 @@ LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
   c.CODE_DESC AS UNIT_NAME =>별명 잡음(단위이름)
  -->
 <select  id="unitcode_list" resultType="itemDTO">
-  SELECT CODE_ID, CODE_DESC
+  SELECT CODE_ID, CODE
   FROM COMMON_CODE
   WHERE CODE_TYPE = 'UNIT_CODE'
 </select>
@@ -144,6 +128,7 @@ LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
     <result property="whCode" column="WH_CODE"/>
     <result property="price" column="PRICE"/>
     <result property="unitCode" column="UNIT_CODE"/>
+    <result property="Code" column="CODE"/>
     
     <result property="bpCode" column="BP_CODE"/>
     <result property="bpName" column="BP_NAME"/>
@@ -156,14 +141,12 @@ LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
      
     <result property="codeId" column="CODE_ID"/>
     <result property="codeDesc" column="CODE_DESC"/>
-    
-    <result property="codeDesc" column="CODE_DESC"/>
    
     <result property="itemId" column="ITEM_ID"/>
     <result property="itemType" column="ITEM_TYPE"/>
     <result property="leadTime" column="LEAD_TIME"/>
     <result property="createdAt" column="CREATED_AT"/>
-  
+    <result property="unitName" column="UNIT_NAME"/>
   
    
 </resultMap>

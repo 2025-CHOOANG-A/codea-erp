@@ -7,18 +7,12 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface item_mapper {
-	/*
-	//주문등록
-	public insert_item(itemDTO dto);
-	
-	//거래처등록
-	public insert_partner(itemDTO dto);
 
-	*/
+	/*주문 등록*/	
+    // ITEM 테이블 추가 
+    int insert_item(itemDTO dto);
 	
-	
-/*테이블 조회 : 등록시 필요한 리스트 가져오*/
-	
+    /*테이블 조회 : 등록시 필요한 리스트 가져오*/	
 	//주문목록 조회
 	List<itemDTO> item_select();	
 	//거래처 등록 조회

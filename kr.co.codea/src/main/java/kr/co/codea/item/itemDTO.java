@@ -22,7 +22,11 @@ public class itemDTO {
 	private String whId;   // 재고창고(WH_ID)
 	private String whCode; // 창코코드
 	private String reMark; // 비고
-	          
+	//단위 
+	private int unitCode;
+	private String unitName;     
+	private String Code;  
+	
     //거래처 정보     
      private String bpName;// 거래처이름
      private String bpCode;// 거래처코드 
@@ -43,5 +47,7 @@ public class itemDTO {
      private int leadTime;  // LEAD_TIME 품목을 생산하는 데 소요되는 기간을 의미, 각 거래처의 납기기간
      private Date createdAt;  //등록일
 	    
-		
+	
+     
+     
 }

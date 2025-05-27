@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.annotation.Resource;
+import kr.co.codea.productplan.ProductPlanController;
 import lombok.RequiredArgsConstructor;
 
 
@@ -22,12 +23,19 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequestMapping("/item")
 public class item_controller {
+
+    private final ProductPlanController productPlanController;
 	
 	Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	
 	@Autowired
 	itemDAO dao;
+
+
+    item_controller(ProductPlanController productPlanController) {
+        this.productPlanController = productPlanController;
+    }
 	
 	
 	 @GetMapping("/item_detail")
@@ -71,7 +79,15 @@ public class item_controller {
 	    return "item/item_write"; 
 	}	
 	
-	
-	
+	@PostMapping("/item_writeok")
+	public String item_wirteok(@ModelAttribute itemDTO dto, Model m) {
+		this.dao.insert_item(dto);//제품등록(item)
+		
+		//저장 후 직접 리스트 다시 조회 
+		List<itemDTO> item_list = this.dao.item_select();
+		m.addAttribute("item_list", item_list);
+				
+	    return "item/item_list";
+	}
 
 }
