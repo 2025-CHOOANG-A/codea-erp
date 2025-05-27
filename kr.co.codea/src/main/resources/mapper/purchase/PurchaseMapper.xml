@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.purchase.PurchaseMapper">
+
+    <select id="selectPurchaseList" parameterType="map" resultType="kr.co.codea.purchase.PurchaseDto">
+        SELECT
+            PURCHASE_ID,
+            PURCHASE_CODE,
+            ORDER_DATE,
+            SUPPLIER_NAME,
+            TOTAL_AMOUNT,
+            STATUS,
+            EMPLOYEE_NAME,
+            CREATED_AT,
+            REMARK
+        FROM
+            V_PURCHASE_LIST
+        ORDER BY
+            ORDER_DATE DESC, PURCHASE_ID DESC
+    </select>
+
+    <select id="countPurchaseList" parameterType="map" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            V_PURCHASE_LIST
+    </select>
+
+</mapper>

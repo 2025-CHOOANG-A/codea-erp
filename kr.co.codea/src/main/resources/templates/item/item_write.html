@@ -185,7 +185,8 @@
 
     <div class="main-content-wrapper">
       <main class="main-content">
-        <form id="productForm" autocomplete="off">
+      <!-- <form id="productForm" autocomplete="off"> -->     
+        <form id="productForm" action="/item/item_writeok" method="post" autocomplete="off">
           <!-- 제품 정보 -->
           <div class="form-section-title">제품 정보</div>
           <table class="table table-bordered align-middle table-form mb-4">
@@ -199,8 +200,8 @@
                 <td>
                   <select class="form-select" id="itemType" name="itemType" required>
                     <option value="">선택</option>
-                    <option value="제품">완제품</option>
-                    <option value="자재">원자재</option>
+                    <option value="완제품">완제품</option>
+                    <option value="원자재">원자재</option>
                   </select>
                 </td>
               </tr>
@@ -213,10 +214,10 @@
                   </select>
                 </td>
                 <th>소분류 <span class="required">*</span></th>
-                <td th:each="cs:${calS}">
+                <td >
                   <select class="form-select" id="itemCatS" name="itemCatS"  required>
                     <option value="">선택</option>
-                    <option value="회로" th:text="${cs.categoryId}">회로</option>
+                    <option th:value="${cs.categoryId}" th:each="cs:${calS}" th:text="${cs.categoryId}">회로</option>
                   </select>
                 </td>
               </tr>
@@ -233,9 +234,19 @@
               <tr>
                 <th>단위 <span class="required">*</span></th>
                 <td >
+                  
                   <select class="form-select" id="unitCode" name="unitCode" required>
+                      <!--
+                   <option value="">선택</option>
+                      <option th:each="uncd : ${uni_code}"
+                               th:text="${uncd.code}">
+                   </option>
+                      -->
+                
                     <option value="" >선택</option>
-                    <option value=""  th:each="uncd:${uni_code}"th:text="${uncd.codeDesc}"></option>
+                    <option value="" 
+                     th:value="${uncd.codeId}"
+                     th:each="uncd:${uni_code}"th:text="${uncd.Code}"></option>              
                   </select>
                 </td>
                 <th>단가 <span class="required">*</span></th>
@@ -322,7 +333,7 @@
 
           <!-- 버튼 -->
           <div class="text-end mb-5">
-            <button type="button" class="btn btn-primary">저장</button>
+            <button type="submit" class="btn btn-primary">저장</button>
             <button
               type="button"
               class="btn btn-secondary ms-2"

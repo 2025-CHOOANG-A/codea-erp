@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <title>발주목록</title>
@@ -10,7 +10,6 @@
       font-family: 'Segoe UI', sans-serif;
       overflow-x: hidden;
     }
-
     .sidebar {
       position: fixed;
       top: 0;
@@ -19,24 +18,18 @@
       height: 100%;
       background-color: #343a40;
       color: white;
-      overflow-y: scroll;
       overflow-y: auto;
-      padding: 1rem 1rem 2rem;
+      padding: 1rem;
       z-index: 1050;
       transition: left 0.3s ease;
     }
-
-    .sidebar.active {
-      left: 0;
-    }
-
+    .sidebar.active { left: 0; }
     .sidebar h5, .sidebar .section-title {
       font-size: 14px;
       color: #adb5bd;
       margin-top: 1.5rem;
       margin-bottom: 0.5rem;
     }
-
     .sidebar a {
       display: block;
       color: white;
@@ -44,17 +37,12 @@
       padding: 4px 0;
       font-size: 15px;
     }
-
-    .sidebar a:hover {
-      text-decoration: underline;
-    }
-
+    .sidebar a:hover { text-decoration: underline; }
     .menu-header {
       font-weight: bold;
       font-size: 18px;
       margin-bottom: 1rem;
     }
-
     .top-bar {
       height: 60px;
       background-color: white;
@@ -63,8 +51,8 @@
       align-items: center;
       justify-content: space-between;
       color: black;
+      border-bottom: 1px solid #e9ecef;
     }
-
     .menu-icon {
       font-size: 24px;
       cursor: pointer;
@@ -72,7 +60,6 @@
       background: none;
       border: none;
     }
-
     .close-icon {
       font-size: 20px;
       color: white;
@@ -83,25 +70,22 @@
       right: 10px;
       cursor: pointer;
     }
-
     .main-content {
       padding: 2rem;
       transition: margin-left 0.3s ease;
     }
-
-    .main-content.shifted {
-      margin-left: 250px;
+    .main-content.shifted { margin-left: 250px; }
+    .table th, .table td { vertical-align: middle; text-align: center; }
+    .table th.text-start, .table td.text-start { text-align: left; }
+    .table th.text-end, .table td.text-end { text-align: right; }
+    .purchase-code-link {
+      color: #0d6efd;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
     }
-
-    .table th, .table td {
-      vertical-align: middle;
-      text-align: center;
-    }
-
-    .btn-group-bottom {
-      margin-top: 1rem;
-      text-align: right;
-    }
+    .purchase-code-link:hover { text-decoration: underline; }
+    .btn-group-bottom { margin-top: 1rem; text-align: right; }
   </style>
 </head>
 <body>
@@ -136,49 +120,53 @@
 
   <div class="main-content" id="mainContent">
     <h4 class="fw-bold mb-3">발주목록</h4>
+
     <div class="table-responsive">
-      <table class="table table-bordered align-middle">
+      <table class="table table-bordered table-hover align-middle">
         <thead class="table-light">
           <tr>
-            <th><input type="checkbox" id="purchase_all"></th>
             <th>발주코드</th>
-            <th>자재명</th>
-            <th>자재코드</th>
-            <th>규격</th>
-            <th>단가</th>
-            <th>수량</th>
-            <th>단위</th>
-            <th>총액</th>
             <th>발주일</th>
-            <th>비고</th>
+            <th class="text-start">공급처명</th>
+            <th class="text-end">총 발주금액</th>
+            <th>발주상태</th>
+            <th>담당자명</th>
+            <th>등록일</th>
+            <th class="text-start">비고</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240601-01</td><td>알루미늄 판</td><td>M001</td><td>100x200x2T</td><td>5,000</td><td>20</td><td>EA</td><td>100,000</td><td>2024-06-01</td><td></td></tr>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240601-02</td><td>스테인리스 볼트</td><td>M002</td><td>M8x30</td><td>300</td><td>100</td><td>EA</td><td>30,000</td><td>2024-06-01</td><td></td></tr>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240602-01</td><td>구리선</td><td>M003</td><td>Ø2mm</td><td>1,200</td><td>50</td><td>EA</td><td>60,000</td><td>2024-06-02</td><td></td></tr>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240602-02</td><td>플라스틱 커버</td><td>M004</td><td>50x50</td><td>800</td><td>40</td><td>EA</td><td>32,000</td><td>2024-06-02</td><td></td></tr>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240603-01</td><td>고무 패킹</td><td>M005</td><td>Ø10mm</td><td>150</td><td>200</td><td>EA</td><td>30,000</td><td>2024-06-03</td><td></td></tr>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240603-02</td><td>철판</td><td>M006</td><td>200x300x3T</td><td>7,500</td><td>10</td><td>EA</td><td>75,000</td><td>2024-06-03</td><td></td></tr>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240604-01</td><td>아연 도금 볼트</td><td>M007</td><td>M10x40</td><td>400</td><td>80</td><td>EA</td><td>32,000</td><td>2024-06-04</td><td></td></tr>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240604-02</td><td>플라스틱 와셔</td><td>M008</td><td>Ø15mm</td><td>100</td><td>300</td><td>EA</td><td>30,000</td><td>2024-06-04</td><td></td></tr>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240605-01</td><td>스프링</td><td>M009</td><td>Ø5x50mm</td><td>600</td><td>60</td><td>EA</td><td>36,000</td><td>2024-06-05</td><td></td></tr>
-          <tr><td><input type="checkbox" class="check_item"></td><td>PO20240605-02</td><td>실리콘 튜브</td><td>M010</td><td>Ø8x1000mm</td><td>2,000</td><td>15</td><td>EA</td><td>30,000</td><td>2024-06-05</td><td></td></tr>
+          <tr th:each="purchase : ${purchaseList}">
+            <td>
+              <a href="#" class="purchase-code-link"
+                 th:attr="data-code=${purchase.purchaseCode}, data-id=${purchase.purchaseId}"
+                 th:text="${purchase.purchaseCode}"
+                 onclick="handleDetailClick(this); return false;"></a>
+            </td>
+            <td th:text="${#dates.format(purchase.orderDate, 'yyyy-MM-dd')}"></td>
+            <td class="text-start" th:text="${purchase.supplierName}"></td>
+            <td class="text-end" th:text="${#numbers.formatInteger(purchase.totalAmount, 3, 'COMMA')}"></td>
+            <td th:text="${purchase.status}"></td>
+            <td th:text="${purchase.employeeName}"></td>
+            <td th:text="${#dates.format(purchase.createdAt, 'yyyy-MM-dd')}"></td>
+            <td class="text-start" th:text="${purchase.remark}"></td>
+          </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="d-flex justify-content-between mt-3">
-      <nav>
-        <ul class="pagination">
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <nav aria-label="Page navigation">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
           <li class="page-item active"><a class="page-link" href="#">1</a></li>
           <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
           <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
         </ul>
       </nav>
       <div>
-        <button class="btn btn-dark" onclick="go_add()">추가</button>
-        <button class="btn btn-light border" onclick="go_delete()">삭제</button>
+        <button class="btn btn-dark" onclick="goToPurchaseCreatePage()">발주 등록</button>
       </div>
     </div>
   </div>
@@ -191,65 +179,22 @@
       sidebar.classList.toggle('active');
       content.classList.toggle('shifted');
     }
+
+    function goToPurchaseCreatePage() {
+      if (confirm('발주 등록 페이지로 이동 하시겠습니까?')) {
+        alert('발주 등록 페이지로 이동합니다. (실제 이동 경로는 수정 필요)');
+      }
+    }
+
+    function handleDetailClick(el) {
+      const code = el.getAttribute('data-code');
+      const id = el.getAttribute('data-id');
+      viewPurchaseDetail(code, id);
+    }
+
+    function viewPurchaseDetail(purchaseCode, purchaseId) {
+      alert(purchaseCode + ' (ID: ' + purchaseId + ') 발주의 상세 페이지로 이동합니다. (실제 이동 경로는 수정 필요)');
+    }
   </script>
-  
-  <script>
-  function go_add() {
-	  if (confirm('발주신청 페이지로 이동 하시겠습니까?')) {
-	    alert('발주신청 페이지로 이동되었습니다.');
-	    location.href = '.purchase.html';
-	  }
-	}
-
-  window.onload = function () {
-	    var checkall = document.getElementById("purchase_all");     // 전체 선택 박스
-	    var checkitems = document.querySelectorAll(".check_item");  // 개별 선택 박스들
-
-	    // 전체 선택 박스를 클릭했을 때
-	    checkall.onclick = function () {
-	    	checkitems.forEach(function (checkbox) {
-	        checkbox.checked = checkall.checked;
-	      });
-	    };
-
-	    // 개별 체크박스를 클릭했을 때
-	    checkitems.forEach(function (checkbox) {
-	      checkbox.onclick = function () {
-	        // 만약 하나라도 체크 해제되면 전체 선택도 해제
-	        if (!checkbox.checked) {
-	          checkall.checked = false;
-	        } else {
-	          // 전부 다 체크된 경우에만 전체선택 체크
-	          const allChecked = Array.from(checkitems).every(cb => cb.checked);
-	          checkall.checked = allChecked;
-	        }
-	      };
-	    });
-	  };
-	  
-function go_delete() {
-		// 모든 체크박스(class="check_item") 가져오기
-		 var checkboxes = document.querySelectorAll(".check_item");
-		 var check_delete = 0;
-
-		 checkboxes.forEach(function (checkbox) {
-			    if (checkbox.checked) {
-			    	check_delete ++;
-			      checkbox.checked = false; // 체크 해제 (삭제처럼 처리)
-			    }
-			  });
-
-		 if (check_delete > 0) {
-			    if (confirm('선택한 발주건을 삭제 하시겠습니까?')) {
-			      alert("선택된 발주건이 삭제되었습니다.");
-			      document.getElementById("purchase_all").checked = false;
-			      location.href = './purchase_list.html'; // 실제 이동 원하면 여기에
-			    }
-			  } else {
-			    alert("삭제할 항목을 선택하세요.");
-			  }
-			}
-  
-</script>
 </body>
 </html>
