@@ -49,11 +49,17 @@ public class itemDAO implements item_service{
    @Override
    public List<itemDTO> unitcode_list() {
 	List<itemDTO> uni_code = this.mp.unitcode_list();
-	return uni_code;
-}
-	
-	
-	
-	
-	
+	return uni_code;		
+   }
+   
+   
+   /* 제품등록 항목 (등록은 return 값이 필요없음)*/
+   @Override //ITEM 등록
+   public int insert_item(itemDTO dto) {
+       return mp.insert_item(dto);
+   }
+
+ 
+
+  
 }

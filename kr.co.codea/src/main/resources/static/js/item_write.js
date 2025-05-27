@@ -1,4 +1,80 @@
+// 사이드바 토글 (모바일)
+const sidebar = document.getElementById("sidebar");
+document.getElementById("sidebarOpenBtn").onclick = () =>
+  sidebar.classList.remove("closed");
+document.getElementById("sidebarCloseBtn").onclick = () =>
+  sidebar.classList.add("closed");
+
+function handleSidebar() {
+  if (window.innerWidth >= 992) sidebar.classList.remove("closed");
+  else sidebar.classList.add("closed");
+}
+window.addEventListener("resize", handleSidebar);
+window.addEventListener("DOMContentLoaded", handleSidebar);
+
+// 거래처 검색 모달
+const clientModal = new bootstrap.Modal(
+  document.getElementById("clientSearchModal")
+);
+document.getElementById("searchClientBtn").onclick = () => {
+  clientModal.show();
+};
+
+// 거래처 선택 시 input에 반영
+document.querySelectorAll("#clientSearchResult tr").forEach((row) => {
+  row.addEventListener("click", () => {
+    const name = row.getAttribute("data-name");
+    const code = row.getAttribute("data-code");
+    const phone = row.getAttribute("data-phone");
+
+    document.getElementById("bpName").value = name;
+    document.getElementById("bpCode").value = code;
+    document.getElementById("Tel").value = phone;
+
+    clientModal.hide();
+  });
+});
+
+// 제품 등록 폼 유효성 검사
+document.getElementById("productForm").onsubmit = function (e) {
+  const itemCode = document.getElementById("itemCode").value.trim();
+  const itemName = document.getElementById("itemName").value.trim();
+  const price = document.getElementById("price").value.trim();
+  const bpCode = document.getElementById("bpCode").value.trim();
+
+  if (!itemCode || !itemName || !price || !bpCode) {
+    e.preventDefault();
+    document.getElementById("formError").style.display = "block";
+    document.getElementById("formError").innerText =
+      "필수 항목을 모두 입력해주세요.";
+    return false;
+  }
+};
+
+// 대분류 선택 시 소분류 옵션 필터링
+document.getElementById("itemCatL").addEventListener("change", function () {
+  const selectedCatL = this.value;
+  const catSSelect = document.getElementById("itemCatS");
+
+  // 모든 옵션 초기화
+  Array.from(catSSelect.options).forEach((opt, index) => {
+    if (index === 0) return; // '선택' 옵션은 항상 보이게
+    const parent = opt.getAttribute("data-parent");
+    opt.style.display =
+      !parent || parent === selectedCatL ? "block" : "none";
+  });
+
+  catSSelect.value = ""; // 초기화
+});
+
+
+
+
+
+
+
 // Sidebar toggle
+/*
      const sidebar = document.getElementById("sidebar");
      document.getElementById("sidebarOpenBtn").onclick = () =>
        sidebar.classList.remove("closed");
@@ -87,8 +163,8 @@
 	     const code = this.dataset.code;
 	     const phone = this.dataset.phone;
 
-	     document.getElementById("bpCode").value = name;
-	     document.getElementById("clientCode").value = code;
+	     document.getElementById("bpName").value = name;
+	     document.getElementById("bpCode").value = code;
 	     document.getElementById("Tel").value = phone;
 	     // 모달 닫기 로직
 	     const modalEl = document.getElementById("clientSearchModal");
@@ -101,4 +177,4 @@
 	     }
 	   });
 	 });
-	 */
+	*/

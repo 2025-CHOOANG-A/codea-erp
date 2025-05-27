@@ -43,7 +43,7 @@
 			<div class="row g-2 align-items-center mb-2">
 				<div class="col-md-6">
 					<label class="form-label mb-1" for="itemType">제품 구분</label>
-					<input type="text" id="itemType" class="form-control" readonly style="background:#e9ecef;">
+					<input type="text" id="itemType" name="itemType" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 				<div class="col-md-6">
 					<label class="form-label mb-1" for="spec">규격</label>
@@ -112,6 +112,11 @@
 		<div class="mb-4">
 			<div class="form-section-title">비고</div>
 			<textarea class="form-control" rows="3" id="remark" name="remark"></textarea>
+		</div>
+
+		<!-- 중복 체크 -->
+		<div class="d-flex justify-content-end mb-2">
+			<button type="button" class="btn btn-outline-success" id="inck" onclick="inv_check()">중복 체크</button>
 		</div>
 		
 		<!-- 버튼 -->
