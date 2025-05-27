@@ -1,14 +1,19 @@
 package kr.co.codea.inventory;
 
+import java.io.PrintWriter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/inventory")
@@ -17,10 +22,19 @@ public class InventoryController {
 	@Autowired
 	InventoryDAO dao;
 	
+	PrintWriter pw = null;
+	
 	@GetMapping("/list")
-	public String listPage(Model m) {	// 재고 목록 페이지
-		List<InventoryDTO> list = this.dao.inv_list();
+	public String listPage(@RequestParam(name="itemType", required=false) String itemType,
+			@RequestParam(name="field", required=false) String field,
+			@RequestParam(name="keyword", required=false) String keyword,
+			Model m) {	// 재고 목록 페이지
+		List<InventoryDTO> list = this.dao.inv_list(itemType, field, keyword);
+		
 		m.addAttribute("list", list);
+		m.addAttribute("itemType", itemType);
+		m.addAttribute("field", field);
+		m.addAttribute("keyword", keyword);
 		
     	return "inventory/inventory_list"; // templates/receiving/receiving_list.html
 	}
@@ -57,13 +71,45 @@ public class InventoryController {
 		return sea_emp;
 	}
 	
+	@GetMapping("/curQty")
+	@ResponseBody
+	public int cur_qty(@RequestParam(name="itemId") int itemId,
+			@RequestParam(name="whId") int whId,
+			@RequestParam(name="itemType") String itemType) {	// 재고 보유 수량
+		int currentQty = this.dao.inv_qty(itemId, whId, itemType);
+		
+		return currentQty;
+	}
 	
 	@GetMapping("/write")
-	public String writePage(@RequestParam int itemId, @RequestParam int whId, Model m) {	// 재고 등록 페이지
-		InventoryDTO dto = this.dao.inv_dto(itemId, whId);
-		m.addAttribute("dto", dto);
+	public String writePage() {	// 재고 등록 페이지
 		
 		return "inventory/inventory_write"; // templates/receiving/receiving_write.html
+	}
+	
+	@PostMapping("/writeInsert")
+	public String write_insert(@ModelAttribute InventoryDTO dto, HttpServletResponse res) throws Exception {	// 재고 등록
+		res.setContentType("text/html; charset=utf-8");
+		this.pw = res.getWriter();
+		
+		int result = this.dao.inv_insert(dto);
+		
+		if(result > 0) {
+			this.pw.print("<script>"
+					+ "alert('재고 등록이 완료되었습니다.');"
+					+ "location.href='/inventory/list';"
+					+ "</script>");
+		}
+		else {
+			this.pw.print("<script>"
+					+ "alert('서비스 오류로 인하여 재고 등록이 완료되지 않았습니다.');"
+					+ "history.go(-1);"
+					+ "</script>");
+		}
+		
+		this.pw.close();
+		
+		return null;
 	}
 	
 	@GetMapping("/modify")

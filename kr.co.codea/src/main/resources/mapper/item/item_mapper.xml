@@ -3,23 +3,30 @@
  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.item.item_mapper">
 
-<!-- insert -> 재품등록 조회  -->
-  <insert id="insert_item" parameterType="kr.co.codea.item.item_list_DTO">
-INSERT INTO ITEM (
-    ITEM_ID,UNIT_CODE,ITEM_CODE,ITEM_NAME,ITEM_TYPE,ITEM_CAT_L,ITEM_CAT_S
-)
-VALUES (
-    #{ITEM_ID},
-    #{UNIT_CODE},
-    #{ITEM_CODE}, 
-    #{ITEM_NAME},
-    #{ITEM_TYPE},
-    #{ITEM_CAT_L},
-    #{ITEM_CAT_S}
-)
+<!-- insert -->
+<!-- 제품정보 -->
+
+  <insert id="insert_item" parameterType="kr.co.codea.item.itemDTO">
+  INSERT INTO ITEM (
+        ITEM_CODE, ITEM_NAME, ITEM_TYPE, ITEM_CAT_L, 
+        ITEM_CAT_S, UNIT_CODE, SPEC, REMARK
+    ) VALUES (
+        #{itemCode}, #{itemName}, #{itemType}, #{itemCatL}, #{itemCatS},
+       #{unitCode},#{spec}, #{reMark}
+    )
 </insert>
 
-<!-- 제품목록 조회  
+<!-- 거래처 추가   -->
+  <insert id="insert_partner" parameterType="kr.co.codea.item.itemDTO">
+  INSERT INTO BUSINESS_PARTNER (
+        BP_NAME, BP_CODE, TEL
+    ) VALUES (
+        #{bpName}, #{bpCode}, #{Tel}
+    )
+</insert>
+
+
+<!-- 제품목록 , 검색 조회  
  resultType="kr.co.codea.item.item_list_DTO"
 -->
 <select id="item_select"  parameterType="String"  resultMap="itemListResultMap">   
@@ -65,11 +72,55 @@ LEFT JOIN (
 </where>
 </select>
 
+<!-- 거래처 조회(비즈니스 파트너)-->
+<select id="bp_select"  parameterType="String"  resultMap="itemListResultMap">
+SELECT 
+BP_NAME, 
+BP_CODE,
+TEL
+FROM
+BUSINESS_PARTNER
+</select>
 
+<!-- 대분류 소분류 칼럼(ITEM-CATEGORY)  -->
+<select id="item_cg_select"  parameterType="String"  resultMap="itemListResultMap">
+SELECT 
+  i.ITEM_CODE,
+  i.ITEM_NAME,
+  catL.CATEGORY_NAME AS ITEM_CAT_L_NAME,
+  catS.CATEGORY_NAME AS ITEM_CAT_S_NAME
+FROM ITEM i
+LEFT JOIN ITEM_CATEGORY catL ON i.ITEM_CAT_L = catL.CATEGORY_ID
+LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
+</select>
+
+<!-- 대분류만 뽑기 -->
+<select id="selectCatL" resultType="itemDTO">
+  SELECT CATEGORY_ID, CATEGORY_NAME
+  FROM ITEM_CATEGORY
+  WHERE CATEGORY_LEVEL = 1
+</select>
+
+<!-- 소분류만 뽑기 -->
+<select id="selectCatS" resultType="itemDTO">
+  SELECT CATEGORY_ID, CATEGORY_NAME, PARENT_ID
+  FROM ITEM_CATEGORY
+  WHERE CATEGORY_LEVEL = 2
+</select>
+
+<!-- 단위뽑기
+
+  c.CODE_DESC AS UNIT_NAME =>별명 잡음(단위이름)
+ -->
+<select  id="unitcode_list" resultType="itemDTO">
+  SELECT CODE_ID, CODE_DESC
+  FROM COMMON_CODE
+  WHERE CODE_TYPE = 'UNIT_CODE'
+</select>
 
 
 <!-- resultMap -->
-<resultMap id="itemListResultMap" type="kr.co.codea.item.item_list_DTO">
+<resultMap id="itemListResultMap" type="kr.co.codea.item.itemDTO">
     <result property="itemCode" column="ITEM_CODE"/>
     <result property="itemName" column="ITEM_NAME"/>
     <result property="itemCatL" column="ITEM_CAT_L"/>
@@ -81,5 +132,19 @@ LEFT JOIN (
     <result property="whId" column="WH_ID"/>
     <result property="whCode" column="WH_CODE"/>
     <result property="price" column="PRICE"/>
+    <result property="unitCode" column="UNIT_CODE"/>
+    
+    <result property="bpCode" column="BP_CODE"/>
+    <result property="bpName" column="BP_NAME"/>
+    <result property="Tel" column="TEL"/>
+    
+    <result property="itemCatLName" column="ITEM_CAT_L_NAME"/>
+    <result property="itemCatSName" column="ITEM_CAT_S_NAME"/>
+    
+     <result property="categoryId" column="CATEGORY_ID"/>
+     
+   <result property="codeId" column="CODE_ID" />
+  <result property="codeDesc" column="CODE_DESC" />
+    
 </resultMap>
 </mapper>

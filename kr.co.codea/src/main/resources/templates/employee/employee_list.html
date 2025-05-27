@@ -1,147 +1,403 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>사원 목록</title>
+    <title>사원 목록 - CodeA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" th:href="@{/css/sidebar.css}" />
     <style>
-        body {
-            background: #f8f9fa;
-            /* 헤더가 fixed이므로 body 상단에 헤더 높이만큼 패딩을 주지 않으면 내용이 가려질 수 있습니다.
-               만약 fragments/sidebar.html 내부에 body padding-top이 이미 있다면 중복될 수 있으니 확인 필요합니다.
-               여기서는 이 파일이 독립적으로 body를 갖는다고 가정하고 추가합니다. */
-            padding-top: 64px;
+      body {
+        min-height: 100vh;
+        background: #f8f9fa;
+      }
+      .sidebar {
+        width: 260px;
+        min-width: 200px;
+        max-width: 300px;
+        background: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1040;
+        transition: transform 0.2s;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar.collapsed {
+        transform: translateX(-100%);
+      }
+      .sidebar .sidebar-header {
+        padding: 1.2rem 1.5rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        background: #23272b;
+        border-bottom: 1px solid #222;
+        letter-spacing: 1px;
+      }
+      .sidebar .nav-link {
+        color: #adb5bd;
+        padding: 0.7rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 0.3rem;
+        transition: background 0.15s;
+      }
+      .sidebar .nav-link.active,
+      .sidebar .nav-link:hover {
+        background: #495057;
+        color: #fff;
+      }
+      .sidebar .menu-title {
+        padding: 0.8rem 1.5rem 0.3rem 1.5rem;
+        font-size: 0.95rem;
+        color: #ced4da;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+      }
+      .sidebar .nav {
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+      .sidebar .nav-item {
+        width: 100%;
+      }
+      .sidebar-toggle-btn {
+        background: #343a40;
+        border: none;
+        color: #fff;
+        padding: 0.65rem 0.9rem;
+        border-radius: 0 0.5rem 0.5rem 0;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        position: fixed;
+        top: 1.1rem;
+        left: 0.2rem;
+        z-index: 1100;
+        transition: left 0.2s;
+      }
+      .sidebar.collapsed ~ .sidebar-toggle-btn {
+        left: 0.2rem;
+      }
+      .sidebar:not(.collapsed) ~ .sidebar-toggle-btn {
+        left: 260px;
+      }
+      .header {
+        height: 64px;
+        background: #fff;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: sticky;
+        top: 0;
+        z-index: 1020;
+        padding: 0 1rem;
+      }
+      .header .logo {
+        font-size: 1.7rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #343a40;
+        user-select: none;
+      }
+      .main-content {
+        margin-left: 260px;
+        padding: 2.5rem 2rem 2rem 2rem;
+        transition: margin-left 0.2s;
+      }
+      .sidebar.collapsed ~ .main-content {
+        margin-left: 0;
+      }
+      @media (max-width: 991.98px) {
+        .sidebar {
+          transform: translateX(-100%);
         }
-
-        .layout-wrapper { /* 이 클래스는 sidebar.html fragment 내에 있어야 합니다. */
-            display: flex;
-            flex-direction: row;
+        .sidebar:not(.collapsed) {
+          transform: translateX(0);
         }
-
         .main-content {
-            /* body에 padding-top을 주었으므로, main-content의 margin-top은 제거하거나 조정합니다. */
-            /* margin-top: 64px; */
-            padding: 2rem;
-            min-width: 1000px; /* 최소 너비는 상황에 맞게 조정 */
-            margin-left: 0; /* 사이드바 닫혔을 때 기본 마진 */
-            transition: margin-left 0.3s;
-            flex: 1; /* 남은 공간을 채우도록 설정 */
-            width: 100%; /* 초기 너비 설정 */
+          margin-left: 0;
         }
-
-        /* 사이드바가 보이는 상태일 때 main-content의 왼쪽 마진 조정 */
-        /* 이 클래스는 body 또는 layout-wrapper에 동적으로 추가/제거되어야 합니다. */
-        body.sidebar-visible .main-content, /* 또는 #layoutWrapper.sidebar-visible .main-content */
-        .layout-wrapper.sidebar-visible .main-content {
-            margin-left: 260px; /* 사이드바 너비만큼 */
+        .sidebar:not(.collapsed) ~ .main-content {
+          margin-left: 260px; 
         }
-        @media (max-width: 991.98px) {
-            body.sidebar-visible .main-content,
-            .layout-wrapper.sidebar-visible .main-content {
-                margin-left: 220px; /* 작은 화면에서 사이드바 너비 */
-            }
+        .sidebar-toggle-btn {
+          left: 0.2rem !important; 
         }
-        /* 테이블 스타일은 기존 CSS를 활용하거나 필요시 여기에 추가 */
+         .sidebar:not(.collapsed) ~ .sidebar-toggle-btn {
+          left: 260px !important; 
+        }
+      }
+      .table-link {
+        text-decoration: underline;
+        color: inherit;
+        cursor: pointer;
+      }
+      .table-responsive {
+        max-height: 520px; 
+        min-height: 350px; 
+        overflow-y: auto;
+      }
+      .pagination { margin-bottom: 0; }
+      .filter-bar { gap: 0.7rem; flex-wrap: wrap; }
+      .filter-bar .form-select, .filter-bar .form-control { min-width: 120px; max-width: 220px; }
+      .filter-bar .form-control[name="search"] { min-width: 220px; max-width: 320px;}
+      @media (max-width: 575.98px) {
+        .main-content { padding: 1rem 0.5rem; }
+        .filter-bar .form-select, .filter-bar .form-control, .filter-bar .form-control[name="search"] {
+            min-width: 100px; max-width: 100%;
+        }
+      }
     </style>
 </head>
 <body>
-    <div class="layout-wrapper" id="layoutWrapper"> <div th:replace="~{fragments/sidebar :: layout}"></div>
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar-header">메뉴</div>
+      <div class="menu-title">기준정보관리</div>
+      <ul class="nav flex-column mb-2">
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/business-unit}">사업장관리</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/accounts}">거래처관리</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/warehouse}">창고관리</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/products}">제품관리</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/items}">품목관리</a></li>
+        <li class="nav-item">
+          <a class="nav-link active" th:href="@{/employee}">사원관리</a>
+        </li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/notice}">공지사항</a></li>
+      </ul>
+      <div class="menu-title">구매영업관리</div>
+      <ul class="nav flex-column mb-2">
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/purchase-orders}">발주관리</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/sales-orders}">주문관리</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/shipments}">출고관리</a></li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/placeholder/mrp}">자재소요량계산</a>
+        </li>
+      </ul>
+      <div class="menu-title">자재관리</div>
+      <ul class="nav flex-column mb-2">
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/receiving}">입고관리</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/inventory}">재고관리</a></li>
+      </ul>
+      <div class="menu-title">생산관리</div>
+      <ul class="nav flex-column mb-2">
+        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/production-plan}">생산계획</a></li>
+      </ul>
+    </nav>
 
-        <main id="mainContent" class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 th:text="${pageTitle ?: '사원 목록'}">사원 목록</h2>
-                <a th:href="@{/employee/new}" class="btn btn-primary">신규 사원 등록</a> </div>
+    <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="사이드바 열기/닫기">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+        <rect width="16" height="2" y="2" rx="1" /><rect width="16" height="2" y="7" rx="1" /><rect width="16" height="2" y="12" rx="1" />
+      </svg>
+    </button>
 
-            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-                <span th:text="${successMessage}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <span th:text="${errorMessage}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+    <header class="header">
+      <a th:href="@{/index}" style="text-decoration: none;"><span class="logo">CodeA</span></a>
+    </header>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th>사번</th>
-                            <th>이름</th>
-                            <th>부서</th>
-                            <th>직책</th>
-                            <th>이메일</th>
-                            <th>내선번호</th>
-                            <th>작업</th> </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:if="${employees != null and !employees.isEmpty()}" th:each="employee : ${employees}">
-                            <td th:text="${employee.empNo}">1001</td>
-                            <td>
-                                <a th:href="@{/employee/{empId}(empId=${employee.empId})}" th:text="${employee.empName}" class="name-link">김민수</a>
-                            </td>
-                            <td th:text="${employee.empDept}">영업부</td>
-                            <td th:text="${employee.empPosition}">과장</td>
-                            <td th:text="${employee.email}">minsu.kim@company.com</td>
-                            <td th:text="${employee.tel}">0101</td>
-                            <td>
-                                <a th:href="@{/employee/{empId}/edit(empId=${employee.empId})}" class="btn btn-sm btn-outline-primary me-1">수정</a>
-                                <form th:action="@{/employee/{empId}/delete(empId=${employee.empId})}" method="post" style="display: inline;" onsubmit="return confirm('정말로 이 사원을 삭제하시겠습니까?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr th:if="${employees == null or employees.isEmpty()}">
-                            <td colspan="7">등록된 사원이 없습니다.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <div class="main-content" id="mainContent">
+      <div class="container-fluid">
+        <h2 class="mb-4" th:text="${pageTitle ?: '사원 목록'}">사원 목록</h2>
 
-            </main>
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <form class="d-flex align-items-center mb-3 filter-bar" id="filterForm" autocomplete="off" onsubmit="return false;">
+          <select class="form-select" name="category" id="categoryFilter" style="width: auto;">
+            <option value="전체">전체</option>
+            <option value="영업부">영업부</option>
+            <option value="생산부">생산부</option>
+            <option value="구매부">구매부</option>
+            <option value="자재부">자재부</option>
+            <option value="관리부">관리부</option>
+          </select>
+          <input type="text" class="form-control" name="search" id="searchInput" placeholder="사원 이름 검색" maxlength="20" style="width: auto;" />
+          <button type="button" class="btn btn-outline-secondary" id="searchBtn">검색</button>
+        </form>
+
+        <div class="table-responsive mb-3">
+          <table class="table table-bordered table-hover align-middle mb-0" id="employeeTable">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 90px;">사번</th>
+                <th style="width: 120px;">이름</th>
+                <th style="width: 120px;">부서</th>
+                <th style="width: 120px;">직책</th>
+                <th style="width: 220px;">이메일</th>
+                <th style="width: 110px;">내선번호</th>
+                </tr>
+            </thead>
+            <tbody>
+              </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between">
+          <div></div> <nav>
+            <ul class="pagination mb-0" id="pagination">
+              </ul>
+          </nav>
+          <a  th:href="@{/employee/new}" sec:authorize="hasRole('ADMIN')" class="btn btn-primary ms-2" id="addBtn">추가</a>
+          
+        </div>
+      </div>
     </div>
 
-    <script th:if="${#strings.isEmpty(#httpServletRequest.getAttribute('sidebarJsIncluded'))}">
-        const sidebar = document.getElementById("sidebar");
-        const sidebarToggle = document.getElementById("sidebarToggle");
-        const sidebarClose = document.getElementById("sidebarClose");
-        const layoutWrapper = document.getElementById("layoutWrapper"); // 또는 body
-        const mainContent = document.getElementById("mainContent");
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-
-        if (sidebarToggle && sidebar && sidebarClose && layoutWrapper && mainContent) {
-            sidebarToggle.addEventListener("click", () => {
-                sidebar.classList.add("show");
-                // body 또는 layoutWrapper에 클래스를 추가하여 main-content의 마진을 조절
-                // 여기서는 body에 추가한다고 가정. CSS도 body.sidebar-visible 기준으로 수정 필요
-                document.body.classList.add("sidebar-visible");
-            });
-
-            sidebarClose.addEventListener("click", () => {
-                sidebar.classList.remove("show");
-                document.body.classList.remove("sidebar-visible");
-            });
-
-            document.addEventListener("click", (e) => {
-                if (
-                    sidebar.classList.contains("show") &&
-                    !sidebar.contains(e.target) &&
-                    !sidebarToggle.contains(e.target)
-                ) {
-                    sidebar.classList.remove("show");
-                    document.body.classList.remove("sidebar-visible");
-                }
-            });
-        } else {
-            if (!sidebar) console.warn("Element with ID 'sidebar' not found.");
-            if (!sidebarToggle) console.warn("Element with ID 'sidebarToggle' not found.");
-            if (!sidebarClose) console.warn("Element with ID 'sidebarClose' not found.");
-            if (!layoutWrapper) console.warn("Element with ID 'layoutWrapper' not found.");
-            if (!mainContent) console.warn("Element with ID 'mainContent' not found.");
-        }
-        // 공통 스크립트가 sidebar fragment에 포함되어 있다면, 중복 실행 방지 플래그 설정
-        // 예: th:with="sidebarJsIncluded=true" 를 sidebar fragment 최상단에 추가
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const initialEmployees = /*[[${employees}]]*/ [];
+      const employeeDetailBaseUrl = /*[[@{/employee/}]]*/ '';
+      /*]]>*/
     </script>
-    </body>
+
+    <script>
+      let currentPage = 1;
+      const pageSize = 10;
+      let filteredEmployees = [...initialEmployees];
+
+      const sidebar = document.getElementById("sidebar");
+      const sidebarToggle = document.getElementById("sidebarToggle");
+      function setSidebarCollapsed(collapsed) {
+        sidebar.classList.toggle("collapsed", collapsed);
+      }
+      sidebarToggle.addEventListener("click", () => {
+        setSidebarCollapsed(!sidebar.classList.contains("collapsed"));
+      });
+      document.addEventListener("click", (e) => {
+        if (
+          window.innerWidth < 992 &&
+          !sidebar.classList.contains("collapsed")
+        ) {
+          if (
+            !sidebar.contains(e.target) &&
+            !sidebarToggle.contains(e.target)
+          ) {
+            setSidebarCollapsed(true);
+          }
+        }
+      });
+      setSidebarCollapsed(window.innerWidth < 992);
+      window.addEventListener("resize", () => {
+         setSidebarCollapsed(window.innerWidth < 992);
+      });
+
+      function applyFiltersAndSearch() {
+        const categoryValue = document.getElementById("categoryFilter").value;
+        const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
+
+        filteredEmployees = initialEmployees.filter(emp => {
+          const matchesCategory = categoryValue === "전체" || (emp.empDept && emp.empDept === categoryValue);
+          const matchesSearch = !searchValue || (emp.empName && emp.empName.toLowerCase().includes(searchValue));
+          return matchesCategory && matchesSearch;
+        });
+        currentPage = 1;
+        renderTable();
+        renderPagination();
+      }
+      document.getElementById("categoryFilter").addEventListener("change", applyFiltersAndSearch);
+      document.getElementById("searchBtn").addEventListener("click", applyFiltersAndSearch);
+      document.getElementById("searchInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault(); 
+            applyFiltersAndSearch();
+        }
+      });
+
+      function renderTable() {
+        const tbody = document.querySelector("#employeeTable tbody");
+        tbody.innerHTML = ""; 
+
+        const pageData = filteredEmployees.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+        if (pageData.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-secondary py-4">검색 결과가 없습니다.</td></tr>`; // colspan 6으로 수정
+          return;
+        }
+
+        pageData.forEach(emp => {
+          const detailUrl = `${employeeDetailBaseUrl}${emp.empId}`; // empId 사용
+
+          // 작업 열이 제거되었으므로 해당 부분 HTML 생성 안함
+          const row = `
+            <tr>
+              <td>${emp.empNo || ''}</td>
+              <td><a href="${detailUrl}" class="table-link">${emp.empName || ''}</a></td>
+              <td>${emp.empDept || ''}</td>
+              <td>${emp.empPosition || ''}</td>
+              <td>${emp.email || ''}</td>
+              <td>${emp.tel || ''}</td>
+            </tr>
+          `;
+          tbody.insertAdjacentHTML('beforeend', row);
+        });
+      }
+
+      function renderPagination() {
+        const totalItems = filteredEmployees.length;
+        const totalPages = Math.ceil(totalItems / pageSize);
+        const paginationUl = document.getElementById("pagination");
+        paginationUl.innerHTML = "";
+
+        if (totalPages <= 1) return;
+
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        if (totalPages > 5) {
+            if (currentPage <= 3) {
+                endPage = 5;
+            } else if (currentPage >= totalPages - 2) {
+                startPage = totalPages - 4;
+            }
+        } else {
+            startPage = 1;
+            endPage = totalPages;
+        }
+
+        if (currentPage > 1) {
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="이전">&laquo;</a></li>`);
+        }
+        if (startPage > 1) {
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`);
+          if (startPage > 2) {
+            paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item disabled"><span class="page-link">...</span></li>`);
+          }
+        }
+        for (let i = startPage; i <= endPage; i++) {
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item ${i === currentPage ? "active" : ""}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`);
+        }
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item disabled"><span class="page-link">...</span></li>`);
+          }
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`);
+        }
+        if (currentPage < totalPages) {
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="다음">&raquo;</a></li>`);
+        }
+      }
+
+      document.getElementById("pagination").addEventListener("click", (e) => {
+        if (e.target.tagName === "A" && e.target.dataset.page) {
+          e.preventDefault();
+          currentPage = parseInt(e.target.dataset.page);
+          renderTable();
+          renderPagination();
+        }
+      });
+
+      applyFiltersAndSearch(); 
+    </script>
+</body>
 </html>

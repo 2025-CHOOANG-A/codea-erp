@@ -1,26 +1,36 @@
 <div th:fragment="layout" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <nav id="sidebar" class="sidebar">
         <button class="sidebar-close" id="sidebarClose" aria-label="사이드바 닫기">&times;</button>
+
         <div class="sidebar-heading">기준정보관리</div>
         <ul class="nav flex-column mb-2">
             <li class="nav-item"><a class="nav-link" th:href="@{/company/detail}">사업장관리</a></li>
             <li class="nav-item"><a class="nav-link" th:href="@{/client}">거래처관리</a></li>
-            <li class="nav-item"><a class="nav-link" th:href="@{#}">창고관리</a></li> <li class="nav-item"><a class="nav-link" th:href="@{/item/item_list}">제품관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/inventory/list}">창고관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/item/item_list}">제품관리</a></li>
             <li class="nav-item"><a class="nav-link" th:href="@{/bom/bom_list}">품목관리</a></li>
-            <li class="nav-item"><a class="nav-link" th:href="@{/employee}">사원관리</a></li> <li class="nav-item"><a class="nav-link" th:href="@{/notice/list}">공지사항</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/employee}">사원관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/notice/list}">공지사항</a></li>
         </ul>
+
         <div class="sidebar-heading">구매영업관리</div>
         <ul class="nav flex-column mb-2">
-            <li class="nav-item"><a class="nav-link" th:href="@{#}">발주관리</a></li> <li class="nav-item"><a class="nav-link" th:href="@{/order/list}">주문관리</a></li>
-            <li class="nav-item"><a class="nav-link" th:href="@{#}">출고관리</a></li> <li class="nav-item"><a class="nav-link" th:href="@{#}">자재소요량계산</a></li> </ul>
+            <li class="nav-item"><a class="nav-link" th:href="@{/purchase}">발주관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/order/list}">주문관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/shipment}">출고관리</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/mrp}">자재소요량계산</a></li>
+        </ul>
+
         <div class="sidebar-heading">자재관리</div>
         <ul class="nav flex-column mb-2">
             <li class="nav-item"><a class="nav-link" th:href="@{/receiving/list}">입고관리</a></li>
             <li class="nav-item"><a class="nav-link" th:href="@{/inventory/list}">재고관리</a></li>
         </ul>
+
         <div class="sidebar-heading">생산관리</div>
         <ul class="nav flex-column mb-4">
-            <li class="nav-item"><a class="nav-link" th:href="@{#}">생산계획</a></li> </ul>
+            <li class="nav-item"><a class="nav-link" th:href="@{/productplan}">생산계획</a></li>
+        </ul>
     </nav>
 
     <header class="header">
@@ -33,7 +43,9 @@
                 </svg>
             </button>
         </div>
+
         <div class="header-center">CodeA</div>
+
         <div id="authArea" class="header-right">
             <th:block sec:authorize="isAuthenticated()">
                 <span class="fw-bold text-dark me-3"
@@ -41,8 +53,10 @@
                 </span>
                 <button class="btn btn-outline-secondary btn-sm" id="logoutButton">로그아웃</button>
             </th:block>
+
             <th:block sec:authorize="!isAuthenticated()">
-                <a th:href="@{/login}" class="btn btn-primary btn-sm">로그인</a> </th:block>
+                <a th:href="@{/login}" class="btn btn-primary btn-sm">로그인</a>
+            </th:block>
         </div>
     </header>
 </div>
