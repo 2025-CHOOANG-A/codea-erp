@@ -24,4 +24,21 @@ public class PurchaseServiceImpl implements PurchaseService {
         // 이 메소드는 전체 아이템 수를 가져오므로 페이지네이션 파라미터가 필요 없습니다.
         return purchaseMapper.countPurchaseList(params);
     }
+    
+    @Override
+    public PurchaseDto getPurchaseDetail(int purchaseId) {
+    	 PurchaseDto header = purchaseMapper.selectPurchaseHeader(purchaseId);
+         if (header != null) {
+             List<PurchaseDto.PurchaseDetail> details = purchaseMapper.selectPurchaseDetails(purchaseId);
+             header.setDetailList(details);
+         }
+         return header;
+    }
 }
+
+
+
+
+
+
+
