@@ -84,8 +84,8 @@ public class SecurityConfig {
                 .requestMatchers("/index", "/employee").authenticated()
 
                 // 나머지 모든 요청은 인증 필요
-                .anyRequest().authenticated()
-                //.anyRequest().permitAll()
+                //.anyRequest().authenticated()
+                .anyRequest().permitAll()
             );
             //.formLogin(form -> form.loginPage("/login").permitAll());
 
