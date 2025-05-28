@@ -128,4 +128,29 @@ public class InventoryController {
 		
     	return "inventory/inventory_modify"; // templates/receiving/receiving_detail.html
 	}
+	
+	@PostMapping("/modUpdate")
+	public String modify_update(@ModelAttribute InventoryDTO dto, HttpServletResponse res) throws Exception {	// 재고 수정
+		res.setContentType("text/html; charset=utf-8");
+		this.pw = res.getWriter();
+		
+		int result = this.dao.inv_update(dto);
+		
+		if(result > 0) {
+			this.pw.print("<script>"
+					+ "alert('재고 수정이 완료되었습니다.');"
+					+ "location.href='/inventory/detail?inventoryId=" + dto.getInventoryId() + "';"
+					+ "</script>");
+		}
+		else {
+			this.pw.print("<script>"
+					+ "alert('서비스 오류로 인하여 재고 수정이 완료되지 않았습니다.');"
+					+ "history.go(-1);"
+					+ "</script>");
+		}
+		
+		this.pw.close();
+		
+		return null;
+	}
 }
