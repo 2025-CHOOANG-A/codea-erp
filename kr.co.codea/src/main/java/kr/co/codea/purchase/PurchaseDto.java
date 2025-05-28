@@ -40,4 +40,26 @@ public class PurchaseDto {
         private String unitCode;   // 'EA', 'BOX' 등
         private String unitName;   // '개', '박스' 등
     }
+    
+    @Data
+    public static class ItemSimple {
+        private int itemId;
+        private String itemName;
+        private String itemCode;
+        private String unitCode;
+        private String unitName;  // '개' 같은 설명
+        private double unitPrice;
+    }
+
+    @Data
+    public static class SupplierSimple {
+        private int bpId;
+        private String bpName;
+    }
+
+    @Data
+    public static class EmployeeSimple {
+        private int empId;
+        private String empName;
+    }
 }

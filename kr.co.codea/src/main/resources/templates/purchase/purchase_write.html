@@ -29,7 +29,7 @@
   <div class="container">
     <h3 class="mb-4">발주 등록</h3>
 
-    <form id="purchaseForm">
+    <form method="post" action="/purchase/write">
       <!-- 발주 기본 정보 -->
       <table class="table table-bordered w-auto mb-4">
         <tbody>
@@ -37,11 +37,19 @@
             <th>발주일</th>
             <td><input type="date" name="orderDate" class="form-control" id="orderDate" readonly></td>
             <th>담당자</th>
-            <td><input type="text" name="employeeName" class="form-control" placeholder="담당자 검색" required></td>
+            <td style="position: relative;">
+              <input type="text" name="employeeName" class="form-control" placeholder="담당자 검색" autocomplete="off"
+                     oninput="searchAutocomplete(this, '/purchase/employees/search')">
+              <div class="autocomplete-list"></div>
+            </td>
           </tr>
           <tr>
             <th>공급처</th>
-            <td><input type="text" name="supplierName" class="form-control" placeholder="공급처 검색" required></td>
+            <td style="position: relative;">
+              <input type="text" name="supplierName" class="form-control" placeholder="공급처 검색" autocomplete="off"
+                     oninput="searchAutocomplete(this, '/purchase/suppliers/search')">
+              <div class="autocomplete-list"></div>
+            </td>
             <th>비고</th>
             <td><input type="text" name="remark" class="form-control"></td>
           </tr>
@@ -64,7 +72,7 @@
           </tr>
         </thead>
         <tbody id="itemTableBody">
-          <!-- JavaScript로 행 추가 -->
+          <!-- 자바스크립트로 행 추가됨 -->
         </tbody>
         <tfoot>
           <tr>
@@ -84,24 +92,43 @@
       document.getElementById("orderDate").value = today;
     });
 
-    const mockItems = [
-      { code: "ITEM001", name: "볼트", unit: "EA", price: 100 },
-      { code: "ITEM002", name: "너트", unit: "EA", price: 80 },
-      { code: "ITEM003", name: "와셔", unit: "EA", price: 50 },
-      { code: "ITEM004", name: "강철판", unit: "PCS", price: 1500 }
-    ];
+    function searchAutocomplete(input, apiUrl) {
+      const keyword = input.value.trim();
+      const wrapper = input.parentElement;
+      const listBox = wrapper.querySelector(".autocomplete-list");
+      if (keyword.length < 1) return listBox.style.display = "none";
+
+      fetch(apiUrl + "?keyword=" + encodeURIComponent(keyword))
+        .then(res => res.json())
+        .then(data => {
+          listBox.innerHTML = "";
+          data.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "autocomplete-item";
+            div.textContent = item.empName || item.bpName;
+            div.onclick = () => {
+              input.value = div.textContent;
+              listBox.style.display = "none";
+            };
+            listBox.appendChild(div);
+          });
+          listBox.style.display = "block";
+        });
+    }
 
     function addItemRow() {
       const tbody = document.getElementById("itemTableBody");
-      const row = document.createElement("tr");
       const rowId = Date.now();
+      const row = document.createElement("tr");
 
       row.innerHTML = `
         <td style="position: relative;">
-          <input type="text" class="form-control itemSearch" placeholder="품목 검색" oninput="onItemSearch(this, ${rowId})" autocomplete="off">
+          <input type="text" class="form-control itemSearch" placeholder="품목 검색" autocomplete="off"
+                 oninput="onItemSearch(this, ${rowId})">
           <div class="autocomplete-list" id="autocomplete-${rowId}" style="display:none;"></div>
         </td>
-        <td><input type="number" name="details[][orderQty]" class="form-control qty" min="1" value="1" onchange="updateAmount(this)"></td>
+        <td><input type="number" name="details[][orderQty]" class="form-control qty" min="1" value="1"
+                   onchange="updateAmount(this)"></td>
         <td><input type="text" name="details[][unitName]" class="form-control unit" readonly></td>
         <td><input type="number" name="details[][unitPrice]" class="form-control price" readonly></td>
         <td class="amount">₩ 0</td>
@@ -111,35 +138,33 @@
     }
 
     function onItemSearch(input, rowId) {
-      const keyword = input.value.trim().toLowerCase();
+      const keyword = input.value.trim();
       const listBox = document.getElementById(`autocomplete-${rowId}`);
-      const row = input.closest("tr");
-
       if (keyword.length === 0) {
         listBox.style.display = "none";
-        listBox.innerHTML = "";
         return;
       }
 
-      const results = mockItems.filter(item => item.name.toLowerCase().includes(keyword));
-      if (results.length > 0) {
-        listBox.innerHTML = results.map(item => `
-          <div class='autocomplete-item' onclick='selectItem(this, ${JSON.stringify(item)}, ${rowId})'>
-            ${item.name} (${item.code})
-          </div>`).join('');
-        listBox.style.display = "block";
-      } else {
-        listBox.style.display = "none";
-      }
-    }
-
-    function selectItem(div, item, rowId) {
-      const row = document.getElementById(`autocomplete-${rowId}`).closest("tr");
-      row.querySelector(".itemSearch").value = item.name;
-      row.querySelector(".unit").value = item.unit;
-      row.querySelector(".price").value = item.price;
-      updateAmount(row.querySelector(".qty"));
-      document.getElementById(`autocomplete-${rowId}`).style.display = "none";
+      fetch(`/purchase/items/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(res => res.json())
+        .then(data => {
+          listBox.innerHTML = "";
+          data.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "autocomplete-item";
+            div.textContent = `${item.itemName} (${item.itemCode})`;
+            div.onclick = () => {
+              const row = document.getElementById(`autocomplete-${rowId}`).closest("tr");
+              row.querySelector(".itemSearch").value = item.itemName;
+              row.querySelector(".unit").value = item.unitName;
+              row.querySelector(".price").value = item.unitPrice;
+              updateAmount(row.querySelector(".qty"));
+              listBox.style.display = "none";
+            };
+            listBox.appendChild(div);
+          });
+          listBox.style.display = "block";
+        });
     }
 
     function updateAmount(input) {
@@ -159,8 +184,8 @@
     function updateTotal() {
       let total = 0;
       document.querySelectorAll(".amount").forEach(cell => {
-        const val = parseInt(cell.textContent.replace(/[^\d]/g, ""), 10);
-        if (!isNaN(val)) total += val;
+        const value = parseInt(cell.textContent.replace(/[^\d]/g, ""), 10);
+        if (!isNaN(value)) total += value;
       });
       document.getElementById("totalAmount").textContent = `₩ ${total.toLocaleString()}`;
     }

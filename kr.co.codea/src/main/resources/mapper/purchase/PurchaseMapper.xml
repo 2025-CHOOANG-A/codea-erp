@@ -22,7 +22,8 @@
 		WHERE 1 = 1
 		<if test="keyword != null and keyword != ''">
 			AND (SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
-			OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%')
+			OR
+			EMPLOYEE_NAME LIKE '%' || #{keyword} || '%')
 		</if>
 		<if test="status != null and status != ''">
 			AND STATUS = #{status}
@@ -35,7 +36,8 @@
 		</if>
 		ORDER BY ORDER_DATE DESC, PURCHASE_ID DESC
 		) InnerQuery
-		WHERE ROWNUM &lt;= #{endRowForQuery} )
+		WHERE ROWNUM
+		&lt;= #{endRowForQuery} )
 		WHERE rn &gt; #{startRowForQuery}
 	</select>
 
@@ -46,7 +48,8 @@
 		<if test="keyword != null and keyword != ''">
 			AND (
 			SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
-			OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%'
+			OR
+			EMPLOYEE_NAME LIKE '%' || #{keyword} || '%'
 			)
 		</if>
 		<if test="status != null and status != ''">
@@ -91,17 +94,65 @@
 		i.SPEC,
 		d.ORDER_QTY,
 		d.UNIT_PRICE,
-		d.ORDER_QTY * d.UNIT_PRICE AS AMOUNT,
+		d.ORDER_QTY *
+		d.UNIT_PRICE AS AMOUNT,
 		d.REQUIRED_DELIVERY_DATE,
 		d.REMARK,
 		i.UNIT_CODE,
 		cc.CODE_DESC AS UNIT_NAME
 		FROM PURCHASE_DETAIL d
-		JOIN ITEM i ON d.ITEM_ID = i.ITEM_ID
+		JOIN ITEM i ON
+		d.ITEM_ID = i.ITEM_ID
 		LEFT JOIN COMMON_CODE cc
-		ON i.UNIT_CODE = cc.CODE_ID
+		ON i.UNIT_CODE =
+		cc.CODE_ID
 		AND cc.CODE_TYPE = 'UNIT_CODE'
-		WHERE d.PURCHASE_ID = #{purchaseId}
+		WHERE d.PURCHASE_ID =
+		#{purchaseId}
 		ORDER BY d.PURCHASE_DETAIL_ID
+	</select>
+
+	<!-- 품목 자동완성 검색 -->
+	<select id="searchItems" parameterType="string"
+		resultType="kr.co.codea.purchase.PurchaseDto$ItemSimple">
+		SELECT
+		i.ITEM_ID,
+		i.ITEM_NAME,
+		i.ITEM_CODE,
+		c.CODE AS UNIT_NAME, -- ← 단위코드 (예: EA, BOX 등)
+		i.PRICE AS UNIT_PRICE
+		FROM
+		ITEM i
+		LEFT JOIN
+		COMMON_CODE c
+		ON i.UNIT_CODE = c.CODE_ID
+		AND c.CODE_TYPE = 'UNIT_CODE'
+		WHERE
+		i.ITEM_NAME LIKE '%' || #{keyword} || '%'
+		ORDER BY
+		i.ITEM_NAME
+		FETCH FIRST 10 ROWS ONLY
+	</select>
+
+	<!-- 공급처 자동완성 검색 -->
+	<select id="searchSuppliers" parameterType="string"
+		resultType="kr.co.codea.purchase.PurchaseDto$SupplierSimple">
+		SELECT BP_ID, BP_NAME
+		FROM BUSINESS_PARTNER
+		WHERE BP_NAME
+		LIKE '%' || #{keyword} || '%'
+		ORDER BY BP_NAME
+		FETCH FIRST 10 ROWS ONLY
+	</select>
+
+	<!-- 담당자 자동완성 검색 -->
+	<select id="searchEmployees" parameterType="string"
+		resultType="kr.co.codea.purchase.PurchaseDto$EmployeeSimple">
+		SELECT EMP_ID, EMP_NAME
+		FROM EMPLOYEE
+		WHERE EMP_NAME LIKE '%'
+		|| #{keyword} || '%'
+		ORDER BY EMP_NAME
+		FETCH FIRST 10 ROWS ONLY
 	</select>
 </mapper>

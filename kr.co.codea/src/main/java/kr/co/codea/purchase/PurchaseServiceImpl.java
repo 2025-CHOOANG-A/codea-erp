@@ -34,6 +34,21 @@ public class PurchaseServiceImpl implements PurchaseService {
          }
          return header;
     }
+    
+    @Override
+    public List<PurchaseDto.ItemSimple> searchItems(String keyword) {
+        return purchaseMapper.searchItems(keyword);
+    }
+
+    @Override
+    public List<PurchaseDto.SupplierSimple> searchSuppliers(String keyword) {
+        return purchaseMapper.searchSuppliers(keyword);
+    }
+
+    @Override
+    public List<PurchaseDto.EmployeeSimple> searchEmployees(String keyword) {
+        return purchaseMapper.searchEmployees(keyword);
+    }
 }
 
 
