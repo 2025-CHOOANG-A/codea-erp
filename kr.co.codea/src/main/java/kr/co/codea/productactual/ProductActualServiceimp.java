@@ -35,9 +35,10 @@ public class ProductActualServiceimp implements ProductActualService {
         }
         try {
     		mapper.registerProductActual(dto);
+			mapper.updateProductionPlanActualQty(dto.getPlanId()); //일일생산량을 생산계획에 반영
 
 		} catch (Exception e) {
-			mapper.updateProductionPlanActualQty(dto.getPlanId());
+			throw new RuntimeException("생산 실적 DB 처리 중 오류 발생: " + e.getMessage(), e);
 		}
 	}
 
