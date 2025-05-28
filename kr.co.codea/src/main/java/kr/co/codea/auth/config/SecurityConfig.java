@@ -77,13 +77,13 @@ public class SecurityConfig {
                 // 인증 없이 접근 가능한 공개 경로
                 .requestMatchers(
                         "/", "/login", "/auth/login", "/auth/reissue", "/favicon.ico", "/.well-known/**", "/error",
-                        "/css/**", "/js/**", "/images/**", "/webjars/**",  "/purchase/employees/search",
-                        "/purchase/suppliers/search",
-                        "/purchase/items/search"
+                        "/css/**", "/js/**", "/images/**", "/webjars/**"
                 ).permitAll()
 
                 // 인증 필요 경로 (일반 사용자 접근 가능)
-                .requestMatchers("/index", "/employee").authenticated()
+                .requestMatchers("/index", "/employee", "/purchase/employees/search",
+                        "/purchase/suppliers/search",
+                        "/purchase/items/search").authenticated()
 
                 // 나머지 모든 요청은 인증 필요
                 .anyRequest().authenticated()

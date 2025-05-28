@@ -82,7 +82,7 @@ public class PurchaseController {
         return "purchase/purchase_detail";
     }
     
-    @GetMapping("/write")
+    @GetMapping("/create")
     public String showWriteForm(Model model) {
         // 오늘 날짜 기본값 전달 (Thymeleaf에서 사용 가능)
         model.addAttribute("today", java.time.LocalDate.now().toString());
