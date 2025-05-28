@@ -167,7 +167,7 @@ VALUES (SEQ_INV_ID.NEXTVAL, #{itemId}, #{whId}, #{currentQty}, #{expectedQty}, #
 
 <!-- 수정 페이지 -->
 <select id="inv_mod" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT A.INVENTORY_ID, A.INVENTORY_CODE, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, A.CURRENT_QTY, E.CODE, C.WH_CODE, C.WH_NAME
+SELECT A.INVENTORY_ID, A.INVENTORY_CODE, A.ITEM_ID, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, A.CURRENT_QTY, E.CODE, C.WH_ID, C.WH_CODE, C.WH_NAME
 FROM INVENTORY A 
 JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
 JOIN WAREHOUSE C ON A.WH_ID = C.WH_ID
@@ -178,11 +178,10 @@ WHERE A.INVENTORY_ID = #{inventoryId}
 <!-- 수정 -->
 <update id="inv_update" parameterType="kr.co.codea.inventory.InventoryDTO">
 UPDATE INVENTORY SET
-CURRENT_QTY = #{current_qty},
+CURRENT_QTY = #{currentQty},
 AVERAGE_COST = #{averageCost},
 EMP_NO = #{empNo},
-REMARK = #{remark},
-UPDATED_AT = SYSDATE
+REMARK = #{remark}
 WHERE INVENTORY_ID = #{inventoryId}
 </update>
 

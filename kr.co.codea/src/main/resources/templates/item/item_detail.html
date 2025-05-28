@@ -195,37 +195,39 @@
           <div class="mb-3 fw-semibold">제품 정보</div>
           <table class="table table-bordered detail-table align-middle mb-0">
             <tbody>
+            <!--  
               <tr>
                 <th>품번</th>
                 <td>PRD-00123</td>
               </tr>
+              -->
               <tr>
                 <th>제품구분</th>
-                <td>제품</td>
+                <td th:text="${item_detail_list[0].itemType}">제품</td>
               </tr>
-              <tr>
+              <tr >
                 <th>제품코드</th>
-                <td>CA-2024-001</td>
+                <td th:text="${item_detail_list[0].itemCode}"></td>
               </tr>
               <tr>
                 <th>대분류</th>
-                <td>전자부품</td>
+                <td th:text="${item_detail_list[0].itemCatL}"></td>
               </tr>
               <tr>
                 <th>소분류</th>
-                <td>센서</td>
+                <td th:text="${item_detail_list[0].itemCatS}"></td>
               </tr>
               <tr>
                 <th>제품명</th>
-                <td>온도센서</td>
+                <td th:text="${item_detail_list[0].itemName}"></td>
               </tr>
               <tr>
                 <th>규격</th>
-                <td>TS-1000</td>
+                <td th:text="${item_detail_list[0].spec}"></td>
               </tr>
               <tr>
                 <th>단위</th>
-                <td>EA</td>
+                <td th:text="${item_detail_list[0].unitCode}"></td>
               </tr>
               <tr>
                 <th>단가</th>
@@ -273,9 +275,9 @@
         </div>
         <!-- 하단 버튼 -->
         <div class="btn-group-bottom">
-          <a href="./item_list.html" class="btn btn-outline-secondary">목록</a>
-          <a href="#" class="btn btn-outline-primary">수정</a>
-          <a href="#" class="btn btn-outline-danger">삭제</a>
+          <a href="/item/item_list"  class="btn btn-outline-secondary">목록</a>
+          <a href="/item/item_modify" class="btn btn-outline-primary">수정</a>
+          <a href="/item/item_list" class="btn btn-outline-danger">삭제</a>
         </div>
       </section>
     </main>
