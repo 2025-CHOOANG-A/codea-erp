@@ -361,12 +361,16 @@
             </thead>
             <tbody id="productTableBody">
               <!-- JS로 데이터 렌더링 -->           
+            <!-- 
          <tr th:each="item : ${item_list}">
-         <td th:text="${item.inventoryCode}"></td> 
          <td th:text="${item.itemCatL}"></td>
          <td th:text="${item.itemCatS}"></td>      
          <td th:text="${item.itemCode}"></td>
-         <td th:text="${item.itemName}"></td>
+         <td>        
+        <a
+           th:href="@{/item/item_detail(itemId=${item.itemId})}"
+           th:text="${item.itemName}"></a>
+         </td>
          <td th:text="${item.spec}"></td>
          <td th:text="${item.price}"></td>
          <td th:text="${item.currentQty}"></td>
@@ -374,6 +378,7 @@
          <td th:text="${item.whCode}"></td>
          <td th:text="${item.reMark}"></td>      
           </tr> 
+          -->
             </tbody>
           </table>
         </div>
@@ -409,7 +414,7 @@
               class="btn-close"
               data-bs-dismiss="modal"
               aria-label="닫기"
-            ></button>
+            ></button>                                                                                                                                            
           </div>
           <div class="modal-body" id="remarkModalBody">
             <!-- JS로 내용 채움 -->

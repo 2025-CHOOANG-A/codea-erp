@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.annotation.Resource;
+import kr.co.codea.order.OrderController;
 import kr.co.codea.productplan.ProductPlanController;
 import lombok.RequiredArgsConstructor;
 
@@ -24,8 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/item")
 public class item_controller {
 
-    private final ProductPlanController productPlanController;
-	
+ 
 	Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	
@@ -33,23 +33,23 @@ public class item_controller {
 	itemDAO dao;
 
 
-    item_controller(ProductPlanController productPlanController) {
-        this.productPlanController = productPlanController;
-    }
 	
 	
 	 @GetMapping("/item_detail")
-	 public String item_detail() {
-	      return "item/item_detail"; 
-	 }
-	    	
+	 public String item_detail(@RequestParam("itemId") int itemId, Model m) {		   
+		 List<itemDTO> item_detail_list = this.dao.item_detail();
+	     m.addAttribute("item_detail_list", item_detail_list);
+	     //System.out.println(item_detail_list);
+	 
+	     return "item/item_detail";
+	 }	
 	 //주문목록 , 검색창 핸들링 
 	 @GetMapping("/item_list")
 	 public String itemList(Model m,
 			 @RequestParam(name = "keyword", required = false) String keyword) {
-	
 		    List<itemDTO> item_list = this.dao.item_select();
-		    m.addAttribute("item_list", item_list);
+		    m.addAttribute("item_list", item_list);//주문목록 리스트 
+		   System.out.println(item_list);
 		  // m.addAttribute("keyword", keyword); // 검색어 유지용
 		    return "item/item_list";
 		}
@@ -73,7 +73,7 @@ public class item_controller {
 		m.addAttribute("calS", calS); //소분류 항목만 가져옴
 		m.addAttribute("uni_code", uni_code); //단위 항목만 가져옴
 		//m.addAttribute("item_cg_list", item_cg_list); //대분류 소분류 항목 조회 선택
-		System.out.println(uni_code);
+		//System.out.println(uni_code);
 		//System.out.println(calL);
 		//System.out.println(calS);
 	    return "item/item_write"; 
