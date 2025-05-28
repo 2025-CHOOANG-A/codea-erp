@@ -2,8 +2,8 @@ package kr.co.codea.item;
 
 import java.util.List;
 
+
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface item_mapper {
@@ -27,9 +27,18 @@ public interface item_mapper {
 	List<itemDTO> selectCatS();	
 	//단위조회
 	List<itemDTO> unitcode_list();
+	
+	
+
+	//item_detail 상세조회 경로 전송 (ITEM_ID)
+	List<itemDTO> item_detail();
+	
+
+	
 	// 조건 검색용
 	//keyword => 검색창 작동
+	/*
 	List<itemDTO> item_search(@Param("keyword") String keyword); 
-    
+    */
     
 }

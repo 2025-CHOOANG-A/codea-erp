@@ -1,70 +1,91 @@
 <div th:fragment="view">
 
 <!-- Main Content -->
-<div class="container-fluid" style="padding-top:72px; max-width: 1600px;">
-	<!-- 검색 필터 -->
-	<form class="row g-2 align-items-end justify-content-center mb-4" id="searchForm">
-		<div class="col-auto">
-			<label for="searchField" class="form-label mb-0">검색항목</label>
-			<select class="form-select" id="searchField" style="min-width: 140px;">
-				<option value="입고번호">입고번호</option>
-				<option value="입고일">입고일</option>
-				<option value="제품코드">제품코드</option>
-				<option value="제품명">제품명</option>
-				<option value="발주번호">발주번호</option>
-				<option value="발주일자">발주일자</option>
-				<option value="창고코드">창고코드</option>
-				<option value="창고명">창고명</option>
-				<option value="담당자코드">담당자코드</option>
-				<option value="담당자명">담당자명</option>
-				<option value="담당자전화번호">담당자전화번호</option>
-			</select>
-		</div>
-		<div class="col-auto">
-			<label for="searchInput" class="form-label mb-0 visually-hidden">검색어</label>
-			<input type="text" class="form-control" id="searchInput" placeholder="검색어 입력" style="min-width: 220px;">
-		</div>
-		<div class="col-auto">
-			<button type="submit" class="btn btn-primary px-4">검색</button>
-		</div>
-	</form>
-
-	<!-- 표 + 등록버튼/페이징 -->
-	<div class="row justify-content-center">
-		<div class="col-12">
-		    <div class="table-responsive mb-2">
-				<table class="table table-bordered table-hover align-middle bg-white">
-				    <thead class="table-light">
-						<tr class="text-center">
-							<th style="width:40px;"><input type="checkbox" /></th>
-							<th>입고번호</th>
-							<th>입고일</th>
-							<th>제품코드</th>
-							<th>제품명</th>
-							<th>발주번호</th>
-							<th>발주일</th>
-							<th>규격</th>
-							<th class="text-end">단가</th>
-							<th class="text-end">입고수량</th>
-							<th class="text-end">총액</th>
-							<th>창고명</th>
-							<th>담당자명</th>
-						</tr>
-					</thead>
-					<tbody id="inListTableBody">
-						<!-- 샘플 데이터 JS로 렌더링 -->
-					</tbody>
-				</table>
+<div class="main-content" id="mainContent">
+	<div class="container-fluid py-4">
+		<!-- 분류 및 검색 -->
+		<div class="row mb-3 align-items-end">
+			<div class="col-auto filter-group">
+				<div class="btn-group" role="group" aria-label="분류 필터">
+					<a href="#" class="btn btn-outline-primary">전체</a>
+					<a href="#" class="btn btn-outline-primary">자재 입고</a>
+					<a href="#" class="btn btn-outline-primary">생산 입고</a>
+				</div>
 			</div>
+			<div class="col-auto search-form">
+				<form class="row gx-2 gy-1 align-items-end" autocomplete="off">
+					<input type="hidden" name="itemType" th:value="${itemType}">
+					<div class="col-auto">
+						<select class="form-select" name="field">
+							<option value="inoutId">입고 번호</option>
+							<option value="inoutTime">입고 일자</option>
+							<option value="itemId">제품 코드</option>
+							<option value="itemName">제품명</option>
+							<option value="sourceDocHeaderId">발주 및 생산 번호</option>
+							<option value="sourceDocDetailId">발주 및 생산 일자</option>
+							<option value="whCode">창고 코드</option>
+							<option value="whName">창고명</option>
+							<option value="empNo">담당자 코드</option>
+							<option value="empName">담당자명</option>
+						</select>
+					</div>
+					<div class="col-auto">
+						<input type="text" class="form-control" name="keyword" placeholder="Search..." style="min-width:160px;">
+					</div>
+					<div class="col-auto">
+						<button type="submit" class="btn btn-primary">검색</button>
+					</div>
+				</form>
+			</div>
+		</div>
 
-			<!-- 페이징 네비게이터와 등록 버튼을 한 줄에, 페이징은 중앙, 등록버튼은 오른쪽 -->
-			<div class="paging-row" style="min-height:40px;">
-				<nav aria-label="입고 목록 페이지">
-					<ul class="pagination mb-0" id="pagination">
-						<!-- 페이징 JS로 렌더링 -->
+		<!-- Table -->
+		<div class="row justify-content-center">
+			<div class="col-12">
+				<div class="table-responsive mb-2">
+					<table class="table table-bordered align-middle mb-0" id="stockTable">
+						<thead class="table-light">
+							<tr>
+								<th>입고 번호</th>
+								<th>입고 일자</th>
+								<th>제품 코드</th>
+								<th>제품명</th>
+								<th>제품 구분</th>
+								<th>발주 및 생산 번호</th>
+								<th>발주 및 생산 일자</th>
+								<th>입고 수량</th>
+								<th>창고명</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each = "n : ${list}" th:onclick="|location.href='/receiving/detail?inoutId=${n.inoutId}'|" style="cursor:pointer;">
+								<td>[[${n.inoutId}]]</td>	<!-- 입고 번호 -->
+								<td>[[${n.inoutTime.substring(0, 10)}]]</td>	<!-- 입고 일자 -->
+								<td>[[${n.itemCode}]]</td>	<!-- 제품 코드 -->
+								<td>[[${n.itemName}]]</td>	<!-- 제품명 -->
+								<td>[[${n.itemType}]]</td>	<!-- 제품 구분 -->
+								<td>[[${n.orderOrPlanNo}]]</td>	<!-- 발주 및 생산 번호 -->
+								<td>[[${n.orderOrPlanDate.substring(0, 10)}]]</td>	<!-- 발주 및 생산 일자 -->
+								<td>[[${n.quantity}]]</td>	<!-- 입고 수량 -->
+								<td>[[${n.whName}]]</td>	<!-- 창고명 -->
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<!-- Pagination & Register Button -->
+		<div class="row align-items-center">
+			<div class="col text-center">
+				<nav>
+					<ul class="pagination justify-content-center my-2" id="pagination">
+						<!-- JS로 페이지네이션 렌더링 -->
 					</ul>
 				</nav>
-				<a href="#" class="btn btn-success ms-3" style="min-width:100px;">등록</a>
+			</div>
+			<div class="col-auto ms-auto">
+				<a href="/receiving/write" class="btn btn-success" id="rec_add">등록</a>
 			</div>
 		</div>
 	</div>

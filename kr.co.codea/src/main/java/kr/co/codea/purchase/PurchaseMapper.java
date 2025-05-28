@@ -11,4 +11,7 @@ import kr.co.codea.purchase.PurchaseDto;
 public interface PurchaseMapper {
 	 List<PurchaseDto> selectPurchaseList(Map<String, Object> params);
      int countPurchaseList(Map<String, Object> params); // 페이징을 위한 전체 개수
+     
+     PurchaseDto selectPurchaseHeader(int purchaseId);
+     List<PurchaseDto.PurchaseDetail> selectPurchaseDetails(int purchaseId);
 }
