@@ -1,15 +1,5 @@
 package kr.co.codea.auth.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.co.codea.auth.config.JwtProvider;
@@ -18,6 +8,14 @@ import kr.co.codea.auth.dto.TokenDto;
 import kr.co.codea.auth.dto.UserDetailsDto;
 import kr.co.codea.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
 
 @RestController
 @RequestMapping("/auth")
@@ -36,18 +34,18 @@ public class AuthController {
     public ResponseEntity<TokenDto> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
         TokenDto tokenDto = authService.login(loginRequestDto);
 
-        // Access Token을 HttpOnly 쿠키에 저장
-        Cookie accessTokenCookie = new Cookie("accessToken", tokenDto.getAccessToken());
-        accessTokenCookie.setHttpOnly(true); // JavaScript 접근 불가
-        accessTokenCookie.setPath("/");      // 전체 경로에서 유효
-        // accessTokenCookie.setSecure(true); // HTTPS 환경에서만 전송 (배포 시 활성화)
-        accessTokenCookie.setMaxAge((int) (jwtProvider.getAccessTokenExpirationMillis() / 1000));
+        // Access Token을 HttpOnly + Secure + SameSite=Strict 쿠키로 설정
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", tokenDto.getAccessToken())
+                .httpOnly(true)
+                .secure(true) // 운영 환경에서 필수
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(Duration.ofMillis(jwtProvider.getAccessTokenExpirationMillis()))
+                .build();
 
-        response.addCookie(accessTokenCookie);
+        response.addHeader("Set-Cookie", accessTokenCookie.toString());
 
-        // System.out.println("AuthController: Access Token 쿠키 설정 완료. 이름: accessToken, HttpOnly: true");
-
-        // 응답 본문에는 Refresh Token만 전달
+        // Refresh Token은 응답 본문에만 포함
         return ResponseEntity.ok(new TokenDto(null, tokenDto.getRefreshToken()));
     }
 
@@ -60,34 +58,30 @@ public class AuthController {
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse httpResponse, @AuthenticationPrincipal UserDetailsDto userDetailsDto) {
         Long empIdToLogout = null;
 
-        // 인증된 사용자의 empId 가져오기 (직접 주입 또는 SecurityContext에서 추출)
         if (userDetailsDto != null && userDetailsDto.getEmpId() != null) {
             empIdToLogout = userDetailsDto.getEmpId();
         } else {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.getPrincipal() instanceof UserDetailsDto) {
-                UserDetailsDto principal = (UserDetailsDto) authentication.getPrincipal();
-                if (principal.getEmpId() != null) {
-                    empIdToLogout = principal.getEmpId();
-                }
+            if (authentication != null && authentication.getPrincipal() instanceof UserDetailsDto principal) {
+                empIdToLogout = principal.getEmpId();
             }
         }
 
-        // Refresh Token DB에서 삭제
+        // Refresh Token 삭제
         if (empIdToLogout != null) {
             authService.logout(empIdToLogout);
-            // System.out.println("AuthController: DB에서 Refresh Token 삭제 완료 for empId: " + empIdToLogout);
         }
 
-        // Access Token 쿠키 제거 (클라이언트에서 즉시 삭제됨)
-        Cookie accessTokenCookie = new Cookie("accessToken", null);
-        accessTokenCookie.setMaxAge(0); // 만료 즉시
-        accessTokenCookie.setPath("/");
-        // accessTokenCookie.setHttpOnly(true);
-        // accessTokenCookie.setSecure(true);
-        httpResponse.addCookie(accessTokenCookie);
+        // Access Token 쿠키 제거 (즉시 만료)
+        ResponseCookie deleteCookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(0)
+                .build();
 
-        // System.out.println("AuthController: Access Token 쿠키 만료 처리 완료.");
+        httpResponse.addHeader("Set-Cookie", deleteCookie.toString());
 
         SecurityContextHolder.clearContext(); // 인증 정보 제거
         return ResponseEntity.ok().build();
@@ -102,18 +96,18 @@ public class AuthController {
     public ResponseEntity<TokenDto> reissue(@RequestBody TokenDto requestTokenDto, HttpServletResponse response) {
         TokenDto newTokens = authService.reissueToken(requestTokenDto.getRefreshToken());
 
-        // 새 Access Token을 쿠키에 설정
-        Cookie newAccessTokenCookie = new Cookie("accessToken", newTokens.getAccessToken());
-        newAccessTokenCookie.setHttpOnly(true);
-        newAccessTokenCookie.setPath("/");
-        newAccessTokenCookie.setMaxAge((int) (jwtProvider.getAccessTokenExpirationMillis() / 1000));
-        // newAccessTokenCookie.setSecure(true); // 배포 환경에서는 활성화
+        // 새 Access Token을 HttpOnly + Secure + SameSite=Strict 쿠키로 설정
+        ResponseCookie newAccessTokenCookie = ResponseCookie.from("accessToken", newTokens.getAccessToken())
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(Duration.ofMillis(jwtProvider.getAccessTokenExpirationMillis()))
+                .build();
 
-        response.addCookie(newAccessTokenCookie);
+        response.addHeader("Set-Cookie", newAccessTokenCookie.toString());
 
-        // System.out.println("AuthController: 새 Access Token 쿠키 설정 완료 (재발급).");
-
-        // 현재 정책: Refresh Token은 그대로 유지
+        // Refresh Token은 응답 본문 유지
         return ResponseEntity.ok(new TokenDto(null, requestTokenDto.getRefreshToken()));
     }
 }

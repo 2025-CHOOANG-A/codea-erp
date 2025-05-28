@@ -3,8 +3,9 @@
 <!-- Main Content -->
 <main class="container py-4 main-content" style="max-width:900px;">
 	<form autocomplete="off" id="frm" method="POST" action="/inventory/modUpdate">
-		<input type="hidden" id="itemId" name="itemId">
-		<input type="hidden" id="whId" name="whId">
+		<input type="hidden" name="inventoryId" th:value="${mod.inventoryId}">
+		<input type="hidden" name="itemId" th:value="${mod.itemId}">
+		<input type="hidden" name="whId" th:value="${mod.whId}">
 		<input type="hidden" id="empNo" name="empNo">
 
 		<!-- 재고 정보 -->

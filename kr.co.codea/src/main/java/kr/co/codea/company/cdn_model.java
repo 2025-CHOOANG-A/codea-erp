@@ -39,6 +39,7 @@ public class cdn_model {
 			String ext = originalName.substring(originalName.lastIndexOf("."));
 			String uuid = UUID.randomUUID().toString();
 			String new_file = uuid + ext; 
+			
 			String new_file = files.getOriginalFilename();
 			this.fc = new FTPClient();
 			this.fc.setControlEncoding("utf-8");

@@ -15,8 +15,8 @@ public class ProductPlanDTO {
     private LocalDate endDate;
 
     private LocalDate completionDate;
-    private int planQty;
-    private int actualQty;
+    private Integer planQty;
+    private Integer actualQty;
     private String status;
     private String empNo;
     private String remark;

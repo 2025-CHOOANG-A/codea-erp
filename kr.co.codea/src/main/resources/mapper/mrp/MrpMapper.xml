@@ -2,4 +2,19 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.mrp.MrpMapper">
 
+<!-- 날짜검색 -->
+<select id="alldata" resultType="kr.co.codea.mrp.MrpDTO">
+
+</select>
+
+<!-- 생산계획 모든 데이터 가져오는 select -->
+<select id="plandata" resultType="kr.co.codea.mrp.MrpDTO">
+
+</select>
+
+<!-- 계산하기 누를시 들어가는 데이터 insert -->
+<insert id="insertMrp">
+
+</insert>
+
 </mapper>
