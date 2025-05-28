@@ -162,16 +162,11 @@ public class InventoryDAO implements InventoryService {
 	@Override
 	public Integer inv_update(InventoryDTO dto) {	// 재고 수정
 		InventoryDTO inv_avg_cost = this.mp.inv_avg_cost(dto.getItemId(), dto.getWhId());
-		
-		int cur_qty = inv_avg_cost.getCurrentQty();	// 기존 수량
-		double avg_cost = inv_avg_cost.getAverageCost();	// 기존 평균 단가
+		dto.setAverageCost(inv_avg_cost.getAverageCost());	// 기존 평균 단가
 		
 		InventoryDTO qty_dto = this.inv_dto(dto.getItemId(), dto.getWhId());
 		dto.setExpectedQty(qty_dto.getExpectedQty());	// 입고 예정 수량
 		dto.setAllocatedQty(qty_dto.getAllocatedQty());	// 출고 예정 수량
-		
-		InventoryDTO cost_dto = this.avg_cost(cur_qty, avg_cost, dto.getItemId(), dto.getWhId(), dto.getItemType());
-		dto.setAverageCost(cost_dto.getAverageCost());	// 평균 단가
 		
 		int result = this.mp.inv_update(dto);
 		
