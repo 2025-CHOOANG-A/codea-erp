@@ -18,7 +18,10 @@ public interface item_service {
 	    
 	    public List<itemDTO> unitcode_list();//단위 조회
 	    
+	    /*제품 상세 정보*/
+        public List<itemDTO> item_detail(); //id로 경로 전송해서 띄우기 
 	    
+        
 	/*주문등록용 */     
 	   int insert_item(itemDTO dto);//제품등록
 	 

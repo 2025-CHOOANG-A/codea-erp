@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.bom.bom_mapper">
+
+<!-- 완재품 항목조회  -->
+<select id="bom_item_type_y" parameterType="string" resultType="kr.co.codea.bom.bomDTO">
+SELECT 
+    I.ITEM_ID,
+    I.ITEM_CODE,
+    I.ITEM_NAME,
+    I.ITEM_TYPE,
+    I.ITEM_CAT_L,
+    I.ITEM_CAT_S,
+    I.UNIT_CODE,
+    TO_CHAR(I.UNIT_CODE) || ' (' || C.CODE_DESC || ')' AS UNIT_NAME,
+    I.SPEC,
+    I.REMARK
+FROM ITEM I
+LEFT JOIN COMMON_CODE C
+    ON TO_CHAR(I.UNIT_CODE) = C.CODE
+    AND C.CODE_TYPE = 'UNIT_CODE'
+WHERE I.ITEM_TYPE = '완제품'
+
+</select>
+
+<!-- resultMap -->
+<resultMap id="itemListResultMap" type="kr.co.codea.bom.bomDTO">
+    <result property="itemId" column="ITEM_ID"/>
+    <result property="itemCode" column="ITEM_CODE"/>
+    <result property="itemName" column="ITEM_NAME"/>
+    <result property="itemType" column="ITEM_TYPE"/>
+    <result property="itemCatL" column="ITEM_CAT_L"/>
+    <result property="itemCatS" column="ITEM_CAT_S"/>
+    <result property="spec" column="SPEC"/>
+    <result property="reMark" column="REMARK"/>
+    
+    
+    
+    
+    <result property="inventoryCode" column="INVENTORY_CODE"/>
+    <result property="currentQty" column="CURRENT_QTY"/>
+    <result property="whId" column="WH_ID"/>
+    <result property="whCode" column="WH_CODE"/>
+    <result property="price" column="PRICE"/>
+    <result property="unitCode" column="UNIT_CODE"/>
+    <result property="Code" column="CODE"/>
+    
+    <result property="bpCode" column="BP_CODE"/>
+    <result property="bpName" column="BP_NAME"/>
+    <result property="Tel" column="TEL"/>
+    
+    <result property="itemCatLName" column="ITEM_CAT_L_NAME"/>
+    <result property="itemCatSName" column="ITEM_CAT_S_NAME"/>
+    
+    <result property="categoryId" column="CATEGORY_ID"/>
+     
+    <result property="codeId" column="CODE_ID"/>
+    <result property="codeDesc" column="CODE_DESC"/>
+   
+    <result property="leadTime" column="LEAD_TIME"/>
+    <result property="createdAt" column="CREATED_AT"/>
+    <result property="unitName" column="UNIT_NAME"/>
+  
+   
+</resultMap>
+
+</mapper>
