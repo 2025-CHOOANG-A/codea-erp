@@ -93,8 +93,14 @@
         font-weight: bold;
         margin-bottom: 1rem;
       }
-      #requirementResult table {
+      /* 가로 스크롤 추가 */
+      #requirementList {
+        width: 100%;
+        overflow-x: auto;
+      }
+      #requirementList table {
         margin-bottom: 0;
+        min-width: 800px;
       }
       .requirement-footer {
         display: flex;
@@ -102,6 +108,17 @@
         justify-content: flex-end;
         margin-top: 1rem;
         gap: 1rem;
+      }
+      .requirement-filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+      .requirement-filter-bar .form-control {
+        min-width: 120px;
+        max-width: 180px;
       }
     </style>
   </head>
@@ -119,6 +136,15 @@
         <input type="date" class="form-control" id="startDate" />
         <span>~</span>
         <input type="date" class="form-control" id="endDate" />
+        <select
+          class="form-select"
+          id="statusFilter"
+          style="min-width: 120px; max-width: 160px"
+        >
+          <option value="all">전체</option>
+          <option value="unconfirmed">미확인</option>
+          <option value="confirmed">확인됨</option>
+        </select>
         <button type="button" class="btn btn-outline-primary" id="searchBtn">
           검색
         </button>
@@ -141,14 +167,17 @@
               <th>생산종료일</th>
               <th>생산 일수</th>
               <th>비고</th>
-              <th>소요량계산</th>
+              <th>확인</th>
             </tr>
           </thead>
           <tbody id="planTableBody"></tbody>
         </table>
       </div>
-      <!-- Table Footer: Paging -->
+      <!-- Table Footer: Paging & 계산하기 버튼 -->
       <div class="table-footer mt-3">
+        <button type="button" class="btn btn-success" id="calcSelectedBtn">
+          선택항목 계산하기
+        </button>
         <nav>
           <ul class="pagination mb-0" id="pagination"></ul>
         </nav>
@@ -156,6 +185,31 @@
       <!-- 소요량 계산 결과 -->
       <div id="requirementResult">
         <h5>소요량 계산 결과</h5>
+        <!-- 소요량 결과 필터 -->
+        <form
+          class="requirement-filter-bar"
+          id="requirementFilterForm"
+          autocomplete="off"
+          onsubmit="return false;"
+        >
+          <input type="date" class="form-control" id="requirementStartDate" />
+          <span>~</span>
+          <input type="date" class="form-control" id="requirementEndDate" />
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-sm"
+            id="requirementSearchBtn"
+          >
+            검색
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            id="requirementResetBtn"
+          >
+            초기화
+          </button>
+        </form>
         <div id="requirementList"></div>
         <div class="requirement-footer">
           <nav>
@@ -339,6 +393,8 @@
 
       // 소요량 계산 결과 데이터
       let requirementData = [];
+      // 확인된 항목 id 저장
+      let confirmedIds = [];
 
       // Paging
       const ROWS_PER_PAGE = 10;
@@ -349,23 +405,44 @@
       const REQUIREMENT_ROWS_PER_PAGE = 10;
       let requirementCurrentPage = 1;
 
+      // 상태 필터
+      let statusFilter = "all";
+
+      // 소요량 결과 날짜 필터
+      let requirementFilterStartDate = "";
+      let requirementFilterEndDate = "";
+
       function filterData() {
         const startDate = document.getElementById("startDate").value;
         const endDate = document.getElementById("endDate").value;
+        statusFilter = document.getElementById("statusFilter").value;
         filteredData = planData.filter((row) => {
           let match = true;
           if (startDate && row.start < startDate) match = false;
           if (endDate && row.end > endDate) match = false;
+          // 상태 필터
+          if (statusFilter === "unconfirmed") {
+            // 계산 안된 항목만
+            if (
+              requirementData.some((r) => r.id === row.id) ||
+              confirmedIds.includes(row.id)
+            )
+              match = false;
+          } else if (statusFilter === "confirmed") {
+            if (!confirmedIds.includes(row.id)) match = false;
+          }
           return match;
         });
         currentPage = 1;
         renderTable();
         renderPagination();
-        renderRequirementResult();
       }
       document
         .getElementById("searchBtn")
         .addEventListener("click", filterData);
+      document
+        .getElementById("statusFilter")
+        .addEventListener("change", filterData);
 
       // Render table
       function renderTable() {
@@ -373,41 +450,58 @@
         tbody.innerHTML = "";
         const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
         const endIdx = startIdx + ROWS_PER_PAGE;
-        const pageData = filteredData.slice(startIdx, endIdx);
+        // 정렬: 확인됨은 맨 아래로
+        let pageData = filteredData.slice();
+        pageData.sort((a, b) => {
+          const aConfirmed = confirmedIds.includes(a.id);
+          const bConfirmed = confirmedIds.includes(b.id);
+          if (aConfirmed && !bConfirmed) return 1;
+          if (!aConfirmed && bConfirmed) return -1;
+          return 0;
+        });
+        pageData = pageData.slice(startIdx, endIdx);
+
         pageData.forEach((row) => {
           const tr = document.createElement("tr");
-          // 소요량 계산 결과에 이미 있으면 버튼 비활성화
+          // 이미 계산된 항목은 체크박스 비활성화
           const alreadyCalculated = requirementData.some(
             (r) => r.id === row.id
           );
+          const alreadyConfirmed = confirmedIds.includes(row.id);
           tr.innerHTML = `
-                                                <td><input type="checkbox" class="row-check"></td>
-                                                <td>${row.id}</td>
-                                                <td>${row.code}</td>
-                                                <td><a href="#" class="name-link" data-name="${
-                                                  row.name
-                                                }">${row.name}</a></td>
-                                                <td>${row.spec}</td>
-                                                <td>${row.price.toLocaleString()}</td>
-                                                <td>${row.qty.toLocaleString()}</td>
-                                                <td>${row.start}</td>
-                                                <td>${row.end}</td>
-                                                <td>${row.days}</td>
-                                                <td>
-                                                        ${
-                                                          row.remark
-                                                            ? `<button type="button" class="btn btn-outline-secondary btn-sm remark-btn" data-remark="${row.remark}">내용 확인</button>`
-                                                            : "<span>-</span>"
-                                                        }
-                                                </td>
-                                                <td>
-                                                        <button type="button" class="btn btn-success btn-sm requirement-calc-btn" data-id="${
-                                                          row.id
-                                                        }" ${
-            alreadyCalculated ? "disabled" : ""
-          }>계산하기</button>
-                                                </td>
-                                        `;
+            <td>
+              <input type="checkbox" class="row-check" data-id="${row.id}" ${
+            alreadyCalculated || alreadyConfirmed ? "disabled" : ""
+          }>
+            </td>
+            <td>${row.id}</td>
+            <td>${row.code}</td>
+            <td><a href="#" class="name-link" data-name="${row.name}">${
+            row.name
+          }</a></td>
+            <td>${row.spec}</td>
+            <td>${row.price.toLocaleString()}</td>
+            <td>${row.qty.toLocaleString()}</td>
+            <td>${row.start}</td>
+            <td>${row.end}</td>
+            <td>${row.days}</td>
+            <td>
+              ${
+                row.remark
+                  ? `<button type="button" class="btn btn-outline-secondary btn-sm remark-btn" data-remark="${row.remark}">내용 확인</button>`
+                  : "<span>-</span>"
+              }
+            </td>
+            <td>
+              ${
+                alreadyConfirmed
+                  ? `<span class="text-primary fw-bold">확인됨</span>`
+                  : alreadyCalculated
+                  ? `<span class="text-success fw-bold">계산완료</span>`
+                  : `<span class="text-secondary">미확인</span>`
+              }
+            </td>
+          `;
           tbody.appendChild(tr);
         });
         // 체크박스 전체선택 비활성화
@@ -506,13 +600,47 @@
         pagination.appendChild(nextLi);
       }
 
-      // 체크박스 전체선택 비활성화
+      // 체크박스 전체선택
       document
         .getElementById("checkAll")
         .addEventListener("change", function () {
-          document
-            .querySelectorAll(".row-check")
-            .forEach((cb) => (cb.checked = this.checked));
+          document.querySelectorAll(".row-check").forEach((cb) => {
+            if (!cb.disabled) cb.checked = this.checked;
+          });
+        });
+
+      // 계산하기 버튼 (선택항목)
+      document
+        .getElementById("calcSelectedBtn")
+        .addEventListener("click", function () {
+          const checked = Array.from(
+            document.querySelectorAll(".row-check:checked")
+          );
+          if (checked.length === 0) {
+            alert("계산할 항목을 선택하세요.");
+            return;
+          }
+          let added = 0;
+          checked.forEach((cb) => {
+            const planId = cb.getAttribute("data-id");
+            if (
+              !requirementData.some((r) => r.id === planId) &&
+              !confirmedIds.includes(planId)
+            ) {
+              const plan = planData.find((r) => r.id === planId);
+              if (plan) {
+                requirementData.push({
+                  ...plan,
+                  calcDate: new Date(),
+                });
+                added++;
+              }
+            }
+          });
+          if (added > 0) {
+            renderTable();
+            renderRequirementResult();
+          }
         });
 
       // Modal for remark
@@ -532,35 +660,48 @@
           e.preventDefault();
           alert(`${e.target.dataset.name} 상세 페이지로 이동`);
         }
-        // 소요량 계산하기 버튼
-        if (e.target.classList.contains("requirement-calc-btn")) {
-          const planId = e.target.getAttribute("data-id");
-          // 이미 계산된 항목은 추가하지 않음
-          if (!requirementData.some((r) => r.id === planId)) {
-            const plan = planData.find((r) => r.id === planId);
-            if (plan) {
-              requirementData.push({
-                ...plan,
-                calcDate: new Date(),
-              });
-              renderTable();
-              renderRequirementResult();
-            }
-          }
-        }
         // 소요량 결과 확인 버튼
         if (e.target.classList.contains("requirement-confirm-btn")) {
           const planId = e.target.getAttribute("data-id");
           if (confirm("정말 확인 처리하시겠습니까?")) {
-            // 소요량 결과에서 삭제
+            // 소요량 결과에서 삭제, 확인된 id로 이동
             requirementData = requirementData.filter(
               (row) => row.id !== planId
             );
+            if (!confirmedIds.includes(planId)) confirmedIds.push(planId);
             renderTable();
             renderRequirementResult();
+            // 확인됨이 맨 아래로 가도록 테이블 스크롤
+            setTimeout(() => {
+              const mainContent = document.getElementById("mainContent");
+              mainContent.scrollIntoView({ behavior: "smooth", block: "end" });
+            }, 200);
           }
         }
       });
+
+      // 소요량 결과 날짜 필터 핸들러
+      document
+        .getElementById("requirementSearchBtn")
+        .addEventListener("click", function () {
+          requirementFilterStartDate = document.getElementById(
+            "requirementStartDate"
+          ).value;
+          requirementFilterEndDate =
+            document.getElementById("requirementEndDate").value;
+          requirementCurrentPage = 1;
+          renderRequirementResult();
+        });
+      document
+        .getElementById("requirementResetBtn")
+        .addEventListener("click", function () {
+          document.getElementById("requirementStartDate").value = "";
+          document.getElementById("requirementEndDate").value = "";
+          requirementFilterStartDate = "";
+          requirementFilterEndDate = "";
+          requirementCurrentPage = 1;
+          renderRequirementResult();
+        });
 
       // 소요량 계산 결과 렌더링 (페이징 포함)
       function renderRequirementResult() {
@@ -568,7 +709,30 @@
         const listDiv = document.getElementById("requirementList");
         const paginationDiv = document.getElementById("requirementPagination");
         // 계산된 항목 = requirementData
-        const calculatedPlans = requirementData;
+        let calculatedPlans = requirementData.slice();
+
+        // 날짜 필터 적용
+        if (requirementFilterStartDate) {
+          calculatedPlans = calculatedPlans.filter((row) => {
+            const d = row.calcDate ? new Date(row.calcDate) : new Date();
+            return d >= new Date(requirementFilterStartDate);
+          });
+        }
+        if (requirementFilterEndDate) {
+          calculatedPlans = calculatedPlans.filter((row) => {
+            const d = row.calcDate ? new Date(row.calcDate) : new Date();
+            // end date inclusive
+            return d <= new Date(requirementFilterEndDate + "T23:59:59");
+          });
+        }
+
+        // 최신 계산일이 위로 오도록 정렬
+        calculatedPlans.sort((a, b) => {
+          const da = a.calcDate ? new Date(a.calcDate) : new Date();
+          const db = b.calcDate ? new Date(b.calcDate) : new Date();
+          return db - da;
+        });
+
         const totalPages = Math.ceil(
           calculatedPlans.length / REQUIREMENT_ROWS_PER_PAGE
         );
@@ -579,7 +743,7 @@
         const endIdx = startIdx + REQUIREMENT_ROWS_PER_PAGE;
         const pageData = calculatedPlans.slice(startIdx, endIdx);
 
-        let html = `<table class="table table-bordered table-sm align-middle">
+        let html = `<div style="overflow-x:auto;"><table class="table table-bordered table-sm align-middle">
                                         <thead>
                                                 <tr>
                                                         <th>계획번호</th>
@@ -604,7 +768,9 @@
                                                         <td>${row.qty.toLocaleString()}</td>
                                                         <td>${
                                                           row.calcDate
-                                                            ? row.calcDate.toLocaleString()
+                                                            ? new Date(
+                                                                row.calcDate
+                                                              ).toLocaleString()
                                                             : new Date().toLocaleString()
                                                         }</td>
                                                         <td><span class="text-success fw-bold">계산완료</span></td>
@@ -616,7 +782,7 @@
                                                 </tr>`;
           });
         }
-        html += `</tbody></table>`;
+        html += `</tbody></table></div>`;
         listDiv.innerHTML = html;
 
         // 페이징 렌더링
@@ -708,8 +874,7 @@
       }
 
       // Initial render
-      renderTable();
-      renderPagination();
+      filterData();
       renderRequirementResult();
     </script>
   </body>

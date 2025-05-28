@@ -22,6 +22,7 @@ public class itemDTO {
 	private String whId;   // 재고창고(WH_ID)
 	private String whCode; // 창코코드
 	private String reMark; // 비고
+
 	//단위 
 	private int unitCode;
 	private String unitName;     

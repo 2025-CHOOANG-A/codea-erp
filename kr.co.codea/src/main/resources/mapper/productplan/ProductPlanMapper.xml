@@ -6,6 +6,20 @@
 <mapper namespace="kr.co.codea.productplan.ProductPlanMapper">
 
 
+<!--생산계획 수정  -->
+<update id="productPlanUpdate">
+UPDATE PRODUCTION_PLAN
+SET
+    ITEM_CODE = #{itemCode},
+    PLAN_QTY = #{planQty},
+    START_DATE = #{startDate},
+    DUE_DATE = #{dueDate},
+    STATUS = #{status},
+    REMARK = #{remark},
+    EMP_NO = #{empNo}
+WHERE
+    PLAN_ID = #{planId}
+</update>
 
 
 <!--생산계획 생성  -->
@@ -19,7 +33,7 @@ VALUES (
 
 
 <!--아이템 코드 조회 api  -->
-      <select id="searchItem" resultType="kr.co.codea.productplan.ProductPlanDTO">
+      <select id="searchItem" resultType="kr.co.codea.productplan.ProductPlanDTO"> 
         SELECT
             ITEM_CODE, ITEM_NAME FROM
             ITEM  <where>
@@ -30,6 +44,29 @@ VALUES (
         </where>
         ORDER BY ITEM_NAME ASC
     </select>
+
+
+<!--생산계획 상세 by planId  -->
+    <select id="productPlanDetail" resultType="kr.co.codea.productplan.ProductPlanDTO">
+        SELECT
+            PP.PLAN_ID,
+             PP.ITEM_CODE,
+             PP.PLAN_QTY,
+             PP.START_DATE,
+              PP.DUE_DATE,
+              PP.COMPLETION_DATE,
+              PP.ACTUAL_QTY,
+              PP.STATUS,
+              PP.EMP_NO,
+              PP.REMARK,
+              I.ITEM_NAME,
+              E.EMP_NAME
+            FROM
+            PRODUCTION_PLAN PP    LEFT JOIN
+            ITEM I ON PP.ITEM_CODE = I.ITEM_CODE    LEFT JOIN
+            EMPLOYEE E ON PP.EMP_NO = E.EMP_NO      WHERE
+            PP.PLAN_ID = #{planId}  </select>
+
 
 
 <!-- 생산계획 조회 -->

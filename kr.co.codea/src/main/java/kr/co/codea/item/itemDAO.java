@@ -58,8 +58,13 @@ public class itemDAO implements item_service{
    public int insert_item(itemDTO dto) {
        return mp.insert_item(dto);
    }
+   
+   @Override
+   public List<itemDTO> item_detail() {
+	
+	List<itemDTO> item_detail_list = this.mp.item_detail();	   	   
+	return item_detail_list;
+   }
+   
 
- 
-
-  
 }

@@ -21,52 +21,52 @@
 <!-- 제품목록 , 검색 조회  
  resultType="kr.co.codea.item.item_list_DTO"
    cc.CODE AS UNIT_NAME => 단위 EA 조회하기 
- 
 -->
 <select id="item_select"  parameterType="String"  resultMap="itemListResultMap">   
- SELECT 
+  SELECT 
     A.ITEM_CODE,
-    A.ITEM_NAME,
+    A.ITEM_TYPE,
     A.ITEM_CAT_L,
     A.ITEM_CAT_S,
     A.SPEC,
-    A.REMARK,
-    A.UNIT_CODE,
-    cc.CODE AS UNIT_NAME,
-    B.INVENTORY_CODE,
-    B.CURRENT_QTY,
-    B.WH_ID,
-    C.WH_CODE,
-    D.PRICE
+    A.PRICE,
+    A.BP_CODE,
+    P.BP_NAME,
+    A.REMARK
   FROM ITEM A
-  LEFT JOIN INVENTORY B ON A.ITEM_ID = B.ITEM_ID
-  LEFT JOIN WAREHOUSE C ON B.WH_ID = C.WH_ID
-  LEFT JOIN (
-    SELECT ITEM_ID, PRICE
-    FROM (
-      SELECT 
-        ITEM_ID, PRICE,
-        ROW_NUMBER() OVER (PARTITION BY ITEM_ID ORDER BY PRICE_DATE DESC) AS RN
-      FROM PARTNER_ITEM
-    )
-    WHERE RN = 1
-  ) D ON A.ITEM_ID = D.ITEM_ID
-  LEFT JOIN COMMON_CODE cc ON A.UNIT_CODE = cc.CODE_ID AND cc.CODE_TYPE = 'UNIT_CODE'
+  LEFT JOIN BUSINESS_PARTNER P ON A.BP_CODE = P.BP_CODE
   <where>
     <if test="keyword != null and keyword != ''">
       AND (
-        A.ITEM_NAME LIKE CONCAT('%', #{keyword}, '%')
-        OR A.ITEM_CODE LIKE CONCAT('%', #{keyword}, '%')
+        A.ITEM_CODE LIKE CONCAT('%', #{keyword}, '%')
+        OR A.ITEM_TYPE LIKE CONCAT('%', #{keyword}, '%')
         OR A.ITEM_CAT_L LIKE CONCAT('%', #{keyword}, '%')
         OR A.ITEM_CAT_S LIKE CONCAT('%', #{keyword}, '%')
         OR A.SPEC LIKE CONCAT('%', #{keyword}, '%')
         OR A.REMARK LIKE CONCAT('%', #{keyword}, '%')
-        OR B.INVENTORY_CODE LIKE CONCAT('%', #{keyword}, '%')
-        OR C.WH_CODE LIKE CONCAT('%', #{keyword}, '%')
-        OR CC.CODE LIKE CONCAT('%', #{keyword}, '%') 
+        OR P.BP_CODE LIKE CONCAT('%', #{keyword}, '%')
+        OR P.BP_NAME LIKE CONCAT('%', #{keyword}, '%')
       )
     </if>
   </where>
+</select>
+<!-- 제품 상세 정보 -->
+<select id="item_detail" parameterType="int" resultType="kr.co.codea.item.itemDTO">
+SELECT 
+    I.ITEM_ID,
+    I.ITEM_CODE,
+    I.ITEM_NAME,
+    I.SPEC,
+    I.PRICE,
+    I.REMARK,
+    I.UNIT_CODE,                
+    C.CODE AS UNIT_CODE_VALUE,   
+    C.CODE_DESC AS UNIT_DESC     
+FROM ITEM I
+LEFT JOIN CODE_TABLE C
+  ON I.UNIT_CODE = C.CODE_ID
+WHERE C.CODE_TYPE = 'UNIT_CODE'
+ORDER BY I.ITEM_ID
 </select>
 
 <!-- 거래처 조회(비즈니스 파트너)-->
@@ -147,7 +147,8 @@ LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
     <result property="leadTime" column="LEAD_TIME"/>
     <result property="createdAt" column="CREATED_AT"/>
     <result property="unitName" column="UNIT_NAME"/>
-  
+    
+
    
 </resultMap>
 </mapper>
