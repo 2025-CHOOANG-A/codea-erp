@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import kr.co.codea.purchase.PurchaseDto;
 
@@ -14,4 +15,12 @@ public interface PurchaseMapper {
      
      PurchaseDto selectPurchaseHeader(int purchaseId);
      List<PurchaseDto.PurchaseDetail> selectPurchaseDetails(int purchaseId);
+     
+     List<PurchaseDto.ItemSimple> searchItems(@Param("keyword") String keyword);
+     List<PurchaseDto.SupplierSimple> searchSuppliers(@Param("keyword") String keyword);
+     List<PurchaseDto.EmployeeSimple> searchEmployees(@Param("keyword") String keyword);
+     
+     void insertPurchaseHeader(PurchaseDto dto);
+     void insertPurchaseDetail(PurchaseDto.PurchaseDetail detail);
+
 }

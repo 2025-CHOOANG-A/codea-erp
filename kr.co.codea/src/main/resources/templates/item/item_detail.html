@@ -227,7 +227,7 @@
               </tr>
               <tr>
                 <th>단위</th>
-                <td th:text="${item_detail_list[0].unitCode}"></td>
+                <td th:text="${item_detail_list[0].unitcodeValue}"></td>
               </tr>
               <tr>
                 <th>단가</th>
@@ -244,15 +244,15 @@
               <tbody>
                 <tr>
                   <th>거래처</th>
-                  <td>코드에이상사</td>
+                  <td th:text="${item_detail_list[0].bpName}"></td>
                 </tr>
                 <tr>
                   <th>거래처 코드</th>
-                  <td>VND-1002</td>
+                  <td th:text="${item_detail_list[0].bpCode}"></td>
                 </tr>
                 <tr>
                   <th>거래처 전화번호</th>
-                  <td>02-1234-5678</td>
+                  <td th:text="${item_detail_list[0].Tel}"></td>
                 </tr>
               </tbody>
             </table>

@@ -31,15 +31,19 @@ public class item_controller {
 	
 	@Autowired
 	itemDAO dao;
-
-
 	
+	
+	 @GetMapping("/list")
+	    public String listPage() {
+	        return "item/item_list"; 
+	    }
+	    
 	
 	 @GetMapping("/item_detail")
-	 public String item_detail(@RequestParam("itemId") int itemId, Model m) {		   
+	 public String item_detail(@RequestParam("itemId") Integer itemId, Model m) {		   
 		 List<itemDTO> item_detail_list = this.dao.item_detail();
 	     m.addAttribute("item_detail_list", item_detail_list);
-	     //System.out.println(item_detail_list);
+	     System.out.println(item_detail_list);
 	 
 	     return "item/item_detail";
 	 }	

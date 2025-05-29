@@ -10,7 +10,7 @@
 		SELECT
 		PURCHASE_ID,
 		PURCHASE_CODE,
-		ORDER_DATE,
+		PURCHASE_DATE AS ORDER_DATE,
 		SUPPLIER_NAME,
 		TOTAL_AMOUNT,
 		STATUS,
@@ -22,20 +22,23 @@
 		WHERE 1 = 1
 		<if test="keyword != null and keyword != ''">
 			AND (SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
-			OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%')
+			OR
+			EMPLOYEE_NAME LIKE '%' || #{keyword} || '%')
 		</if>
 		<if test="status != null and status != ''">
 			AND STATUS = #{status}
 		</if>
 		<if test="startDate != null and startDate != ''">
-			AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+			AND PURCHASE_DATE &gt;= TO_DATE(#{startDate},
+			'YYYY-MM-DD')
 		</if>
 		<if test="endDate != null and endDate != ''">
-			AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+			AND PURCHASE_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
 		</if>
-		ORDER BY ORDER_DATE DESC, PURCHASE_ID DESC
+		ORDER BY PURCHASE_DATE DESC, PURCHASE_ID DESC
 		) InnerQuery
-		WHERE ROWNUM &lt;= #{endRowForQuery} )
+		WHERE ROWNUM
+		&lt;= #{endRowForQuery} )
 		WHERE rn &gt; #{startRowForQuery}
 	</select>
 
@@ -46,17 +49,19 @@
 		<if test="keyword != null and keyword != ''">
 			AND (
 			SUPPLIER_NAME LIKE '%' || #{keyword} || '%'
-			OR EMPLOYEE_NAME LIKE '%' || #{keyword} || '%'
+			OR
+			EMPLOYEE_NAME LIKE '%' || #{keyword} || '%'
 			)
 		</if>
 		<if test="status != null and status != ''">
 			AND STATUS = #{status}
 		</if>
 		<if test="startDate != null and startDate != ''">
-			AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+			AND PURCHASE_DATE &gt;= TO_DATE(#{startDate},
+			'YYYY-MM-DD')
 		</if>
 		<if test="endDate != null and endDate != ''">
-			AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+			AND PURCHASE_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
 		</if>
 	</select>
 
@@ -66,6 +71,7 @@
 		SELECT
 		PURCHASE_ID,
 		PURCHASE_CODE,
+		PURCHASE_DATE AS
 		ORDER_DATE,
 		BP_ID,
 		SUPPLIER_NAME,
@@ -76,7 +82,8 @@
 		CREATED_AT,
 		REMARK
 		FROM V_PURCHASE_LIST
-		WHERE PURCHASE_ID = #{purchaseId}
+		WHERE PURCHASE_ID =
+		#{purchaseId}
 	</select>
 
 	<!-- 발주 상세 항목 목록 조회 -->
@@ -91,17 +98,92 @@
 		i.SPEC,
 		d.ORDER_QTY,
 		d.UNIT_PRICE,
-		d.ORDER_QTY * d.UNIT_PRICE AS AMOUNT,
+		d.ORDER_QTY *
+		d.UNIT_PRICE AS AMOUNT,
 		d.REQUIRED_DELIVERY_DATE,
 		d.REMARK,
 		i.UNIT_CODE,
 		cc.CODE_DESC AS UNIT_NAME
 		FROM PURCHASE_DETAIL d
-		JOIN ITEM i ON d.ITEM_ID = i.ITEM_ID
+		JOIN ITEM i ON
+		d.ITEM_ID = i.ITEM_ID
 		LEFT JOIN COMMON_CODE cc
-		ON i.UNIT_CODE = cc.CODE_ID
+		ON i.UNIT_CODE =
+		cc.CODE_ID
 		AND cc.CODE_TYPE = 'UNIT_CODE'
-		WHERE d.PURCHASE_ID = #{purchaseId}
+		WHERE d.PURCHASE_ID =
+		#{purchaseId}
 		ORDER BY d.PURCHASE_DETAIL_ID
 	</select>
+
+	<!-- 품목 자동완성 검색 -->
+	<select id="searchItems" parameterType="string"
+		resultType="kr.co.codea.purchase.PurchaseDto$ItemSimple">
+		SELECT
+		i.ITEM_ID,
+		i.ITEM_NAME,
+		i.ITEM_CODE,
+		c.CODE AS
+		UNIT_NAME,
+		i.PRICE AS UNIT_PRICE
+		FROM
+		ITEM i
+		LEFT JOIN
+		COMMON_CODE c
+		ON
+		i.UNIT_CODE = c.CODE_ID
+		AND c.CODE_TYPE = 'UNIT_CODE'
+		WHERE
+		i.ITEM_NAME
+		LIKE '%' || #{keyword} || '%'
+		ORDER BY
+		i.ITEM_NAME
+		FETCH FIRST 10 ROWS
+		ONLY
+	</select>
+
+	<!-- 공급처 자동완성 검색 -->
+	<select id="searchSuppliers" parameterType="string"
+		resultType="kr.co.codea.purchase.PurchaseDto$SupplierSimple">
+		SELECT BP_ID, BP_NAME
+		FROM BUSINESS_PARTNER
+		WHERE BP_NAME
+		LIKE '%' || #{keyword} || '%'
+		ORDER BY BP_NAME
+		FETCH FIRST 10 ROWS ONLY
+	</select>
+
+	<!-- 담당자 자동완성 검색 -->
+	<select id="searchEmployees" parameterType="string"
+		resultType="kr.co.codea.purchase.PurchaseDto$EmployeeSimple">
+		SELECT EMP_ID, EMP_NAME
+		FROM EMPLOYEE
+		WHERE EMP_NAME LIKE '%'
+		|| #{keyword} || '%'
+		ORDER BY EMP_NAME
+		FETCH FIRST 10 ROWS ONLY
+	</select>
+
+	<insert id="insertPurchaseHeader"
+		parameterType="kr.co.codea.purchase.PurchaseDto"
+		useGeneratedKeys="true" keyProperty="purchaseId"
+		keyColumn="PURCHASE_ID">
+		INSERT INTO PURCHASE_HEADER (
+		PURCHASE_DATE, BP_ID, STATUS, EMP_ID, REMARK
+		) VALUES (
+		#{orderDate}, #{bpId}, '접수', #{empId}, #{remark}
+		)
+	</insert>
+
+
+	<insert id="insertPurchaseDetail">
+		INSERT INTO PURCHASE_DETAIL (
+		PURCHASE_ID, ITEM_ID,
+		ORDER_QTY, UNIT_PRICE, REQUIRED_DELIVERY_DATE
+		) VALUES (
+		#{purchaseId},
+		#{itemId}, #{orderQty}, #{unitPrice}, #{requiredDeliveryDate}
+		)
+	</insert>
+
 </mapper>
