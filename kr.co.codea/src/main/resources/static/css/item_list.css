@@ -23,107 +23,12 @@
         text-align: center;
         flex: 1;
       }
-      .sidebar-toggle-btn {
-        background: #343a40;
-        border: none;
-        color: #fff;
-        width: 44px;
-        height: 44px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: 16px;
-        margin-right: 16px;
-        transition: background 0.2s;
-      }
-      .sidebar-toggle-btn:hover {
-        background: #495057;
-      }
-      #sidebar {
-        position: fixed;
-        top: 56px;
-        left: 0;
-        width: 260px;
-        height: calc(100vh - 56px);
-        background: #343a40;
-        color: #fff;
-        z-index: 1030;
-        transition: transform 0.2s;
-        overflow-y: auto;
-        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
-      }
-      #sidebar.closed {
-        transform: translateX(-100%);
-      }
-      #sidebar .sidebar-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1rem 1rem 0.5rem 1rem;
-      }
-      #sidebar .sidebar-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #fff;
-      }
-      #sidebar .sidebar-close-btn {
-        background: #495057;
-        border: none;
-        color: #fff;
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-      }
-      #sidebar .sidebar-close-btn:hover {
-        background: #868e96;
-      }
-      #sidebar nav {
-        padding: 0 1rem 1rem 1rem;
-      }
-      #sidebar .menu-group {
-        margin-bottom: 1.5rem;
-      }
-      #sidebar .menu-group-title {
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #adb5bd;
-        margin-bottom: 0.5rem;
-        margin-top: 1rem;
-      }
-      #sidebar .nav-link {
-        color: #fff;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        font-size: 1rem;
-        margin-bottom: 2px;
-        display: block;
-        transition: background 0.2s;
-      }
-      #sidebar .nav-link:hover,
-      #sidebar .nav-link.active {
-        background: #495057;
-        color: #fff;
-        text-decoration: none;
-      }
-      @media (max-width: 991.98px) {
-        #sidebar {
-          top: 56px;
-          height: calc(100vh - 56px);
-        }
-      }
+          
       .main-content {
         margin-top: 56px;
         margin-left: 260px;
         padding: 2rem 2rem 2rem 2rem;
         transition: margin-left 0.2s;
-      }
-      #sidebar.closed ~ .main-content {
-        margin-left: 0;
       }
       @media (max-width: 991.98px) {
         .main-content {

@@ -28,12 +28,13 @@
       });
 
       // Always show sidebar toggle in header
+	  /*
       window.addEventListener("resize", () => {
         if (window.innerWidth < 992) closeSidebar();
         else openSidebar();
       });
       if (window.innerWidth < 992) closeSidebar();
-
+*/
   
       // 페이징/필터 변수
       let currentPage = 1;
