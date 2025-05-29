@@ -6,6 +6,36 @@
 <mapper namespace="kr.co.codea.productplan.ProductPlanMapper">
 
 
+<!--작업지시생성  -->
+   <select id="findByPlanIdAndStatus" resultType="kr.co.codea.productplan.ProductPlanDTO">
+        SELECT
+            PLAN_ID,
+            ITEM_CODE,
+            PLAN_QTY,
+            START_DATE,
+            DUE_DATE,
+            STATUS,
+            REMARK,
+            EMP_NO
+            FROM
+            PRODUCTION_PLAN
+        WHERE
+            PLAN_ID = #{planId}
+          AND STATUS = #{status}
+          
+          </select>
+
+    <update id="updateStatus">
+        UPDATE PRODUCTION_PLAN
+        SET
+            STATUS = #{targetStatus} WHERE
+            PLAN_ID = #{planId}
+    </update>
+
+
+
+
+
 <!--생산계획 수정  -->
 <update id="productPlanUpdate">
 UPDATE PRODUCTION_PLAN

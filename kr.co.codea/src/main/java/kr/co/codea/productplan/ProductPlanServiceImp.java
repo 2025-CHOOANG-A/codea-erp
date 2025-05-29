@@ -3,6 +3,7 @@ package kr.co.codea.productplan;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 @Service
 
 public class ProductPlanServiceImp implements ProductPlanService {
@@ -36,5 +37,26 @@ public class ProductPlanServiceImp implements ProductPlanService {
 	public int productPlanUpdate(ProductPlanDTO dto) {
 		return mapper.productPlanUpdate(dto);
 	}
+
+	
+	@Override
+	@Transactional // 여러 건을 업데이트하므로 트랜잭션 처리
+	public int changePlansStatus(List<String> planIds, String targetStatus, String mrpok) {
+	        int updatedCount = 0;
+	        for (String planId : planIds) {
+
+	            ProductPlanDTO plan = mapper.findByPlanIdAndStatus(planId, targetStatus); // 예시 메소드
+
+	            if (plan != null) {
+	                // 상태 변경
+	                int result = mapper.updateStatus(planId, mrpok);
+	                if (result > 0) {
+	                    updatedCount++;
+	                }
+	            }
+	        }
+	        return updatedCount;
+	    }
+	   
 
 }
