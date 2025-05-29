@@ -48,6 +48,7 @@ public class itemDTO {
      private int leadTime;  // LEAD_TIME 품목을 생산하는 데 소요되는 기간을 의미, 각 거래처의 납기기간
      private Date createdAt;  //등록일
 	    
+     private String unitcodeValue;
 	
      
      

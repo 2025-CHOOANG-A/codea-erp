@@ -7,9 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
@@ -80,5 +83,38 @@ public class PurchaseController {
         model.addAttribute("purchase", purchase);
         return "purchase/purchase_detail";
     }
+    
+    @GetMapping("/create")
+    public String showWriteForm(Model model) {
+        // 오늘 날짜 기본값 전달 (Thymeleaf에서 사용 가능)
+        model.addAttribute("today", java.time.LocalDate.now().toString());
+        return "purchase/purchase_write";
+    }
+    
+    @GetMapping("/items/search")
+    @ResponseBody
+    public List<PurchaseDto.ItemSimple> searchItems(@RequestParam("keyword") String keyword) {
+        return purchaseService.searchItems(keyword);
+    }
+
+    @GetMapping("/suppliers/search")
+    @ResponseBody
+    public List<PurchaseDto.SupplierSimple> searchSuppliers(@RequestParam("keyword") String keyword) {
+        return purchaseService.searchSuppliers(keyword);
+    }
+
+    @GetMapping("/employees/search")
+    @ResponseBody
+    public List<PurchaseDto.EmployeeSimple> searchEmployees(@RequestParam("keyword") String keyword) {
+        return purchaseService.searchEmployees(keyword);
+    }
+    
+    @PostMapping("/write")
+    public String registerPurchase(@ModelAttribute PurchaseDto purchaseDto) {
+        purchaseService.registerPurchase(purchaseDto);
+        return "redirect:/purchase"; // 등록 후 목록으로 이동
+    }
+
+    
     
 }
