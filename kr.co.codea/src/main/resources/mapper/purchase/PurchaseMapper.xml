@@ -169,20 +169,27 @@
 		useGeneratedKeys="true" keyProperty="purchaseId"
 		keyColumn="PURCHASE_ID">
 		INSERT INTO PURCHASE_HEADER (
-		PURCHASE_DATE, BP_ID, STATUS, EMP_ID, REMARK
+		PURCHASE_DATE, BP_ID, STATUS,
+		EMP_ID, REMARK
 		) VALUES (
-		#{orderDate}, #{bpId}, '접수', #{empId}, #{remark}
+		#{orderDate}, #{bpId}, '접수', #{empId},
+		#{remark}
 		)
 	</insert>
 
 
-	<insert id="insertPurchaseDetail">
+	<insert id="insertPurchaseDetail"
+		parameterType="kr.co.codea.purchase.PurchaseDto$PurchaseDetail"
+		useGeneratedKeys="true" keyProperty="purchaseDetailId"
+		keyColumn="PURCHASE_DETAIL_ID">
 		INSERT INTO PURCHASE_DETAIL (
+		PURCHASE_DETAIL_ID,
 		PURCHASE_ID, ITEM_ID,
-		ORDER_QTY, UNIT_PRICE, REQUIRED_DELIVERY_DATE
+		ORDER_QTY, UNIT_PRICE, REQUIRED_DELIVERY_DATE, REMARK
 		) VALUES (
-		#{purchaseId},
-		#{itemId}, #{orderQty}, #{unitPrice}, #{requiredDeliveryDate}
+		DEFAULT,
+		#{purchaseId}, #{itemId}, #{orderQty}, #{unitPrice}, #{requiredDeliveryDate},
+		#{remark}
 		)
 	</insert>
 
