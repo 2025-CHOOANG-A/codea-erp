@@ -23,18 +23,29 @@
    cc.CODE AS UNIT_NAME => 단위 EA 조회하기 
 -->
 <select id="item_select"  parameterType="String"  resultMap="itemListResultMap">   
-  SELECT 
-    A.ITEM_CODE,
-    A.ITEM_TYPE,
-    A.ITEM_CAT_L,
-    A.ITEM_CAT_S,
-    A.SPEC,
-    A.PRICE,
-    A.BP_CODE,
-    P.BP_NAME,
-    A.REMARK
-  FROM ITEM A
-  LEFT JOIN BUSINESS_PARTNER P ON A.BP_CODE = P.BP_CODE
+SELECT 
+  A.ITEM_ID,
+  A.ITEM_CODE,
+  A.ITEM_TYPE,
+  A.ITEM_NAME,
+  A.ITEM_CAT_L,
+  A.ITEM_CAT_S,
+  A.SPEC,
+  A.UNIT_CODE,
+  CC.CODE AS UNIT_CODE_VALUE, 
+  A.PRICE,
+  A.BP_CODE,
+  P.BP_NAME,
+  P.TEL,  
+  A.REMARK
+FROM ITEM A
+LEFT JOIN BUSINESS_PARTNER P 
+  ON A.BP_CODE = P.BP_CODE
+LEFT JOIN COMMON_CODE CC 
+  ON A.UNIT_CODE = CC.CODE_ID 
+  AND CC.CODE_TYPE = 'UNIT_CODE'
+WHERE A.ITEM_TYPE = '완제품' 
+  AND P.BP_TYPE = '고객사' 
   <where>
     <if test="keyword != null and keyword != ''">
       AND (
@@ -53,20 +64,28 @@
 <!-- 제품 상세 정보 -->
 <select id="item_detail" parameterType="int" resultType="kr.co.codea.item.itemDTO">
 SELECT 
-    I.ITEM_ID,
-    I.ITEM_CODE,
-    I.ITEM_NAME,
-    I.SPEC,
-    I.PRICE,
-    I.REMARK,
-    I.UNIT_CODE,                
-    C.CODE AS UNIT_CODE_VALUE,   
-    C.CODE_DESC AS UNIT_DESC     
-FROM ITEM I
-LEFT JOIN CODE_TABLE C
-  ON I.UNIT_CODE = C.CODE_ID
-WHERE C.CODE_TYPE = 'UNIT_CODE'
-ORDER BY I.ITEM_ID
+  A.ITEM_ID,
+  A.ITEM_CODE,
+  A.ITEM_TYPE,
+  A.ITEM_NAME,
+  A.ITEM_CAT_L,
+  A.ITEM_CAT_S,
+  A.SPEC,
+  A.UNIT_CODE,
+  CC.CODE AS UNIT_CODE_VALUE, 
+  A.PRICE,
+  A.BP_CODE,
+  P.BP_NAME,
+  P.TEL,                     
+  A.REMARK
+FROM ITEM A
+LEFT JOIN BUSINESS_PARTNER P 
+  ON A.BP_CODE = P.BP_CODE
+LEFT JOIN COMMON_CODE CC 
+  ON A.UNIT_CODE = CC.CODE_ID 
+  AND CC.CODE_TYPE = 'UNIT_CODE'
+WHERE A.ITEM_TYPE = '완제품'        
+  AND P.BP_TYPE = '고객사'   
 </select>
 
 <!-- 거래처 조회(비즈니스 파트너)-->
@@ -147,8 +166,6 @@ LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
     <result property="leadTime" column="LEAD_TIME"/>
     <result property="createdAt" column="CREATED_AT"/>
     <result property="unitName" column="UNIT_NAME"/>
-    
-
-   
+    <result property="unitcodeValue" column="UNIT_CODE_VALUE"/>
 </resultMap>
 </mapper>

@@ -17,4 +17,46 @@
 
 </insert>
 
+<!-- 생산계획 조회 -->
+    <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
+SELECT
+	    PP.PLAN_ID,
+	    PP.ITEM_CODE,
+	    I.ITEM_NAME,
+	    PP.START_DATE,
+	    PP.DUE_DATE,
+	    PP.COMPLETION_DATE, 
+	    PP.PLAN_QTY,
+	    PP.ACTUAL_QTY,       
+	    PP.STATUS,
+	    PP.REMARK,
+	    PP.EMP_NO
+	FROM
+	    PRODUCTION_PLAN PP
+	JOIN
+	    ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
+    <where>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                PP.PLAN_ID LIKE '%' || #{keyword} || '%'
+                OR I.ITEM_NAME LIKE '%' || #{keyword} || '%'
+            )
+        </if>
+        <if test="startDate != null">
+            AND PP.START_DATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND PP.DUE_DATE &lt;= #{endDate}
+        </if>
+        <if test="status != null and status != ''">
+            AND PP.STATUS = #{status}
+        </if>
+        <if test="empNo != null and empNo != ''">
+            AND PP.EMP_NO = #{empNo}
+        </if>
+    </where>
+    ORDER BY PP.PLAN_ID DESC
+    </select>
+
+
 </mapper>

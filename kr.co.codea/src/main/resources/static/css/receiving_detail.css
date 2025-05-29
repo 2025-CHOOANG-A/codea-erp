@@ -1,23 +1,12 @@
-.table-detail th {
-	background: #e9ecef !important;
+.table th {
+	background: #f1f3f5 !important;
 	color: #495057 !important;
 	width: 160px;
 	vertical-align: middle;
 }
 
-.table-detail td {
-	background: #fff;
-	vertical-align: middle;
-}
-
-.detail-section-title {
-	font-size: 1.1rem;
-	font-weight: 600;
-	margin-top: 2rem;
-	margin-bottom: 1rem;
-	color: #343a40;
-}
-
-.btn-list {
-	min-width: 100px;
+.content {
+	margin-left: 0;
+	padding: 2rem 1rem 1rem 1rem;
+	transition: margin-left 0.3s;
 }
