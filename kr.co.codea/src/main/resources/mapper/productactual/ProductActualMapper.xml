@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.codea.productactual.ProductActualMapper">
+
+
+<update id="updateProductionPlanActualQty">
+    UPDATE PRODUCTION_PLAN
+    SET ACTUAL_QTY = (SELECT NVL(SUM(DAILY_QTY), 0) FROM PRODUCTION_DAILY WHERE PLAN_ID = #{planId})
+    WHERE PLAN_ID = #{planId}
+</update>
+
+
+  
+  <!--일일생산수량 조회  -->
+   <select id="getDailyActualsByPlanId" resultType="kr.co.codea.productactual.ProductActualDTO">
+        SELECT
+            DAILY_ID,
+            PLAN_ID,
+            WORK_DATE AS actualDate,
+            DAILY_QTY AS actualQty, 
+            DEFECT_QTY,              
+            REMARK,
+            CREATED_AT AS regDate
+        FROM PRODUCTION_DAILY
+        WHERE PLAN_ID = #{planId}
+        ORDER BY WORK_DATE DESC, CREATED_AT DESC
+    </select>
+    
+    
+  
+  <!--일일생산수량 등록  -->
+      <insert id="registerProductActual">
+        INSERT INTO PRODUCTION_DAILY (
+            PLAN_ID,
+            WORK_DATE,
+            DAILY_QTY,
+            DEFECT_QTY,
+            REMARK
+        ) VALUES (
+            #{planId},
+            #{actualDate},
+            #{actualQty},
+            #{defectQty},
+            #{remark}
+        )
+    </insert>
+    
+    
+  
+    <select id="productActualList" parameterType="kr.co.codea.productactual.ProductActualDTO" resultType="kr.co.codea.productactual.ProductActualDTO">
+SELECT
+	    PP.PLAN_ID,
+	    PP.ITEM_CODE,
+	    I.ITEM_NAME,
+	    PP.START_DATE,
+	    PP.DUE_DATE,
+	    PP.COMPLETION_DATE,
+	    PP.PLAN_QTY,
+	    PP.ACTUAL_QTY,
+	    PP.STATUS,
+	    PP.REMARK,
+	    PP.EMP_NO
+	FROM
+	    PRODUCTION_PLAN PP
+	JOIN
+	    ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
+    <where>
+        AND PP.STATUS = '작업지시'
+        <if test="keyword != null and keyword != ''">
+            AND (
+                PP.PLAN_ID LIKE '%' || #{keyword} || '%'
+                OR I.ITEM_NAME LIKE '%' || #{keyword} || '%'
+            )
+        </if>
+        <if test="startDate != null">
+            AND PP.START_DATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND PP.DUE_DATE &lt;= #{endDate}
+        </if>
+        <if test="empNo != null and empNo != ''">
+            AND PP.EMP_NO = #{empNo}
+        </if>
+    </where>
+    ORDER BY PP.PLAN_ID DESC
+    </select>
+
+
+</mapper>

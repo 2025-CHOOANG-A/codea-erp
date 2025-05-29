@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +35,34 @@ public class PurchaseServiceImpl implements PurchaseService {
          }
          return header;
     }
+    
+    @Override
+    public List<PurchaseDto.ItemSimple> searchItems(String keyword) {
+        return purchaseMapper.searchItems(keyword);
+    }
+
+    @Override
+    public List<PurchaseDto.SupplierSimple> searchSuppliers(String keyword) {
+        return purchaseMapper.searchSuppliers(keyword);
+    }
+
+    @Override
+    public List<PurchaseDto.EmployeeSimple> searchEmployees(String keyword) {
+        return purchaseMapper.searchEmployees(keyword);
+    }
+    
+    @Transactional
+    @Override
+    public void registerPurchase(PurchaseDto purchaseDto) {
+        purchaseMapper.insertPurchaseHeader(purchaseDto);
+
+        int purchaseId = purchaseDto.getPurchaseId(); // mapper에서 SELECT KEY로 세팅됨
+        for (PurchaseDto.PurchaseDetail detail : purchaseDto.getDetailList()) {
+            detail.setPurchaseId(purchaseId);
+            purchaseMapper.insertPurchaseDetail(detail);
+        }
+    }
+
 }
 
 

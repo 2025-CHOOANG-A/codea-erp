@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/receiving")
@@ -24,8 +25,9 @@ public class ReceivingController {
 	}
 
 	@GetMapping("/detail")
-	public String detailPage() {	// 입고 상세 페이지
-
+	public String detailPage(@RequestParam("inoutId") int inoutId, Model m) {	// 입고 상세 페이지
+		ReceivingDTO detail = this.dao.rec_detail(inoutId);
+		m.addAttribute("detail", detail);
 		
     	return "receiving/receiving_detail"; // templates/receiving/receiving_detail.html
 	}

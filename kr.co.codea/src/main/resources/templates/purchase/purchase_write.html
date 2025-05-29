@@ -1,143 +1,213 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>발주 등록</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    .table th, .table td { vertical-align: middle; }
-    .amount, #totalAmount { text-align: right; font-weight: bold; }
-    .autocomplete-list {
-      position: absolute;
-      z-index: 1000;
-      background: white;
-      border: 1px solid #ccc;
-      width: 100%;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-    .autocomplete-item {
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-    .autocomplete-item:hover {
-      background-color: #f1f1f1;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>발주 등록</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<style>
+.table th, .table td {
+	vertical-align: middle;
+}
+
+.amount, #totalAmount {
+	text-align: right;
+	font-weight: bold;
+}
+
+.autocomplete-list {
+	position: absolute;
+	z-index: 1000;
+	background: white;
+	border: 1px solid #ccc;
+	width: 100%;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.autocomplete-item {
+	padding: 5px 10px;
+	cursor: pointer;
+}
+
+.autocomplete-item:hover {
+	background-color: #f1f1f1;
+}
+</style>
 </head>
 <body class="p-4">
-  <div class="container">
-    <h3 class="mb-4">발주 등록</h3>
+	<div class="container">
+		<h3 class="mb-4">발주 등록</h3>
 
-    <form id="purchaseForm">
-      <!-- 발주 기본 정보 -->
-      <table class="table table-bordered w-auto mb-4">
-        <tbody>
-          <tr>
-            <th>발주일</th>
-            <td><input type="date" name="orderDate" class="form-control" id="orderDate" readonly></td>
-            <th>담당자</th>
-            <td><input type="text" name="employeeName" class="form-control" placeholder="담당자 검색" required></td>
-          </tr>
-          <tr>
-            <th>공급처</th>
-            <td><input type="text" name="supplierName" class="form-control" placeholder="공급처 검색" required></td>
-            <th>비고</th>
-            <td><input type="text" name="remark" class="form-control"></td>
-          </tr>
-        </tbody>
-      </table>
+		<form method="post" action="/purchase/write" onsubmit="return validateForm()"> 
+			<!-- 발주 기본 정보 -->
+			<table class="table table-bordered w-auto mb-4">
+				<tbody>
+					<tr>
+						<th>발주일</th>
+						<td><input type="date" name="orderDate" class="form-control"
+							id="orderDate" readonly></td>
 
-      <!-- 품목 목록 -->
-      <h5>발주 품목</h5>
-      <button type="button" class="btn btn-outline-primary btn-sm mb-2" onclick="addItemRow()">+ 품목 추가</button>
+						<th>담당자</th>
+						<td style="position: relative;"><input type="hidden"
+							name="empId" id="empId"> <!-- (2) 담당자 ID hidden 추가 --> <input
+							type="text" name="employeeName" class="form-control"
+							placeholder="담당자 검색" autocomplete="off"
+							oninput="searchAutocomplete(this, '/purchase/employees/search', 'empId')">
+							<div class="autocomplete-list"></div></td>
+					</tr>
+					<tr>
+						<th>공급처</th>
+						<td style="position: relative;"><input type="hidden"
+							name="bpId" id="bpId"> <!-- (3) 공급처 ID hidden 유지 --> <input
+							type="text" name="supplierName" class="form-control"
+							placeholder="공급처 검색" autocomplete="off"
+							oninput="searchAutocomplete(this, '/purchase/suppliers/search', 'bpId')">
+							<div class="autocomplete-list"></div></td>
+						<th>비고</th>
+						<td><input type="text" name="remark" class="form-control"></td>
+					</tr>
+				</tbody>
+			</table>
 
-      <table class="table table-bordered text-center">
-        <thead>
-          <tr>
-            <th>품목</th>
-            <th>수량</th>
-            <th>단위</th>
-            <th>단가</th>
-            <th>금액</th>
-            <th>삭제</th>
-          </tr>
-        </thead>
-        <tbody id="itemTableBody">
-          <!-- JavaScript로 행 추가 -->
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="3" class="text-end">총 합계</td>
-            <td colspan="3" id="totalAmount">₩ 0</td>
-          </tr>
-        </tfoot>
-      </table>
+			<!-- 품목 목록 -->
+			<h5>발주 품목</h5>
+			<button type="button" class="btn btn-outline-primary btn-sm mb-2"
+				onclick="addItemRow()">+ 품목 추가</button>
 
-      <button type="submit" class="btn btn-primary">등록</button>
-    </form>
-  </div>
+			<table class="table table-bordered text-center">
+				<thead>
+					<tr>
+						<th>납기일</th>
+						<th>품목</th>
+						<th>수량</th>
+						<th>단위</th>
+						<th>단가</th>
+						<th>금액</th>
+						<th>삭제</th>
+					</tr>
+				</thead>
+				<tbody id="itemTableBody">
+					<!-- 자바스크립트로 행 추가됨 -->
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="5" class="text-end">총 합계</td>
+						<td colspan="2" id="totalAmount">₩ 0</td>
+					</tr>
+				</tfoot>
+			</table>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById("orderDate").value = today;
-    });
+			<button type="submit" class="btn btn-primary">등록</button>
+		</form>
+	</div>
 
-    const mockItems = [
-      { code: "ITEM001", name: "볼트", unit: "EA", price: 100 },
-      { code: "ITEM002", name: "너트", unit: "EA", price: 80 },
-      { code: "ITEM003", name: "와셔", unit: "EA", price: 50 },
-      { code: "ITEM004", name: "강철판", unit: "PCS", price: 1500 }
-    ];
+	<script>
+	// 발주일 오늘 날짜 세팅
+	  document.addEventListener("DOMContentLoaded", () => {
+	    const today = new Date().toISOString().split('T')[0];
+	    document.getElementById("orderDate").value = today;
+	  });
 
-    function addItemRow() {
-      const tbody = document.getElementById("itemTableBody");
-      const row = document.createElement("tr");
-      const rowId = Date.now();
+	// 자동완성 함수 수정: hidden input에 ID 삽입되도록
+	  function searchAutocomplete(input, apiUrl, hiddenId) {
+	    const keyword = input.value.trim();
+	    const wrapper = input.parentElement;
+	    const listBox = wrapper.querySelector(".autocomplete-list");
+	    if (keyword.length < 1) return listBox.style.display = "none";
 
-      row.innerHTML = `
-        <td style="position: relative;">
-          <input type="text" class="form-control itemSearch" placeholder="품목 검색" oninput="onItemSearch(this, ${rowId})" autocomplete="off">
-          <div class="autocomplete-list" id="autocomplete-${rowId}" style="display:none;"></div>
-        </td>
-        <td><input type="number" name="details[][orderQty]" class="form-control qty" min="1" value="1" onchange="updateAmount(this)"></td>
-        <td><input type="text" name="details[][unitName]" class="form-control unit" readonly></td>
-        <td><input type="number" name="details[][unitPrice]" class="form-control price" readonly></td>
-        <td class="amount">₩ 0</td>
-        <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)">삭제</button></td>
-      `;
-      tbody.appendChild(row);
-    }
+	    fetch(apiUrl + "?keyword=" + encodeURIComponent(keyword))
+	      .then(res => res.json())
+	      .then(data => {
+	        listBox.innerHTML = "";
+	        data.forEach(item => {
+	          const name = item.bpName || item.empName;
+	          const id = item.bpId || item.empId;
+	          const div = document.createElement("div");
+	          div.className = "autocomplete-item";
+	          div.textContent = name;
+	          div.onclick = () => {
+	            input.value = name;
+	            if (hiddenId) document.getElementById(hiddenId).value = id;
+	            listBox.style.display = "none";
+	          };
+	          listBox.appendChild(div);
+	        });
+	        listBox.style.display = "block";
+	      });
+	  }
+
+	  // 폼 검증: bpId가 없는 경우 alert
+	  function validateForm() {
+	    const bpId = document.getElementById("bpId").value;
+	    if (!bpId || isNaN(bpId)) {
+	      alert("공급처를 반드시 선택해야 합니다.");
+	      return false;
+	    }
+
+	    const empId = document.getElementById("empId").value;
+	    if (!empId || isNaN(empId)) {
+	      alert("담당자를 반드시 선택해야 합니다.");
+	      return false;
+	    }
+
+	    return true;
+	  }
+
+	  function addItemRow() {
+		  const tbody = document.getElementById("itemTableBody");
+		  const rowIndex = tbody.rows.length;
+		  const rowId = Date.now();
+		  const today = new Date().toISOString().split('T')[0];
+
+		  const row = document.createElement("tr");
+		  row.innerHTML = `
+		    <td><input type="date" name="detailList[${rowIndex}].requiredDeliveryDate" class="form-control" min="${today}" required></td>
+		    <td style="position: relative;">
+		      <input type="hidden" name="detailList[${rowIndex}].itemId" class="itemIdHidden">
+		      <input type="text" class="form-control itemSearch" placeholder="품목 검색" autocomplete="off"
+		             oninput="onItemSearch(this, ${rowId})">
+		      <div class="autocomplete-list" id="autocomplete-${rowId}" style="display:none;"></div>
+		    </td>
+		    <td><input type="number" name="detailList[${rowIndex}].orderQty" class="form-control qty" min="1" value="1"
+		               onchange="updateAmount(this)"></td>
+		    <td><input type="text" name="detailList[${rowIndex}].unitName" class="form-control unit" readonly></td>
+		    <td><input type="number" name="detailList[${rowIndex}].unitPrice" class="form-control price" readonly></td>
+		    <td class="amount">₩ 0</td>
+		    <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)">삭제</button></td>
+		  `;
+		  tbody.appendChild(row);
+		}
+
 
     function onItemSearch(input, rowId) {
-      const keyword = input.value.trim().toLowerCase();
+      const keyword = input.value.trim();
       const listBox = document.getElementById(`autocomplete-${rowId}`);
-      const row = input.closest("tr");
-
       if (keyword.length === 0) {
         listBox.style.display = "none";
-        listBox.innerHTML = "";
         return;
       }
 
-      const results = mockItems.filter(item => item.name.toLowerCase().includes(keyword));
-      if (results.length > 0) {
-        listBox.innerHTML = results.map(item => `
-          <div class='autocomplete-item' onclick='selectItem(this, ${JSON.stringify(item)}, ${rowId})'>
-            ${item.name} (${item.code})
-          </div>`).join('');
-        listBox.style.display = "block";
-      } else {
-        listBox.style.display = "none";
-      }
+      fetch(`/purchase/items/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(res => res.json())
+        .then(data => {
+          listBox.innerHTML = data.map(item => `
+            <div class='autocomplete-item'
+              onclick='selectItem(this, ${JSON.stringify(item)}, ${rowId})'>
+              ${item.itemName} (${item.itemCode})
+            </div>
+          `).join('');
+          listBox.style.display = "block";
+        });
     }
 
     function selectItem(div, item, rowId) {
       const row = document.getElementById(`autocomplete-${rowId}`).closest("tr");
-      row.querySelector(".itemSearch").value = item.name;
-      row.querySelector(".unit").value = item.unit;
-      row.querySelector(".price").value = item.price;
+      row.querySelector(".itemIdHidden").value = item.itemId;
+      row.querySelector(".itemSearch").value = item.itemName;
+      row.querySelector(".unit").value = item.unitName;
+      row.querySelector(".price").value = item.unitPrice;
       updateAmount(row.querySelector(".qty"));
       document.getElementById(`autocomplete-${rowId}`).style.display = "none";
     }
@@ -159,8 +229,8 @@
     function updateTotal() {
       let total = 0;
       document.querySelectorAll(".amount").forEach(cell => {
-        const val = parseInt(cell.textContent.replace(/[^\d]/g, ""), 10);
-        if (!isNaN(val)) total += val;
+        const value = parseInt(cell.textContent.replace(/[^\d]/g, ""), 10);
+        if (!isNaN(value)) total += value;
       });
       document.getElementById("totalAmount").textContent = `₩ ${total.toLocaleString()}`;
     }
