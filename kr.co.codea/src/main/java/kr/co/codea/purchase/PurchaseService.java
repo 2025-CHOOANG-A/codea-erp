@@ -12,4 +12,7 @@ public interface PurchaseService {
     List<PurchaseDto.ItemSimple> searchItems(String keyword);
     List<PurchaseDto.SupplierSimple> searchSuppliers(String keyword);
     List<PurchaseDto.EmployeeSimple> searchEmployees(String keyword);
+    
+    void registerPurchase(PurchaseDto purchaseDto);
+
 }

@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -106,6 +108,13 @@ public class PurchaseController {
     public List<PurchaseDto.EmployeeSimple> searchEmployees(@RequestParam("keyword") String keyword) {
         return purchaseService.searchEmployees(keyword);
     }
+    
+    @PostMapping("/write")
+    public String registerPurchase(@ModelAttribute PurchaseDto purchaseDto) {
+        purchaseService.registerPurchase(purchaseDto);
+        return "redirect:/purchase"; // 등록 후 목록으로 이동
+    }
+
     
     
 }

@@ -19,4 +19,8 @@ public interface PurchaseMapper {
      List<PurchaseDto.ItemSimple> searchItems(@Param("keyword") String keyword);
      List<PurchaseDto.SupplierSimple> searchSuppliers(@Param("keyword") String keyword);
      List<PurchaseDto.EmployeeSimple> searchEmployees(@Param("keyword") String keyword);
+     
+     void insertPurchaseHeader(PurchaseDto dto);
+     void insertPurchaseDetail(PurchaseDto.PurchaseDetail detail);
+
 }

@@ -10,7 +10,7 @@
 		SELECT
 		PURCHASE_ID,
 		PURCHASE_CODE,
-		ORDER_DATE,
+		PURCHASE_DATE AS ORDER_DATE,
 		SUPPLIER_NAME,
 		TOTAL_AMOUNT,
 		STATUS,
@@ -29,12 +29,13 @@
 			AND STATUS = #{status}
 		</if>
 		<if test="startDate != null and startDate != ''">
-			AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+			AND PURCHASE_DATE &gt;= TO_DATE(#{startDate},
+			'YYYY-MM-DD')
 		</if>
 		<if test="endDate != null and endDate != ''">
-			AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+			AND PURCHASE_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
 		</if>
-		ORDER BY ORDER_DATE DESC, PURCHASE_ID DESC
+		ORDER BY PURCHASE_DATE DESC, PURCHASE_ID DESC
 		) InnerQuery
 		WHERE ROWNUM
 		&lt;= #{endRowForQuery} )
@@ -56,10 +57,11 @@
 			AND STATUS = #{status}
 		</if>
 		<if test="startDate != null and startDate != ''">
-			AND ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+			AND PURCHASE_DATE &gt;= TO_DATE(#{startDate},
+			'YYYY-MM-DD')
 		</if>
 		<if test="endDate != null and endDate != ''">
-			AND ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+			AND PURCHASE_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
 		</if>
 	</select>
 
@@ -69,6 +71,7 @@
 		SELECT
 		PURCHASE_ID,
 		PURCHASE_CODE,
+		PURCHASE_DATE AS
 		ORDER_DATE,
 		BP_ID,
 		SUPPLIER_NAME,
@@ -79,7 +82,8 @@
 		CREATED_AT,
 		REMARK
 		FROM V_PURCHASE_LIST
-		WHERE PURCHASE_ID = #{purchaseId}
+		WHERE PURCHASE_ID =
+		#{purchaseId}
 	</select>
 
 	<!-- 발주 상세 항목 목록 조회 -->
@@ -119,19 +123,23 @@
 		i.ITEM_ID,
 		i.ITEM_NAME,
 		i.ITEM_CODE,
-		c.CODE AS UNIT_NAME, -- ← 단위코드 (예: EA, BOX 등)
+		c.CODE AS
+		UNIT_NAME,
 		i.PRICE AS UNIT_PRICE
 		FROM
 		ITEM i
 		LEFT JOIN
 		COMMON_CODE c
-		ON i.UNIT_CODE = c.CODE_ID
+		ON
+		i.UNIT_CODE = c.CODE_ID
 		AND c.CODE_TYPE = 'UNIT_CODE'
 		WHERE
-		i.ITEM_NAME LIKE '%' || #{keyword} || '%'
+		i.ITEM_NAME
+		LIKE '%' || #{keyword} || '%'
 		ORDER BY
 		i.ITEM_NAME
-		FETCH FIRST 10 ROWS ONLY
+		FETCH FIRST 10 ROWS
+		ONLY
 	</select>
 
 	<!-- 공급처 자동완성 검색 -->
@@ -155,4 +163,27 @@
 		ORDER BY EMP_NAME
 		FETCH FIRST 10 ROWS ONLY
 	</select>
+
+	<insert id="insertPurchaseHeader"
+		parameterType="kr.co.codea.purchase.PurchaseDto"
+		useGeneratedKeys="true" keyProperty="purchaseId"
+		keyColumn="PURCHASE_ID">
+		INSERT INTO PURCHASE_HEADER (
+		PURCHASE_DATE, BP_ID, STATUS, EMP_ID, REMARK
+		) VALUES (
+		#{orderDate}, #{bpId}, '접수', #{empId}, #{remark}
+		)
+	</insert>
+
+
+	<insert id="insertPurchaseDetail">
+		INSERT INTO PURCHASE_DETAIL (
+		PURCHASE_ID, ITEM_ID,
+		ORDER_QTY, UNIT_PRICE, REQUIRED_DELIVERY_DATE
+		) VALUES (
+		#{purchaseId},
+		#{itemId}, #{orderQty}, #{unitPrice}, #{requiredDeliveryDate}
+		)
+	</insert>
+
 </mapper>
