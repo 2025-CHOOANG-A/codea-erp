@@ -1,135 +1,133 @@
 <div th:fragment="view">
 
 <!-- Main Content -->
-<main id="main-content" class="container py-4">
-	<div class="row justify-content-center">
-		<div class="col-lg-8 col-md-10">
-			<div class="card shadow-sm">
-				<div class="card-body">
-					<h2 class="h5 mb-4 fw-bold">입고 상세 정보</h2>
-					<!-- 입고 정보 -->
-					<div class="detail-section-title">입고 정보</div>
-					<table class="table table-bordered table-detail mb-4">
-						<tbody>
-							<tr>
-								<th>입고 번호</th>
-								<td>IN20240601001</td>
-							</tr>
-							<tr>
-								<th>입고 일자</th>
-								<td>2024-06-01</td>
-							</tr>
-						</tbody>
-					</table>
-                    
-					<!-- 제품 정보 -->
-					<div class="detail-section-title">제품 정보</div>
-					<table class="table table-bordered table-detail mb-4">
-						<tbody>
-							<tr>
-								<th>제품 코드</th>
-								<td>P20240001</td>
-							</tr>
-							<tr>
-								<th>제품 명</th>
-								<td>고급 볼트</td>
-							</tr>
-							<tr>
-								<th>규격</th>
-								<td>M8 x 30mm</td>
-							</tr>
-							<tr>
-								<th>단위</th>
-								<td>EA</td>
-							</tr>
-						</tbody>
-					</table>
-                    
-					<!-- 입고 내역 -->
-					<div class="detail-section-title">입고 내역</div>
-					<table class="table table-bordered table-detail mb-4">
-						<tbody>
-							<tr>
-								<th>입고 수량</th>
-								<td>1,000</td>
-							</tr>
-							<tr>
-								<th>총액</th>
-								<td>2,000,000원</td>
-							</tr>
-						</tbody>
-					</table>
-                    
-					<!-- 발주 정보 -->
-					<div class="detail-section-title">발주 정보</div>
-					<table class="table table-bordered table-detail mb-4">
-						<tbody>
-							<tr>
-								<th>발주 번호</th>
-								<td>PO20240525001</td>
-							</tr>
-							<tr>
-								<th>발주 일자</th>
-								<td>2024-05-25</td>
-							</tr>
-							<tr>
-								<th>주문 수량</th>
-								<td>1,000</td>
-							</tr>
-						</tbody>
-					</table>
-                    
-					<!-- 창고 정보 -->
-					<div class="detail-section-title">창고 정보</div>
-					<table class="table table-bordered table-detail mb-4">
-						<tbody>
-							<tr>
-								<th>창고 코드</th>
-								<td>WH001</td>
-							</tr>
-							<tr>
-								<th>창고명</th>
-								<td>본사창고</td>
-							</tr>
-						</tbody>
-					</table>
-                    
-                    <!-- 담당자 정보 -->
-					<div class="detail-section-title">담당자 정보</div>
-					<table class="table table-bordered table-detail mb-4">
-						<tbody>
-							<tr>
-								<th>담당자 코드</th>
-								<td>E20240001</td>
-							</tr>
-							<tr>
-								<th>담당자 명</th>
-								<td>홍길동</td>
-							</tr>
-							<tr>
-								<th>담당자 전화번호</th>
-								<td>010-1234-5678</td>
-							</tr>
-						</tbody>
-					</table>
-
-					<!-- 비고 -->
-					<div class="detail-section-title">비고</div>
-					<table class="table table-bordered table-detail mb-4">
-						<tbody>
-							<tr>
-								<th>비고</th>
-								<td>특이사항 없음</td>
-							</tr>
-						</tbody>
-					</table>
-					<div class="d-flex justify-content-end mt-4">
-						<a href="/d:/file/in_list.html" class="btn btn-outline-secondary btn-list">목록</a>
-					</div>
+<div class="content main-content" id="mainContent">
+	<div class="container" style="max-width:700px;">
+		<div class="card shadow-sm mb-4">
+			<div class="card-header bg-white border-bottom-0 pb-2" style="padding-top:2rem;">
+				<h5 class="mb-0 fw-semibold">입고 상세 정보</h5>
+			</div>
+			<div class="card-body">
+				<table class="table table-bordered align-middle mb-4">
+					<tbody>
+						<tr>
+							<th scope="row">입고 번호</th>
+							<td th:text="${detail.inoutId}"></td>
+						</tr>
+						<tr>
+							<th scope="row">입고 일자</th>
+							<td th:text="${detail.inoutTime}"></td>
+						</tr>
+					</tbody>
+				</table>
+				<h6 class="fw-bold mt-4 mb-3">제품 정보</h6>
+				<table class="table table-bordered align-middle mb-4">
+					<tbody>
+						<tr>
+							<th scope="row">제품 코드</th>
+							<td th:text="${detail.itemCode}"></td>
+						</tr>
+						<tr>
+							<th scope="row">제품 명</th>
+							<td th:text="${detail.itemName}"></td>
+						</tr>
+						<tr>
+							<th scope="row">제품 구분</th>
+							<td th:text="${detail.itemType}"></td>
+						</tr>
+						<tr>
+							<th scope="row">규격</th>
+							<td th:text="${detail.spec}"></td>
+						</tr>
+						<tr>
+							<th scope="row">단위</th>
+							<td th:text="${detail.code}"></td>
+						</tr>
+						<tr>
+							<th scope="row">단가</th>
+							<td th:text="${detail.price}"></td>
+						</tr>
+					</tbody>
+				</table>
+				<h6 class="fw-bold mt-4 mb-3">발주 정보</h6>
+				<table class="table table-bordered align-middle mb-4">
+					<tbody>
+						<tr>
+							<th scope="row">발주 번호</th>
+							<td th:text="${detail.purchaseCode}"></td>
+						</tr>
+						<tr>
+							<th scope="row">발주 일자</th>
+							<td th:text="${detail.purchaseDate}"></td>
+						</tr>
+						<tr>
+							<th scope="row">발주 수량</th>
+							<td th:text="${detail.orderQty}"></td>
+						</tr>
+						<tr>
+							<th scope="row">발주 금액</th>
+							<td th:text="${detail.purchaseCost}"></td>
+						</tr>
+					</tbody>
+				</table>
+				<h6 class="fw-bold mt-4 mb-3">입고 내역</h6>
+				<table class="table table-bordered align-middle mb-4">
+					<tbody>
+						<tr>
+							<th scope="row">입고 수량</th>
+							<td th:text="${detail.quantity}"></td>
+						</tr>
+						<tr>
+							<th scope="row">총액</th>
+							<td th:text="${detail.inCost}"></td>
+						</tr>
+					</tbody>
+				</table>
+				<h6 class="fw-bold mt-4 mb-3">창고 정보</h6>
+				<table class="table table-bordered align-middle mb-4">
+					<tbody>
+						<tr>
+							<th scope="row">창고 코드</th>
+							<td th:text="${detail.whCode}"></td>
+						</tr>
+						<tr>
+							<th scope="row">창고명</th>
+							<td th:text="${detail.whName}"></td>
+						</tr>
+					</tbody>
+				</table>
+				<h6 class="fw-bold mt-4 mb-3">담당자 정보</h6>
+				<table class="table table-bordered align-middle mb-4">
+					<tbody>
+						<tr>
+							<th scope="row">담당자 코드</th>
+							<td th:text="${detail.empNo}"></td>
+						</tr>
+						<tr>
+							<th scope="row">담당자 명</th>
+							<td th:text="${detail.empName}"></td>
+						</tr>
+						<tr>
+							<th scope="row">담당자 전화번호</th>
+							<td th:text="${detail.hp}"></td>
+						</tr>
+					</tbody>
+				</table>
+				<h6 class="fw-bold mt-4 mb-3">비고</h6>
+				<table class="table table-bordered align-middle mb-4">
+					<tbody>
+						<tr>
+							<th scope="row">비고</th>
+							<td th:text="${detail.remark}"></td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="d-flex justify-content-end gap-2">
+					<a th:href="@{/receiving/list}" class="btn btn-outline-secondary">목록</a>
 				</div>
 			</div>
 		</div>
 	</div>
-</main>
+</div>
 
 </div>
