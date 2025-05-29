@@ -1,216 +1,114 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <title>자재소요량계산 | CodeA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}" />
     <style>
-      body {
-        min-height: 100vh;
-        background: #f8f9fa;
-      }
-      .main-content {
-        padding: 2rem 2.5vw 2rem 2.5vw;
-      }
-      .table-responsive {
-        overflow-x: auto;
-      }
-      .table thead th {
-        white-space: nowrap;
-        background: #f1f3f5;
-        font-weight: 600;
-        font-size: 1rem;
-        border-bottom: 2px solid #dee2e6;
-      }
-      .table tbody td {
-        vertical-align: middle;
-        white-space: nowrap;
-        font-size: 0.98rem;
-      }
-      .table .name-link {
-        text-decoration: underline;
-        color: inherit;
-        cursor: pointer;
-      }
-      .table .name-link:hover {
-        color: #0d6efd;
-      }
-      .table-footer {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        margin-top: 1.2rem;
-        flex-wrap: wrap;
-        gap: 1rem;
-      }
-      .pagination {
-        margin-bottom: 0;
-      }
-      .add-btn {
-        min-width: 90px;
-      }
-      .delete-btn {
-        min-width: 90px;
-        margin-left: 0.5rem;
-      }
-      .modal-content {
-        border-radius: 0.7rem;
-      }
-      .filter-bar {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-        flex-wrap: wrap;
-      }
-      .filter-bar .form-control {
-        min-width: 140px;
-        max-width: 220px;
-      }
+      body { min-height: 100vh; background: #f8f9fa; }
+      .main-content { padding: 2rem 2.5vw 2rem 2.5vw; }
+      .table-responsive { overflow-x: auto; }
+      .table thead th { white-space: nowrap; background: #f1f3f5; font-weight: 600; font-size: 1rem; border-bottom: 2px solid #dee2e6; }
+      .table tbody td { vertical-align: middle; white-space: nowrap; font-size: 0.98rem; }
+      .table-footer { display: flex; align-items: center; justify-content: flex-end; margin-top: 1.2rem; flex-wrap: wrap; gap: 1rem; }
+      .filter-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+      .filter-bar .form-control { min-width: 140px; max-width: 220px; }
+      #requirementResult { margin-top: 2rem; background: #fff; border-radius: 0.7rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 1.5rem 1rem; display: block; }
+      #requirementResult h5 { font-weight: bold; margin-bottom: 1rem; }
+      #requirementList { width: 100%; overflow-x: auto; }
+      #requirementList table { margin-bottom: 0; min-width: 800px; }
+      .requirement-footer { display: flex; align-items: center; justify-content: flex-end; margin-top: 1rem; gap: 1rem; }
+      .requirement-filter-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+      .requirement-filter-bar .form-control { min-width: 120px; max-width: 180px; }
       @media (max-width: 767.98px) {
-        .main-content {
-          padding: 1rem 0.5rem;
-        }
-        .filter-bar .form-control {
-          width: 100%;
-          min-width: 0;
-          max-width: 100%;
-        }
-      }
-      #requirementResult {
-        margin-top: 2rem;
-        background: #fff;
-        border-radius: 0.7rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        padding: 1.5rem 1rem;
-        display: block;
-      }
-      #requirementResult h5 {
-        font-weight: bold;
-        margin-bottom: 1rem;
-      }
-      /* 가로 스크롤 추가 */
-      #requirementList {
-        width: 100%;
-        overflow-x: auto;
-      }
-      #requirementList table {
-        margin-bottom: 0;
-        min-width: 800px;
-      }
-      .requirement-footer {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        margin-top: 1rem;
-        gap: 1rem;
-      }
-      .requirement-filter-bar {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
-      }
-      .requirement-filter-bar .form-control {
-        min-width: 120px;
-        max-width: 180px;
+        .main-content { padding: 1rem 0.5rem; }
+        .filter-bar .form-control { width: 100%; min-width: 0; max-width: 100%; }
       }
     </style>
   </head>
   <body>
-    <!-- Main Content -->
+    <div th:replace="fragments/sidebar :: layout"></div>
     <main class="main-content" id="mainContent">
       <h2 class="mb-4 fw-bold">자재소요량 계산</h2>
-      <!-- Filter Bar -->
-      <form
-        class="filter-bar mb-3"
-        id="filterForm"
-        autocomplete="off"
-        onsubmit="return false;"
-      >
-        <input type="date" class="form-control" id="startDate" />
+      <!-- 날짜 검색/버튼 -->
+      <form class="filter-bar mb-3" id="filterForm" autocomplete="off" onsubmit="return false;">
+        <input type="date" class="form-control" id="startDate" name="startDate" />
         <span>~</span>
-        <input type="date" class="form-control" id="endDate" />
-        <select
-          class="form-select"
-          id="statusFilter"
-          style="min-width: 120px; max-width: 160px"
-        >
-          <option value="all">전체</option>
-          <option value="unconfirmed">미확인</option>
-          <option value="confirmed">확인됨</option>
-        </select>
-        <button type="button" class="btn btn-outline-primary" id="searchBtn">
-          검색
-        </button>
+        <input type="date" class="form-control" id="endDate" name="endDate" />
+        <button type="button" class="btn btn-outline-primary" id="searchBtn">검색</button>
+        <button type="button" class="btn btn-success ms-2" id="calcSelectedBtn">선택항목 계산하기</button>
       </form>
-      <!-- Table -->
+      <!-- 생산계획 리스트 (Thymeleaf) -->
       <div class="table-responsive">
         <table class="table table-bordered align-middle mb-0" id="planTable">
           <thead>
             <tr>
-              <th style="width: 40px">
-                <input type="checkbox" id="checkAll" />
-              </th>
-              <th>계획번호</th>
-              <th>제품코드</th>
-              <th>제품명</th>
-              <th>규격</th>
-              <th>단가</th>
-              <th>계획수량</th>
-              <th>생산시작일</th>
-              <th>생산종료일</th>
-              <th>생산 일수</th>
+              <th style="width: 40px"><input type="checkbox" id="checkAll" /></th>
+              <th>NO</th>
+              <th>생산계획 번호</th>
+              <th>품목 코드</th>
+              <th>품목 이름</th>
+              <th>생산계획시작일</th>
+              <th>생산완료계획일</th>
+              <th>실제 완료일</th>
+              <th>생산계획수량</th>
+              <th>실제 수량</th>
+              <th>상태</th>
+              <th>담당자 사번</th>
+              <th>작성일</th>
+              <th>상세</th>
               <th>비고</th>
               <th>확인</th>
             </tr>
           </thead>
-          <tbody id="planTableBody"></tbody>
+          <tbody>
+            <tr th:each="row, idx : ${productionPlans}">
+              <td><input type="checkbox" class="row-check" th:value="${row.planId}" /></td>
+			  <td th:text="${productionPlans.size() - idx.index}"></td>
+              <td th:text="${row.planId}"></td>
+              <td th:text="${row.itemCode}"></td>
+              <td th:text="${row.itemName}"></td>
+              <td th:text="${row.startDate}"></td>
+              <td th:text="${row.dueDate}"></td>
+              <td th:text="${row.completionDate != null ? row.completionDate : '-'}"></td>
+              <td th:text="${row.planQty != null ? #numbers.formatInteger(row.planQty, 0, 'COMMA') : '-'}"></td>
+              <td th:text="${row.actualQty != null ? #numbers.formatInteger(row.actualQty, 0, 'COMMA') : '-'}"></td>
+              <td><span th:text="${row.status != null ? row.status : '-'}" class="text-secondary fw-bold"></span></td>
+              <td th:text="${row.empNo != null ? row.empNo : '-'}"></td>
+              <td th:text="${#temporals.format(row.createdAt, 'yyyy-MM-dd HH:mm')}"></td> <!-- 추가 -->
+              <td>
+                <button type="button" class="btn btn-outline-info btn-sm detail-btn"
+                  th:data-detail="'담당자: ' + (${row.empName} != null ? ${row.empName} : '-')">상세</button>
+              </td>
+              <td>
+                <span th:if="${row.remark != null}">
+                  <button type="button" class="btn btn-outline-secondary btn-sm remark-btn" th:data-remark="${row.remark}">내용 확인</button>
+                </span>
+                <span th:if="${row.remark == null}">-</span>
+              </td>
+              <td><span class="text-secondary">미확인</span></td>
+            </tr>
+            <tr th:if="${productionPlans == null or productionPlans.isEmpty()}">
+              <td colspan="15" class="text-center">데이터가 없습니다</td>
+            </tr>
+          </tbody>
         </table>
       </div>
-      <!-- Table Footer: Paging & 계산하기 버튼 -->
-      <div class="table-footer mt-3">
-        <button type="button" class="btn btn-success" id="calcSelectedBtn">
-          선택항목 계산하기
-        </button>
-        <nav>
-          <ul class="pagination mb-0" id="pagination"></ul>
-        </nav>
-      </div>
-      <!-- 소요량 계산 결과 -->
+      <!-- 소요량 계산 결과 테이블 (동적/JS로 데이터 주입) -->
       <div id="requirementResult">
         <h5>소요량 계산 결과</h5>
-        <!-- 소요량 결과 필터 -->
-        <form
-          class="requirement-filter-bar"
-          id="requirementFilterForm"
-          autocomplete="off"
-          onsubmit="return false;"
-        >
+        <form class="requirement-filter-bar" id="requirementFilterForm" autocomplete="off" onsubmit="return false;">
           <input type="date" class="form-control" id="requirementStartDate" />
           <span>~</span>
           <input type="date" class="form-control" id="requirementEndDate" />
-          <button
-            type="button"
-            class="btn btn-outline-primary btn-sm"
-            id="requirementSearchBtn"
-          >
-            검색
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm"
-            id="requirementResetBtn"
-          >
-            초기화
-          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" id="requirementSearchBtn">검색</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="requirementResetBtn">초기화</button>
         </form>
-        <div id="requirementList"></div>
+        <div id="requirementList">
+          <!-- 동적 소요량 계산 결과 테이블 삽입 위치 -->
+        </div>
         <div class="requirement-footer">
           <nav>
             <ul class="pagination mb-0" id="requirementPagination"></ul>
@@ -218,664 +116,59 @@
         </div>
       </div>
     </main>
-    <!-- 비고 내용 확인 Modal -->
-    <div
-      class="modal fade"
-      id="remarkModal"
-      tabindex="-1"
-      aria-labelledby="remarkModalLabel"
-      aria-hidden="true"
-    >
+    <!-- 비고 내용 확인 Modal (옵션) -->
+    <div class="modal fade" id="remarkModal" tabindex="-1" aria-labelledby="remarkModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="remarkModalLabel">비고 내용</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="닫기"
-            ></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
           </div>
           <div class="modal-body" id="remarkModalBody"></div>
         </div>
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 아래는 JS: 기존 requirementList, renderRequirementResult, 이벤트 등 붙이시면 됩니다 -->
     <script>
-      // Sample data
-      let planData = [
-        {
-          id: "PLN20240601",
-          code: "P-1001",
-          name: "스마트워치",
-          spec: "블랙/42mm",
-          price: 120000,
-          qty: 500,
-          start: "2024-06-10",
-          end: "2024-06-15",
-          days: 6,
-          remark: "특수 부품 필요",
-        },
-        {
-          id: "PLN20240602",
-          code: "P-1002",
-          name: "무선이어폰",
-          spec: "화이트/케이스포함",
-          price: 85000,
-          qty: 300,
-          start: "2024-06-12",
-          end: "2024-06-14",
-          days: 3,
-          remark: "",
-        },
-        {
-          id: "PLN20240603",
-          code: "M-2001",
-          name: "배터리셀",
-          spec: "3.7V/2000mAh",
-          price: 1500,
-          qty: 2000,
-          start: "2024-06-11",
-          end: "2024-06-13",
-          days: 3,
-          remark: "고온보관",
-        },
-        {
-          id: "PLN20240604",
-          code: "P-1003",
-          name: "스마트밴드",
-          spec: "핑크/38mm",
-          price: 65000,
-          qty: 400,
-          start: "2024-06-15",
-          end: "2024-06-18",
-          days: 4,
-          remark: "",
-        },
-        {
-          id: "PLN20240605",
-          code: "M-2002",
-          name: "실리콘밴드",
-          spec: "블루/38mm",
-          price: 700,
-          qty: 1500,
-          start: "2024-06-13",
-          end: "2024-06-15",
-          days: 3,
-          remark: "",
-        },
-        {
-          id: "PLN20240606",
-          code: "P-1004",
-          name: "블루투스스피커",
-          spec: "그레이/5W",
-          price: 43000,
-          qty: 250,
-          start: "2024-06-16",
-          end: "2024-06-19",
-          days: 4,
-          remark: "방수 테스트 필요",
-        },
-        {
-          id: "PLN20240607",
-          code: "M-2003",
-          name: "PCB보드",
-          spec: "4층/소형",
-          price: 3200,
-          qty: 800,
-          start: "2024-06-17",
-          end: "2024-06-20",
-          days: 4,
-          remark: "",
-        },
-        {
-          id: "PLN20240608",
-          code: "P-1005",
-          name: "스마트램프",
-          spec: "화이트/LED",
-          price: 39000,
-          qty: 180,
-          start: "2024-06-18",
-          end: "2024-06-21",
-          days: 4,
-          remark: "",
-        },
-        {
-          id: "PLN20240609",
-          code: "M-2004",
-          name: "알루미늄케이스",
-          spec: "실버/중형",
-          price: 2100,
-          qty: 600,
-          start: "2024-06-19",
-          end: "2024-06-22",
-          days: 4,
-          remark: "외주 가공",
-        },
-        {
-          id: "PLN20240610",
-          code: "P-1006",
-          name: "스마트체중계",
-          spec: "블랙/디지털",
-          price: 67000,
-          qty: 120,
-          start: "2024-06-20",
-          end: "2024-06-24",
-          days: 5,
-          remark: "",
-        },
-        {
-          id: "PLN20240611",
-          code: "P-1007",
-          name: "스마트온도계",
-          spec: "화이트/센서포함",
-          price: 29000,
-          qty: 90,
-          start: "2024-06-22",
-          end: "2024-06-25",
-          days: 4,
-          remark: "센서 재고 확인",
-        },
-        {
-          id: "PLN20240612",
-          code: "M-2005",
-          name: "센서모듈",
-          spec: "온습도/소형",
-          price: 1800,
-          qty: 700,
-          start: "2024-06-23",
-          end: "2024-06-26",
-          days: 4,
-          remark: "",
-        },
-      ];
+  // "전체 선택" 체크박스 제어
+  document.addEventListener("DOMContentLoaded", function () {
+    const checkAll = document.getElementById("checkAll");
+    const table = document.getElementById("planTable");
 
-      // 소요량 계산 결과 데이터
-      let requirementData = [];
-      // 확인된 항목 id 저장
-      let confirmedIds = [];
-
-      // Paging
-      const ROWS_PER_PAGE = 10;
-      let currentPage = 1;
-      let filteredData = planData;
-
-      // 소요량 결과 페이징
-      const REQUIREMENT_ROWS_PER_PAGE = 10;
-      let requirementCurrentPage = 1;
-
-      // 상태 필터
-      let statusFilter = "all";
-
-      // 소요량 결과 날짜 필터
-      let requirementFilterStartDate = "";
-      let requirementFilterEndDate = "";
-
-      function filterData() {
-        const startDate = document.getElementById("startDate").value;
-        const endDate = document.getElementById("endDate").value;
-        statusFilter = document.getElementById("statusFilter").value;
-        filteredData = planData.filter((row) => {
-          let match = true;
-          if (startDate && row.start < startDate) match = false;
-          if (endDate && row.end > endDate) match = false;
-          // 상태 필터
-          if (statusFilter === "unconfirmed") {
-            // 계산 안된 항목만
-            if (
-              requirementData.some((r) => r.id === row.id) ||
-              confirmedIds.includes(row.id)
-            )
-              match = false;
-          } else if (statusFilter === "confirmed") {
-            if (!confirmedIds.includes(row.id)) match = false;
-          }
-          return match;
-        });
-        currentPage = 1;
-        renderTable();
-        renderPagination();
-      }
-      document
-        .getElementById("searchBtn")
-        .addEventListener("click", filterData);
-      document
-        .getElementById("statusFilter")
-        .addEventListener("change", filterData);
-
-      // Render table
-      function renderTable() {
-        const tbody = document.getElementById("planTableBody");
-        tbody.innerHTML = "";
-        const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
-        const endIdx = startIdx + ROWS_PER_PAGE;
-        // 정렬: 확인됨은 맨 아래로
-        let pageData = filteredData.slice();
-        pageData.sort((a, b) => {
-          const aConfirmed = confirmedIds.includes(a.id);
-          const bConfirmed = confirmedIds.includes(b.id);
-          if (aConfirmed && !bConfirmed) return 1;
-          if (!aConfirmed && bConfirmed) return -1;
-          return 0;
-        });
-        pageData = pageData.slice(startIdx, endIdx);
-
-        pageData.forEach((row) => {
-          const tr = document.createElement("tr");
-          // 이미 계산된 항목은 체크박스 비활성화
-          const alreadyCalculated = requirementData.some(
-            (r) => r.id === row.id
-          );
-          const alreadyConfirmed = confirmedIds.includes(row.id);
-          tr.innerHTML = `
-            <td>
-              <input type="checkbox" class="row-check" data-id="${row.id}" ${
-            alreadyCalculated || alreadyConfirmed ? "disabled" : ""
-          }>
-            </td>
-            <td>${row.id}</td>
-            <td>${row.code}</td>
-            <td><a href="#" class="name-link" data-name="${row.name}">${
-            row.name
-          }</a></td>
-            <td>${row.spec}</td>
-            <td>${row.price.toLocaleString()}</td>
-            <td>${row.qty.toLocaleString()}</td>
-            <td>${row.start}</td>
-            <td>${row.end}</td>
-            <td>${row.days}</td>
-            <td>
-              ${
-                row.remark
-                  ? `<button type="button" class="btn btn-outline-secondary btn-sm remark-btn" data-remark="${row.remark}">내용 확인</button>`
-                  : "<span>-</span>"
-              }
-            </td>
-            <td>
-              ${
-                alreadyConfirmed
-                  ? `<span class="text-primary fw-bold">확인됨</span>`
-                  : alreadyCalculated
-                  ? `<span class="text-success fw-bold">계산완료</span>`
-                  : `<span class="text-secondary">미확인</span>`
-              }
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-        // 체크박스 전체선택 비활성화
-        document.getElementById("checkAll").checked = false;
-      }
-
-      // Render pagination
-      function renderPagination() {
-        const totalPages = Math.ceil(filteredData.length / ROWS_PER_PAGE);
-        const pagination = document.getElementById("pagination");
-        pagination.innerHTML = "";
-
-        // Prev
-        const prevLi = document.createElement("li");
-        prevLi.className = "page-item" + (currentPage === 1 ? " disabled" : "");
-        prevLi.innerHTML = `<a class="page-link" href="#" aria-label="이전"><span aria-hidden="true">&laquo;</span></a>`;
-        prevLi.addEventListener("click", (e) => {
-          e.preventDefault();
-          if (currentPage > 1) {
-            currentPage--;
-            renderTable();
-            renderPagination();
-          }
-        });
-        pagination.appendChild(prevLi);
-
-        let startPage = Math.max(1, currentPage - 2);
-        let endPage = Math.min(totalPages, startPage + 4);
-        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
-
-        if (startPage > 1) {
-          const firstLi = document.createElement("li");
-          firstLi.className = "page-item";
-          firstLi.innerHTML = `<a class="page-link" href="#">1</a>`;
-          firstLi.addEventListener("click", (e) => {
-            e.preventDefault();
-            currentPage = 1;
-            renderTable();
-            renderPagination();
-          });
-          pagination.appendChild(firstLi);
-
-          if (startPage > 2) {
-            const dotsLi = document.createElement("li");
-            dotsLi.className = "page-item disabled";
-            dotsLi.innerHTML = `<span class="page-link">...</span>`;
-            pagination.appendChild(dotsLi);
-          }
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-          const li = document.createElement("li");
-          li.className = "page-item" + (i === currentPage ? " active" : "");
-          li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-          li.addEventListener("click", (e) => {
-            e.preventDefault();
-            currentPage = i;
-            renderTable();
-            renderPagination();
-          });
-          pagination.appendChild(li);
-        }
-
-        if (endPage < totalPages) {
-          if (endPage < totalPages - 1) {
-            const dotsLi = document.createElement("li");
-            dotsLi.className = "page-item disabled";
-            dotsLi.innerHTML = `<span class="page-link">...</span>`;
-            pagination.appendChild(dotsLi);
-          }
-          const lastLi = document.createElement("li");
-          lastLi.className = "page-item";
-          lastLi.innerHTML = `<a class="page-link" href="#">${totalPages}</a>`;
-          lastLi.addEventListener("click", (e) => {
-            e.preventDefault();
-            currentPage = totalPages;
-            renderTable();
-            renderPagination();
-          });
-          pagination.appendChild(lastLi);
-        }
-
-        // Next
-        const nextLi = document.createElement("li");
-        nextLi.className =
-          "page-item" + (currentPage === totalPages ? " disabled" : "");
-        nextLi.innerHTML = `<a class="page-link" href="#" aria-label="다음"><span aria-hidden="true">&raquo;</span></a>`;
-        nextLi.addEventListener("click", (e) => {
-          e.preventDefault();
-          if (currentPage < totalPages) {
-            currentPage++;
-            renderTable();
-            renderPagination();
-          }
-        });
-        pagination.appendChild(nextLi);
-      }
-
-      // 체크박스 전체선택
-      document
-        .getElementById("checkAll")
-        .addEventListener("change", function () {
-          document.querySelectorAll(".row-check").forEach((cb) => {
-            if (!cb.disabled) cb.checked = this.checked;
-          });
-        });
-
-      // 계산하기 버튼 (선택항목)
-      document
-        .getElementById("calcSelectedBtn")
-        .addEventListener("click", function () {
-          const checked = Array.from(
-            document.querySelectorAll(".row-check:checked")
-          );
-          if (checked.length === 0) {
-            alert("계산할 항목을 선택하세요.");
-            return;
-          }
-          let added = 0;
-          checked.forEach((cb) => {
-            const planId = cb.getAttribute("data-id");
-            if (
-              !requirementData.some((r) => r.id === planId) &&
-              !confirmedIds.includes(planId)
-            ) {
-              const plan = planData.find((r) => r.id === planId);
-              if (plan) {
-                requirementData.push({
-                  ...plan,
-                  calcDate: new Date(),
-                });
-                added++;
-              }
-            }
-          });
-          if (added > 0) {
-            renderTable();
-            renderRequirementResult();
-          }
-        });
-
-      // Modal for remark
-      let remarkModal;
-      document.addEventListener("click", function (e) {
-        if (e.target.classList.contains("remark-btn")) {
-          const remark = e.target.getAttribute("data-remark");
-          document.getElementById("remarkModalBody").textContent = remark;
-          if (!remarkModal) {
-            remarkModal = new bootstrap.Modal(
-              document.getElementById("remarkModal")
-            );
-          }
-          remarkModal.show();
-        }
-        if (e.target.classList.contains("name-link")) {
-          e.preventDefault();
-          alert(`${e.target.dataset.name} 상세 페이지로 이동`);
-        }
-        // 소요량 결과 확인 버튼
-        if (e.target.classList.contains("requirement-confirm-btn")) {
-          const planId = e.target.getAttribute("data-id");
-          if (confirm("정말 확인 처리하시겠습니까?")) {
-            // 소요량 결과에서 삭제, 확인된 id로 이동
-            requirementData = requirementData.filter(
-              (row) => row.id !== planId
-            );
-            if (!confirmedIds.includes(planId)) confirmedIds.push(planId);
-            renderTable();
-            renderRequirementResult();
-            // 확인됨이 맨 아래로 가도록 테이블 스크롤
-            setTimeout(() => {
-              const mainContent = document.getElementById("mainContent");
-              mainContent.scrollIntoView({ behavior: "smooth", block: "end" });
-            }, 200);
-          }
-        }
+    // 전체 선택 체크박스 클릭 시 모든 row-check 변경
+    checkAll.addEventListener("change", function () {
+      const checkboxes = table.querySelectorAll(".row-check");
+      checkboxes.forEach(cb => {
+        cb.checked = checkAll.checked;
       });
+    });
 
-      // 소요량 결과 날짜 필터 핸들러
-      document
-        .getElementById("requirementSearchBtn")
-        .addEventListener("click", function () {
-          requirementFilterStartDate = document.getElementById(
-            "requirementStartDate"
-          ).value;
-          requirementFilterEndDate =
-            document.getElementById("requirementEndDate").value;
-          requirementCurrentPage = 1;
-          renderRequirementResult();
-        });
-      document
-        .getElementById("requirementResetBtn")
-        .addEventListener("click", function () {
-          document.getElementById("requirementStartDate").value = "";
-          document.getElementById("requirementEndDate").value = "";
-          requirementFilterStartDate = "";
-          requirementFilterEndDate = "";
-          requirementCurrentPage = 1;
-          renderRequirementResult();
-        });
-
-      // 소요량 계산 결과 렌더링 (페이징 포함)
-      function renderRequirementResult() {
-        const resultDiv = document.getElementById("requirementResult");
-        const listDiv = document.getElementById("requirementList");
-        const paginationDiv = document.getElementById("requirementPagination");
-        // 계산된 항목 = requirementData
-        let calculatedPlans = requirementData.slice();
-
-        // 날짜 필터 적용
-        if (requirementFilterStartDate) {
-          calculatedPlans = calculatedPlans.filter((row) => {
-            const d = row.calcDate ? new Date(row.calcDate) : new Date();
-            return d >= new Date(requirementFilterStartDate);
-          });
-        }
-        if (requirementFilterEndDate) {
-          calculatedPlans = calculatedPlans.filter((row) => {
-            const d = row.calcDate ? new Date(row.calcDate) : new Date();
-            // end date inclusive
-            return d <= new Date(requirementFilterEndDate + "T23:59:59");
-          });
-        }
-
-        // 최신 계산일이 위로 오도록 정렬
-        calculatedPlans.sort((a, b) => {
-          const da = a.calcDate ? new Date(a.calcDate) : new Date();
-          const db = b.calcDate ? new Date(b.calcDate) : new Date();
-          return db - da;
-        });
-
-        const totalPages = Math.ceil(
-          calculatedPlans.length / REQUIREMENT_ROWS_PER_PAGE
-        );
-        if (requirementCurrentPage > totalPages)
-          requirementCurrentPage = totalPages || 1;
-        const startIdx =
-          (requirementCurrentPage - 1) * REQUIREMENT_ROWS_PER_PAGE;
-        const endIdx = startIdx + REQUIREMENT_ROWS_PER_PAGE;
-        const pageData = calculatedPlans.slice(startIdx, endIdx);
-
-        let html = `<div style="overflow-x:auto;"><table class="table table-bordered table-sm align-middle">
-                                        <thead>
-                                                <tr>
-                                                        <th>계획번호</th>
-                                                        <th>제품코드</th>
-                                                        <th>제품명</th>
-                                                        <th>계획수량</th>
-                                                        <th>계산일시</th>
-                                                        <th>상태</th>
-                                                        <th>확인</th>
-                                                </tr>
-                                        </thead>
-                                        <tbody>
-                                `;
-        if (pageData.length === 0) {
-          html += `<tr><td colspan="7" class="text-center">데이터가 없습니다</td></tr>`;
-        } else {
-          pageData.forEach((row) => {
-            html += `<tr>
-                                                        <td>${row.id}</td>
-                                                        <td>${row.code}</td>
-                                                        <td>${row.name}</td>
-                                                        <td>${row.qty.toLocaleString()}</td>
-                                                        <td>${
-                                                          row.calcDate
-                                                            ? new Date(
-                                                                row.calcDate
-                                                              ).toLocaleString()
-                                                            : new Date().toLocaleString()
-                                                        }</td>
-                                                        <td><span class="text-success fw-bold">계산완료</span></td>
-                                                        <td>
-                                                                <button type="button" class="btn btn-outline-danger btn-sm requirement-confirm-btn" data-id="${
-                                                                  row.id
-                                                                }">확인</button>
-                                                        </td>
-                                                </tr>`;
-          });
-        }
-        html += `</tbody></table></div>`;
-        listDiv.innerHTML = html;
-
-        // 페이징 렌더링
-        paginationDiv.innerHTML = "";
-        if (totalPages > 1) {
-          // Prev
-          const prevLi = document.createElement("li");
-          prevLi.className =
-            "page-item" + (requirementCurrentPage === 1 ? " disabled" : "");
-          prevLi.innerHTML = `<a class="page-link" href="#" aria-label="이전"><span aria-hidden="true">&laquo;</span></a>`;
-          prevLi.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (requirementCurrentPage > 1) {
-              requirementCurrentPage--;
-              renderRequirementResult();
-            }
-          });
-          paginationDiv.appendChild(prevLi);
-
-          let startPage = Math.max(1, requirementCurrentPage - 2);
-          let endPage = Math.min(totalPages, startPage + 4);
-          if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
-
-          if (startPage > 1) {
-            const firstLi = document.createElement("li");
-            firstLi.className = "page-item";
-            firstLi.innerHTML = `<a class="page-link" href="#">1</a>`;
-            firstLi.addEventListener("click", (e) => {
-              e.preventDefault();
-              requirementCurrentPage = 1;
-              renderRequirementResult();
-            });
-            paginationDiv.appendChild(firstLi);
-
-            if (startPage > 2) {
-              const dotsLi = document.createElement("li");
-              dotsLi.className = "page-item disabled";
-              dotsLi.innerHTML = `<span class="page-link">...</span>`;
-              paginationDiv.appendChild(dotsLi);
-            }
-          }
-
-          for (let i = startPage; i <= endPage; i++) {
-            const li = document.createElement("li");
-            li.className =
-              "page-item" + (i === requirementCurrentPage ? " active" : "");
-            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-            li.addEventListener("click", (e) => {
-              e.preventDefault();
-              requirementCurrentPage = i;
-              renderRequirementResult();
-            });
-            paginationDiv.appendChild(li);
-          }
-
-          if (endPage < totalPages) {
-            if (endPage < totalPages - 1) {
-              const dotsLi = document.createElement("li");
-              dotsLi.className = "page-item disabled";
-              dotsLi.innerHTML = `<span class="page-link">...</span>`;
-              paginationDiv.appendChild(dotsLi);
-            }
-            const lastLi = document.createElement("li");
-            lastLi.className = "page-item";
-            lastLi.innerHTML = `<a class="page-link" href="#">${totalPages}</a>`;
-            lastLi.addEventListener("click", (e) => {
-              e.preventDefault();
-              requirementCurrentPage = totalPages;
-              renderRequirementResult();
-            });
-            paginationDiv.appendChild(lastLi);
-          }
-
-          // Next
-          const nextLi = document.createElement("li");
-          nextLi.className =
-            "page-item" +
-            (requirementCurrentPage === totalPages ? " disabled" : "");
-          nextLi.innerHTML = `<a class="page-link" href="#" aria-label="다음"><span aria-hidden="true">&raquo;</span></a>`;
-          nextLi.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (requirementCurrentPage < totalPages) {
-              requirementCurrentPage++;
-              renderRequirementResult();
-            }
-          });
-          paginationDiv.appendChild(nextLi);
-        }
+    // 개별 체크박스 클릭 시 전체선택 체크박스 상태 자동 변경
+    table.addEventListener("change", function (e) {
+      if (e.target.classList.contains("row-check")) {
+        const checkboxes = table.querySelectorAll(".row-check");
+        const checked = table.querySelectorAll(".row-check:checked");
+        // 모두 체크되면 전체선택 체크박스도 체크, 아니면 해제
+        checkAll.checked = (checkboxes.length === checked.length);
       }
-
-      // Initial render
-      filterData();
-      renderRequirementResult();
-    </script>
+    });
+  });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	  document.body.addEventListener("click", function (e) {
+	    if (e.target.classList.contains("remark-btn")) {
+	      // 버튼의 data-remark 속성에서 remark 값을 가져옴
+	      const remark = e.target.getAttribute("data-remark");
+	      document.getElementById("remarkModalBody").textContent = remark;
+	      // Bootstrap 모달 열기
+	      var modal = new bootstrap.Modal(document.getElementById("remarkModal"));
+	      modal.show();
+	    }
+	  });
+	});
+</script>
+<script th:src="@{/js/sidebar.js}"></script>
   </body>
 </html>
