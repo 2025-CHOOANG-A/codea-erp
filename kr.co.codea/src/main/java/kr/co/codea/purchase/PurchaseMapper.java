@@ -14,7 +14,7 @@ public interface PurchaseMapper {
      int countPurchaseList(Map<String, Object> params); // 페이징을 위한 전체 개수
      
      PurchaseDto selectPurchaseHeader(int purchaseId);
-     List<PurchaseDto.PurchaseDetail> selectPurchaseDetails(int purchaseId);
+     List<PurchaseDto.PurchaseDetail> selectPurchaseDetails(Long purchaseId);
      
      List<PurchaseDto.ItemSimple> searchItems(@Param("keyword") String keyword);
      List<PurchaseDto.SupplierSimple> searchSuppliers(@Param("keyword") String keyword);
@@ -22,5 +22,8 @@ public interface PurchaseMapper {
      
      void insertPurchaseHeader(PurchaseDto dto);
      void insertPurchaseDetail(PurchaseDto.PurchaseDetail detail);
+     
+     void insertInout(PurchaseDto.PurchaseDetail detail);
+     void updatePurchaseStatusToComplete(Long purchaseId);
 
 }

@@ -1,6 +1,7 @@
 package kr.co.codea.purchase;
 
 import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -45,6 +46,9 @@ public class PurchaseDto {
         private String remark;
         private String unitCode;   // 'EA', 'BOX' 등
         private String unitName;   // '개', '박스' 등
+        private Long whId;       // 창고 ID
+        private Long empId;      // 처리 담당자 ID
+        private double unitCost;
     }
     
     @Data

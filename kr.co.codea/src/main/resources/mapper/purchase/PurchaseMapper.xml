@@ -185,12 +185,36 @@
 		INSERT INTO PURCHASE_DETAIL (
 		PURCHASE_DETAIL_ID,
 		PURCHASE_ID, ITEM_ID,
-		ORDER_QTY, UNIT_PRICE, REQUIRED_DELIVERY_DATE, REMARK
+		ORDER_QTY, UNIT_PRICE, REQUIRED_DELIVERY_DATE,
+		REMARK
 		) VALUES (
 		DEFAULT,
-		#{purchaseId}, #{itemId}, #{orderQty}, #{unitPrice}, #{requiredDeliveryDate},
+		#{purchaseId}, #{itemId}, #{orderQty},
+		#{unitPrice}, #{requiredDeliveryDate},
 		#{remark}
 		)
 	</insert>
+
+	<insert id="insertInout"
+		parameterType="kr.co.codea.purchase.PurchaseDto$PurchaseDetail">
+		INSERT INTO INOUT (
+		INOUT_TIME, INOUT_TYPE, ITEM_ID, WH_ID, QUANTITY, ITEM_UNIT_COST,
+		SOURCE_DOC_TYPE, SOURCE_DOC_HEADER_ID, SOURCE_DOC_DETAIL_ID, EMP_ID,
+		REMARK
+		) VALUES (
+		SYSDATE, 21,
+		#{itemId}, #{whId}, #{orderQty}, #{unitPrice},
+		41, #{purchaseId}, #{purchaseDetailId}, #{empId}, '발주 완료에 따른 자동 입고'
+		)
+	</insert>
+
+
+	<update id="updatePurchaseStatusToComplete">
+		UPDATE PURCHASE_HEADER
+		SET STATUS = '완료'
+		WHERE
+		PURCHASE_ID = #{purchaseId}
+	</update>
+
 
 </mapper>

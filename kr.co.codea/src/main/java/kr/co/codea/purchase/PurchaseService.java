@@ -14,5 +14,6 @@ public interface PurchaseService {
     List<PurchaseDto.EmployeeSimple> searchEmployees(String keyword);
     
     void registerPurchase(PurchaseDto purchaseDto);
+	void processPurchase(Long purchaseId);
 
 }

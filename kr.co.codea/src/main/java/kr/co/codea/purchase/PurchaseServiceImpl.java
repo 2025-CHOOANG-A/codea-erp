@@ -1,6 +1,7 @@
 package kr.co.codea.purchase;
 
 import java.util.List;
+import java.math.BigDecimal;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     public PurchaseDto getPurchaseDetail(int purchaseId) {
     	 PurchaseDto header = purchaseMapper.selectPurchaseHeader(purchaseId);
          if (header != null) {
-             List<PurchaseDto.PurchaseDetail> details = purchaseMapper.selectPurchaseDetails(purchaseId);
+        	 List<PurchaseDto.PurchaseDetail> details = purchaseMapper.selectPurchaseDetails((long) purchaseId); // ✅
              header.setDetailList(details);
          }
          return header;
@@ -62,6 +63,25 @@ public class PurchaseServiceImpl implements PurchaseService {
             purchaseMapper.insertPurchaseDetail(detail);
         }
     }
+    
+    @Override
+    @Transactional
+    public void processPurchase(Long purchaseId) {
+        purchaseMapper.updatePurchaseStatusToComplete(purchaseId);
+
+        List<PurchaseDto.PurchaseDetail> details = purchaseMapper.selectPurchaseDetails(purchaseId);
+
+        for (PurchaseDto.PurchaseDetail detail : details) {
+            // 단가 = unitPrice 그대로 사용
+            detail.setUnitPrice(detail.getUnitPrice()); // set 안 해도 되지만, insertInout에 필요하면 그대로 사용
+
+            detail.setWhId(1L);  // 예: 기본 창고 ID
+            detail.setEmpId(1L); // 예: 처리자
+
+            purchaseMapper.insertInout(detail);
+        }
+    }
+
 
 }
 

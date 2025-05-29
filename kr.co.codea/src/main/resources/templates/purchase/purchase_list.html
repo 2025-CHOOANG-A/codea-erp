@@ -123,6 +123,46 @@ body {
 	margin-top: 1rem;
 	text-align: right;
 }
+
+.btn-process {
+	padding: 0.25rem 0.5rem;
+	font-size: 0.875rem;
+}
+
+.status-badge {
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.375rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+
+.status-접수 {
+	background-color: #fff3cd;
+	color: #664d03;
+	border: 1px solid #ffecb5;
+}
+
+.status-진행중 {
+	background-color: #cff4fc;
+	color: #055160;
+	border: 1px solid #b6effb;
+}
+
+.status-완료 {
+	background-color: #d1e7dd;
+	color: #0f5132;
+	border: 1px solid #badbcc;
+}
+
+.loading {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.spinner-border-sm {
+	width: 1rem;
+	height: 1rem;
+}
 </style>
 </head>
 <body>
@@ -167,7 +207,6 @@ body {
 			<button type="submit" class="btn btn-primary">검색</button>
 		</form>
 
-
 		<div class="table-responsive">
 			<table class="table table-bordered table-hover align-middle">
 				<thead class="table-light">
@@ -175,18 +214,20 @@ body {
 						<th>발주코드</th>
 						<th>발주일</th>
 						<th class="text-start">공급처명</th>
-						<th class="text-end">총 발주금액</th>
-						<th>발주상태</th>
+						<th class="text-end">총발주금액</th>
 						<th>담당자명</th>
 						<th>등록일</th>
 						<th class="text-start">비고</th>
+						<th>발주상태</th>
+						<th>작업</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr th:if="${#lists.isEmpty(purchaseList)}">
-                        <td colspan="8" class="text-center">조회된 발주 목록이 없습니다.</td>
+                        <td colspan="9" class="text-center">조회된 발주 목록이 없습니다.</td>
                     </tr>
-					<tr th:each="purchase : ${purchaseList}" th:if="${not #lists.isEmpty(purchaseList)}">
+					<tr th:each="purchase : ${purchaseList}" th:if="${not #lists.isEmpty(purchaseList)}" 
+					    th:id="'row-' + ${purchase.purchaseId}">
 						<td><a href="#" class="purchase-code-link"
 							th:attr="data-code=${purchase.purchaseCode}, data-id=${purchase.purchaseId}"
 							th:text="${purchase.purchaseCode}"
@@ -195,10 +236,29 @@ body {
 						<td class="text-start" th:text="${purchase.supplierName}"></td>
 						<td class="text-end"
 							th:text="${#numbers.formatInteger(purchase.totalAmount, 3, 'COMMA')}"></td>
-						<td th:text="${purchase.status}"></td>
 						<td th:text="${purchase.employeeName}"></td>
 						<td th:text="${#dates.format(purchase.createdAt, 'yyyy-MM-dd')}"></td>
-						<td class="text-start" th:text="${purchase.remark}"></td>
+						<td class="text-start">
+							<span th:if="${purchase.remark != null and purchase.remark != ''}">O</span>
+							<span th:if="${purchase.remark == null or purchase.remark == ''}">-</span>
+						</td>
+						<td>
+							<span class="status-badge" 
+							      th:classappend="'status-' + ${purchase.status}" 
+							      th:text="${purchase.status}"
+							      th:id="'status-' + ${purchase.purchaseId}"></span>
+						</td>
+						<td>
+							<button class="btn btn-success btn-process" 
+							        th:id="'btn-process-' + ${purchase.purchaseId}"
+							        th:attr="data-id=${purchase.purchaseId}, data-code=${purchase.purchaseCode}"
+							        th:if="${purchase.status == '접수'}"
+							        onclick="processPurchase(this)">
+								<span class="btn-text">진행</span>
+								<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+							</button>
+							<span th:if="${purchase.status != '접수'}" class="text-muted">-</span>
+						</td>
 					</tr>
 				</tbody>
 			</table>
@@ -239,6 +299,28 @@ body {
          </div>
 	</div>
 
+	<!-- Toast 알림 -->
+	<div class="toast-container position-fixed bottom-0 end-0 p-3">
+		<div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+			<div class="toast-header bg-success text-white">
+				<strong class="me-auto">성공</strong>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+			</div>
+			<div class="toast-body">
+				발주가 성공적으로 처리되었습니다.
+			</div>
+		</div>
+		<div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+			<div class="toast-header bg-danger text-white">
+				<strong class="me-auto">오류</strong>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+			</div>
+			<div class="toast-body" id="errorMessage">
+				처리 중 오류가 발생했습니다.
+			</div>
+		</div>
+	</div>
+
 	<script
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
@@ -251,9 +333,7 @@ body {
 
     function goToPurchaseCreatePage() {
       if (confirm('발주 등록 페이지로 이동 하시겠습니까?')) {
-        // 실제 운영 환경에서는 아래 alert 대신 window.location.href 를 사용하세요.
-         window.location.href = '/purchase/create'; // 예시 경로
-        //alert('발주 등록 페이지로 이동합니다. (실제 이동 경로는 수정 필요)');
+        window.location.href = '/purchase/create';
       }
     }
 
@@ -264,10 +344,115 @@ body {
     }
 
     function viewPurchaseDetail(purchaseCode, purchaseId) {
-      // 실제 운영 환경에서는 아래 alert 대신 window.location.href 를 사용하세요.
-       window.location.href = '/purchase/' + purchaseId; // 예시 경로
-      //alert(purchaseCode + ' (ID: ' + purchaseId + ') 발주의 상세 페이지로 이동합니다. (실제 이동 경로는 수정 필요)');
+      window.location.href = '/purchase/' + purchaseId;
     }
+
+    // 발주 진행 처리 함수
+    async function processPurchase(button) {
+      const purchaseId = button.getAttribute('data-id');
+      const purchaseCode = button.getAttribute('data-code');
+      
+      // 확인 대화상자
+      if (!confirm(`발주코드 ${purchaseCode}를 진행 처리하시겠습니까?\n\n진행 처리 시 다음 작업이 수행됩니다:\n- 발주 상태가 '완료'로 변경\n- 입출고 내역이 자동 생성`)) {
+        return;
+      }
+
+      // 버튼 비활성화 및 로딩 표시
+      setButtonLoading(button, true);
+
+      try {
+        const response = await fetch(`/purchase/${purchaseId}/process`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          // 성공 처리
+          updatePurchaseStatus(purchaseId, '완료');
+          showSuccessToast('발주가 성공적으로 처리되었습니다.');
+          
+          // 버튼을 완전히 제거하고 '-' 표시
+          const actionCell = button.parentElement;
+          actionCell.innerHTML = '<span class="text-muted">-</span>';
+          
+        } else {
+          // 실패 처리
+          throw new Error(result.message || '처리 중 오류가 발생했습니다.');
+        }
+
+      } catch (error) {
+        console.error('발주 처리 중 오류:', error);
+        showErrorToast(error.message || '네트워크 오류가 발생했습니다.');
+        setButtonLoading(button, false);
+      }
+    }
+
+    // 버튼 로딩 상태 설정
+    function setButtonLoading(button, isLoading) {
+      const btnText = button.querySelector('.btn-text');
+      const spinner = button.querySelector('.spinner-border');
+      
+      if (isLoading) {
+        button.disabled = true;
+        button.classList.add('loading');
+        btnText.textContent = '처리중...';
+        spinner.classList.remove('d-none');
+      } else {
+        button.disabled = false;
+        button.classList.remove('loading');
+        btnText.textContent = '진행';
+        spinner.classList.add('d-none');
+      }
+    }
+
+    // 발주 상태 업데이트
+    function updatePurchaseStatus(purchaseId, newStatus) {
+      const statusElement = document.getElementById(`status-${purchaseId}`);
+      if (statusElement) {
+        // 기존 상태 클래스 제거
+        statusElement.className = statusElement.className.replace(/status-\S+/g, '');
+        // 새 상태 클래스 추가
+        statusElement.classList.add(`status-${newStatus}`);
+        statusElement.textContent = newStatus;
+      }
+    }
+
+    // 성공 토스트 표시
+    function showSuccessToast(message) {
+      const toast = document.getElementById('successToast');
+      const toastBody = toast.querySelector('.toast-body');
+      if (message) {
+        toastBody.textContent = message;
+      }
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+    }
+
+    // 에러 토스트 표시
+    function showErrorToast(message) {
+      const toast = document.getElementById('errorToast');
+      const errorMessage = document.getElementById('errorMessage');
+      errorMessage.textContent = message;
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+    }
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+      // 토스트 설정
+      const toastElements = document.querySelectorAll('.toast');
+      toastElements.forEach(toastEl => {
+        toastEl.addEventListener('hidden.bs.toast', function () {
+          // 토스트가 숨겨진 후 추가 작업이 필요한 경우 여기에 작성
+        });
+      });
+    });
   </script>
 </body>
 </html>
