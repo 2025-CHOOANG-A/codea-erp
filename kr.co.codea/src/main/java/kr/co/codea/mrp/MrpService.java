@@ -1,5 +1,9 @@
 package kr.co.codea.mrp;
 
-public interface MrpService {
+import java.util.List;
 
+import kr.co.codea.productplan.ProductPlanDTO;
+
+public interface MrpService {
+	List<ProductPlanDTO> ProductPlanList(ProductPlanDTO dto);
 }
