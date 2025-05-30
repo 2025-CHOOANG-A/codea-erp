@@ -5,7 +5,7 @@ import java.util.List;
 public interface item_service {
 	
 	
-	/*조회용(주문등록을 하기 위한 선택 항목)*/
+	/*조회용(주문등록을 하기 위한 선택 항목) 검색조회*/
 	    public List<itemDTO> item_select();//주문목록 조회 
 
 	    public List<itemDTO> bp_select();//거래처 조회 

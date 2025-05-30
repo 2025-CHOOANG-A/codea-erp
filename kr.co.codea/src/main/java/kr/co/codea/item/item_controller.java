@@ -31,13 +31,10 @@ public class item_controller {
 	
 	@Autowired
 	itemDAO dao;
+		  
 	
-	
-	 @GetMapping("/list")
-	    public String listPage() {
-	        return "item/item_list"; 
-	    }
-	    
+	@Autowired
+	itemDTO dto;
 	
 	 @GetMapping("/item_detail")
 	 public String item_detail(@RequestParam("itemId") Integer itemId, Model m) {		   
@@ -47,13 +44,26 @@ public class item_controller {
 	 
 	     return "item/item_detail";
 	 }	
-	 //주문목록 , 검색창 핸들링 
+	 
+	 //제품목록 + 검색
 	 @GetMapping("/item_list")
 	 public String itemList(Model m,
-			 @RequestParam(name = "keyword", required = false) String keyword) {
+			 @RequestParam(name ="keyword", required = false) String keyword,
+			 @RequestParam(name ="itemType",required = false) String itemType){
+		 
+		 /*
+		  DTO는 데이터 담는 "컨테이너"일 뿐 → 상태를 가지면 안 됨 
+          @Autowired로 공유하면 다른 요청에서도 값이 섞일 수 있어 위험
+          특히 @Controller는 멀티스레드 환경이라 매우 위험해요. 
+		  */
+		 
+		 //완제품, 원제품 구분 
+		 
 		    List<itemDTO> item_list = this.dao.item_select();
 		    m.addAttribute("item_list", item_list);//주문목록 리스트 
-		   System.out.println(item_list);
+		    m.addAttribute("keyword", keyword);
+		    System.out.println(keyword);
+		    //System.out.println(item_list);
 		  // m.addAttribute("keyword", keyword); // 검색어 유지용
 		    return "item/item_list";
 		}

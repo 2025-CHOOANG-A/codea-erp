@@ -378,25 +378,56 @@
                   </td>
                 </tr>
               </tbody>
-              <div class="modal fade" id="productSearchModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-     <div class="modal-content">
+          
+        </form>
+<!-- 완제품 검색 모달 -->
+<div class="modal fade" id="productSearchModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <!-- 모달 헤더 -->
+      <div class="modal-header">
         <h5 class="modal-title">완제품 검색</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-      </div>
+      </div> <!-- 🔴 여기 닫는 태그가 빠졌었어! -->
+
+      <!-- 모달 본문 -->
       <div class="modal-body">
-        <input type="text" class="form-control mb-3" id="productKeyword" placeholder="제품명 또는 코드 입력 후 Enter">
-        <div id="modalProductResult"></div>
-      </div>
+        <!-- 검색창 -->
+        <input type="text" class="form-control mb-3" id="productKeyword" placeholder="제품명 또는 코드 입력 후 Enter" />
+
+        <!-- 검색 결과 테이블 -->
+        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+          <table class="table table-hover table-sm mb-0" id="productSearchTable">
+            <thead class="table-light">
+              <tr>
+                <th>제품코드</th>
+                <th>제품명</th> 
+                <th>규격</th>
+                <th>단위</th>
+              </tr>
+            </thead>
+            <tbody id="modalProductResult">
+              <!-- Thymeleaf 예시 -->
+              <tr th:each="item : ${productList}" 
+                  th:data-code="${item.itemCode}" 
+                  th:data-name="${item.itemName}" 
+                  th:data-spec="${item.spec}" 
+                  th:data-unit="${item.unitCode}"
+                  onclick="selectProduct(this)">
+                <td th:text="${item.itemCode}"></td>
+                <td th:text="${item.itemName}"></td>
+                <td th:text="${item.spec}"></td>
+                <td th:text="${item.unitCode}"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div> <!-- modal-body end -->
+
     </div>
   </div>
 </div>
-            </table>
-          </div>
-
-
-        </form>
-
         <!-- Material List Table -->
         <div>
           <div class="d-flex justify-content-between align-items-center mb-2">
@@ -561,6 +592,7 @@
         </div>
       </div>
     </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/bom_write.js?v=2"></script>

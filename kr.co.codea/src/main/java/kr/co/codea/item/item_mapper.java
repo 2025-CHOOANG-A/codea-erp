@@ -13,7 +13,7 @@ public interface item_mapper {
     int insert_item(itemDTO dto);
 	
     /*테이블 조회 : 등록시 필요한 리스트 가져오*/	
-	//주문목록 조회
+	//주문목록 조회 (제품구분, 검색 전용 포함)
 	List<itemDTO> item_select();	
 	//거래처 등록 조회
 	List<itemDTO> bp_select();
@@ -37,8 +37,10 @@ public interface item_mapper {
 	
 	// 조건 검색용
 	//keyword => 검색창 작동
-	/*
+    /*
 	List<itemDTO> item_search(@Param("keyword") String keyword); 
-    */
-    
+   */
+
+	
+	
 }

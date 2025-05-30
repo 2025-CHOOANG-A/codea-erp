@@ -282,11 +282,36 @@
                 <th scope="col">비고</th>
                 <th scope="col">내용 확인</th>
               </tr>
-            </thead>
-            <tbody>
-              <!-- JS로 데이터 렌더링 -->
-            </tbody>
-          </table>
+    <tbody>
+  <tr th:each="bom : ${select_bomList}">
+    <!-- 체크박스 -->
+    <td><input type="checkbox" name="selected" th:value="${bom.bomCode}" /></td>
+
+    <!-- BOM 정보 출력 -->
+       <!-- 
+    <td th:text="${bom.bomCode}">BOM_CODE</td>
+    <td th:text="${bom.productCode}">ITEM_CODE</td>
+    <td th:text="${bom.productName}">ITEM_NAME</td>
+ -->
+    <!-- 자재 정보 출력 -->
+    <!-- 
+    <td th:text="${bom.materialCode}">MATERIAL_CODE</td>
+    <td th:text="${bom.materialName}">MATERIAL_NAME</td>
+    <td th:text="${bom.spec}">SPEC</td>
+    <td th:text="${bom.unit}">UNIT</td>
+    <td th:text="${#numbers.formatInteger(bom.price, 3, 'COMMA')}">PRICE</td>
+    <td th:text="${bom.qty}">QTY</td>
+    <td th:text="${bom.remark}">REMARK</td>
+ -->
+    <!-- 상세 확인 버튼 -->
+    <td>
+      <a th:href="@{/item/item_detail(id=${bom.itemId})}" class="btn btn-outline-primary btn-sm">
+        보기
+      </a>
+    </td>
+  </tr>
+</tbody>
+</table>
         </div>
 
         <!-- Table Footer: Paging & Add/Delete Button -->

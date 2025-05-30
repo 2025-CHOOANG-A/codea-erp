@@ -51,5 +51,7 @@ public class itemDTO {
      private String unitcodeValue;
 	
      
+     //조회용
+     private String keyword;
      
 }
