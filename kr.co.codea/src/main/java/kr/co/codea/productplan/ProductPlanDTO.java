@@ -3,6 +3,7 @@ package kr.co.codea.productplan;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Data;
 
@@ -31,6 +32,13 @@ public class ProductPlanDTO {
     
     //ui
     private String empName;
+    
+    //생산계획 상태 변경을 위한 아이디값
+    private List<String> planIds;
+    
+    //작업지시/취소 확인을 위함
+    private String actionType;
+
 
 
 }

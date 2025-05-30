@@ -10,7 +10,7 @@ const ITEM_SEARCH_DEBOUNCE_DELAY = 300; // 0.3초 디바운싱 지연 시간
 
 
 document.addEventListener('DOMContentLoaded', function() {
-    // --- 1. 주요 DOM 요소 참조 (모든 변수는 이 DOMContentLoaded 스코프 안에 선언됩니다) ---
+    // --- 1. 주요 DOM 요소 참조 
     const productionPlanRegisterModalElement = document.getElementById('productionPlanRegisterModal');
     const productionPlanRegisterModal = new bootstrap.Modal(productionPlanRegisterModalElement);
     const productionPlanForm = document.getElementById('productionPlanForm');
@@ -54,6 +54,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 새로 추가된 요소 참조 ---
     const completionDateDiv = modalCompletionDateInput.closest('.mb-3'); // 부모 div 찾기
     const actualQtyDiv = modalActualQtyInput.closest('.mb-3'); // 부모 div 찾기
+	
+	//작업지시 생성 및 취소
+	const createWorkOrderButton = document.getElementById('createWorkOrderButton');
+	const cancelWorkOrderButton = document.getElementById('cancelWorkOrderButton'); // ID로 가져오기
+
+
 
     // 현재 모달 모드를 저장할 변수 (register, detail, edit)
     let currentModalMode = 'register'; // 초기값은 'register'
@@ -612,4 +618,159 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+	
+	
+	//작업지시
+	if (createWorkOrderButton) {
+	    createWorkOrderButton.addEventListener('click', function() {
+			console.log('[작업지시] 버튼 클릭됨'); // 로그 추가
+
+	        const selectedCheckboxes = document.querySelectorAll('#productionPlanTable .row-checkbox:checked');
+			console.log('[작업지시] 선택된 체크박스 개수 (쿼리 직후):', selectedCheckboxes.length); // 로그 추가
+
+	        const planIdsToUpdate = [];
+	        let canProceed = true;
+	        let nonEligiblePlanSelected = false;
+
+	        selectedCheckboxes.forEach(checkbox => {
+	            const planId = checkbox.getAttribute('data-plan-id');
+	            const row = checkbox.closest('tr');
+	            const statusCell = row.cells[10]; // 상태 값이 11번째 셀(인덱스 10)에 있다고 가정
+
+	            // 실제 저장된 상태 값과 비교해야 합니다. (예: 'MATERIAL_PLAN_COMPLETED')
+	            // 여기서는 화면에 표시된 텍스트를 기준으로 하지만, 서버에서 정확한 값으로 재검증해야 합니다.
+	            if (statusCell.textContent.trim() === '자재계획완료' || statusCell.textContent.trim() === '계획') { // 또는 '계획' 상태도 허용한다면
+	                planIdsToUpdate.push(planId);
+	            } else {
+	                nonEligiblePlanSelected = true;
+	            }
+	        });
+
+	        if (planIdsToUpdate.length === 0) {
+	            if(nonEligiblePlanSelected || selectedCheckboxes.length > 0) {
+	                alert('선택된 항목 중 "자재계획완료" 또는 "계획" 상태인 생산 계획이 없습니다.\n상태를 확인해주세요.');
+	            } else {
+	                alert('작업 지시를 생성할 생산 계획을 선택해주세요.');
+	            }
+	            return;
+	        }
+	        
+	        if (nonEligiblePlanSelected) {
+	            if (!confirm('"자재계획완료" 또는 "계획" 상태가 아닌 항목이 선택에 포함되어 있습니다. 해당 항목을 제외하고 진행하시겠습니까?')) {
+	                 // 사용자가 '아니오'를 선택하면 아무 작업도 하지 않음
+	                // 만약 제외하지 않고 아예 막고 싶다면, 위의 planIdsToUpdate.length === 0 이전 로직에서 alert 후 return
+	                return;
+	            }
+	        }
+
+
+	        if (!confirm(planIdsToUpdate.length + '개의 생산 계획에 대해 작업 지시를 생성하시겠습니까?')) {
+	            return;
+	        }
+
+	        // 서버 API 엔드포인트 (실제 엔드포인트로 변경해야 합니다)
+	        const apiUrl = 'productplan/api/issue-work-orders';
+
+	        fetch(apiUrl, {
+	            method: 'POST',
+	            headers: {
+	                'Content-Type': 'application/json',
+	                // Spring Security CSRF 사용 시 토큰 추가
+	                // 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+	            },
+	            body: JSON.stringify({ planIds: planIdsToUpdate }) // 서버로 보낼 데이터
+	        })
+	        .then(response => {
+	            if (!response.ok) {
+	                // 서버에서 에러 메시지를 json 형태로 보냈다고 가정
+	                return response.json().then(err => { throw new Error(err.message || '상태 변경 중 오류가 발생했습니다.'); });
+	            }
+	            return response.json(); // 성공 시 JSON 응답 기대
+	        })
+	        .then(data => {
+	            alert(data.message || '선택된 생산 계획의 상태가 성공적으로 변경되었습니다.');
+	            location.reload(); // 페이지 새로고침으로 변경사항 반영 (가장 간단한 방법)
+	            // 또는, 특정 부분만 동적으로 업데이트 할 수도 있습니다.
+	        })
+	        .catch(error => {
+	            console.error('Error issuing work orders:', error);
+	            alert('오류: ' + error.message);
+	        });
+	    });
+	}
+	
+	//작업지시 취소
+	if (cancelWorkOrderButton) {
+	    cancelWorkOrderButton.addEventListener('click', function() {
+	        console.log('[작업지시 취소] 버튼 클릭됨');
+
+	        const selectedCheckboxes = document.querySelectorAll('#productionPlanTable .row-checkbox:checked');
+	        console.log('[작업지시 취소] 선택된 체크박스 개수:', selectedCheckboxes.length);
+
+	        const planIdsToCancel = [];
+	        let canProceed = true;
+	        let nonEligiblePlanSelected = false;
+
+	        selectedCheckboxes.forEach(checkbox => {
+	            const planId = checkbox.getAttribute('data-plan-id');
+	            const row = checkbox.closest('tr');
+	            const statusCell = row.cells[10]; // 상태 값이 11번째 셀(인덱스 10)에 있다고 가정
+
+	            // 작업지시 상태인 것만 취소 가능
+	            if (statusCell.textContent.trim() === '작업지시') {
+	                planIdsToCancel.push(planId);
+	            } else {
+	                nonEligiblePlanSelected = true;
+	            }
+	        });
+
+	        if (planIdsToCancel.length === 0) {
+	            if (nonEligiblePlanSelected || selectedCheckboxes.length > 0) {
+	                alert('선택된 항목 중 "작업지시" 상태인 생산 계획이 없습니다.\n작업지시 상태인 계획만 취소할 수 있습니다.');
+	            } else {
+	                alert('작업 지시를 취소할 생산 계획을 선택해주세요.');
+	            }
+	            return;
+	        }
+
+	        if (nonEligiblePlanSelected) {
+	            if (!confirm('"작업지시" 상태가 아닌 항목이 선택에 포함되어 있습니다. 해당 항목을 제외하고 진행하시겠습니까?')) {
+	                return;
+	            }
+	        }
+
+	        if (!confirm(planIdsToCancel.length + '개의 생산 계획에 대해 작업 지시를 취소하시겠습니까?\n취소된 계획은 "자재계획완료" 상태로 되돌아갑니다.')) {
+	            return;
+	        }
+
+	        // 작업지시 취소 API 엔드포인트
+	        const apiUrl = '/productplan/api/cancel-work-orders';
+
+	        fetch(apiUrl, {
+	            method: 'POST',
+	            headers: {
+	                'Content-Type': 'application/json'
+	            },
+	            body: JSON.stringify({ planIds: planIdsToCancel })
+	        })
+	        .then(response => {
+	            if (!response.ok) {
+	                return response.json().then(err => { 
+	                    throw new Error(err.message || '작업지시 취소 중 오류가 발생했습니다.'); 
+	                });
+	            }
+	            return response.json();
+	        })
+	        .then(data => {
+	            alert(data.message || '선택된 생산 계획의 작업지시가 성공적으로 취소되었습니다.');
+	            location.reload(); // 페이지 새로고침으로 변경사항 반영
+	        })
+	        .catch(error => {
+	            console.error('Error canceling work orders:', error);
+	            alert('오류: ' + error.message);
+	        });
+	    });
+	}
+	
+	
 }); // <--- DOMContentLoaded 이벤트 리스너 끝

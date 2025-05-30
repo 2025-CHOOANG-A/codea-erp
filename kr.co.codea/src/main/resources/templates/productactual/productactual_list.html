@@ -10,7 +10,7 @@
         <div class="container">
             <h2 class="mb-4">생산실적관리</h2>
 
-            <div class="flex justify-end gap-2 mb-3">
+            <div class="flex justify-content-start gap-2 mb-3">
                 <button type="button" id="createWorkOrderButton" class="btn btn-primary work-order-btn">작업시작</button>
                 <button type="button" class="btn btn-primary work-order-btn">작업종료</button>
             </div>
@@ -373,12 +373,38 @@
                 })
                 .then(data => {
                     alert('생산 실적이 성공적으로 등록되었습니다.');
-                    // 성공 후 폼 초기화 및 해당 계획의 실제 수량 업데이트
-                    clearActualForm();
-                    // 페이지 새로고침 또는 해당 행의 실제 수량 및 일별 실적 목록 업데이트
-                    window.location.reload(); // 간단한 방법
-                    // loadDailyActuals(planId); // 선택된 계획의 일별 실적만 업데이트 (더 나은 UX)
-                    // (선택 사항) 테이블의 해당 plan.actualQty 셀을 업데이트하는 로직 추가
+
+                    // 1-1. 현재 선택된 라디오 버튼의 data-actual-qty 업데이트
+                    const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
+                    if (selectedRadio) {
+                        selectedRadio.dataset.actualQty = newAccumulatedActualQty.toString();
+                    }
+
+                    // 1-2. "선택된 생산 계획 상세" 부분 업데이트
+                    displayCurrentActualQty.textContent = newAccumulatedActualQty; // 새 누적 실적 표시
+                    currentActualQtyHidden.value = newAccumulatedActualQty; // 숨겨진 필드 값도 업데이트
+
+                    const progressRate = (totalPlanQty > 0) ? ((newAccumulatedActualQty / totalPlanQty) * 100).toFixed(1) : 0;
+                    displayProgressRate.textContent = `${progressRate}%`;
+
+                    // 1-3. 메인 테이블의 "실제 수량" 셀 업데이트 (선택 사항, 좀 더 복잡할 수 있음)
+                    if (selectedRadio) {
+                        const selectedRow = selectedRadio.closest('tr');
+                        const actualQtyCellInTable = selectedRow.cells[9]; // "실제 수량"이 10번째 컬럼(인덱스 9)이라고 가정
+                        if (actualQtyCellInTable) {
+                            actualQtyCellInTable.textContent = newAccumulatedActualQty;
+                        }
+                    }
+
+                    // 1-4. 일별 실적 목록 새로고침
+                    loadDailyActuals(planId);
+
+                    // 1-5. 실적 입력 폼의 특정 필드만 초기화
+                    actualQtyInput.value = ''; // 오늘 생산 수량 초기화
+                    defectQtyInput.value = '0'; // 불량 수량 기본값으로
+                    actualRemark.value = '';    // 비고 초기화
+                    // actualDateInput.value = `${year}-${month}-${day}`; // 필요하다면 날짜도 오늘로 리셋
+
                 })
                 .catch(error => {
                     console.error('실적 등록 중 오류 발생:', error);

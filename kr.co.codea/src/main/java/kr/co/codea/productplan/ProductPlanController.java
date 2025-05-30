@@ -34,6 +34,94 @@ public class ProductPlanController {
 		this.service = service;
 	}
 	
+	//작업지시 취소
+	@PostMapping("/api/cancel-work-orders")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> cancelWorkOrders(@RequestBody ProductPlanDTO dto) {
+	    Map<String, Object> response = new HashMap<>();
+	    if (dto.getPlanIds() == null || dto.getPlanIds().isEmpty()) {
+	        response.put("success", false);
+	        response.put("message", "선택된 생산 계획이 없습니다.");
+	        return ResponseEntity.badRequest().body(response);
+	    }
+
+	    try {
+	        String mrpok = "작업지시";
+	        String targetStatus = "자재계획완료";     
+
+	        int updatedCount = service.changePlansStatus(dto.getPlanIds(), mrpok, targetStatus);
+
+	        if (updatedCount > 0) {
+	            response.put("success", true);
+	            response.put("message", updatedCount + "개의 생산 계획에 대한 작업 지시가 취소되었습니다.");
+	            return ResponseEntity.ok(response);
+	        } else {
+	            response.put("success", false);
+	            response.put("message", "상태를 변경할 수 있는 생산 계획이 없거나, 이미 처리되었을 수 있습니다. (조건: " + mrpok + ")");
+
+	            return ResponseEntity.status(HttpStatus.OK).body(response); //
+	        }
+	        
+	        
+	    } catch (IllegalArgumentException e) {
+	        log.warn("작업 지시 생성 중 유효성 검사 오류: {}", e.getMessage());
+	        response.put("success", false);
+	        response.put("message", e.getMessage());
+	        return ResponseEntity.badRequest().body(response);
+	    } catch (Exception e) {
+	        log.error("작업 지시 생성 중 서버 오류 발생: {}", e.getMessage(), e);
+	        response.put("success", false);
+	        response.put("message", "작업 지시 생성 중 서버 오류가 발생했습니다.");
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+	    }
+	}
+	
+	
+	
+	//작업지시생성
+	@PostMapping("/api/issue-work-orders") //
+	@ResponseBody 
+	public ResponseEntity<Map<String, Object>> issueWorkOrders(@RequestBody ProductPlanDTO dto) {
+	    Map<String, Object> response = new HashMap<>();
+	    if (dto.getPlanIds() == null || dto.getPlanIds().isEmpty()) {
+	        response.put("success", false);
+	        response.put("message", "선택된 생산 계획이 없습니다.");
+	        return ResponseEntity.badRequest().body(response);
+	    }
+
+	    try {
+	        String mrpok = "자재계획완료";
+	        String targetStatus = "작업지시";     
+
+	        int updatedCount = service.changePlansStatus(dto.getPlanIds(), mrpok, targetStatus);
+
+	        if (updatedCount > 0) {
+	            response.put("success", true);
+	            response.put("message", updatedCount + "개의 생산 계획에 대한 작업 지시가 성공적으로 생성되었습니다.");
+	            return ResponseEntity.ok(response);
+	        } else {
+	            response.put("success", false);
+	            response.put("message", "상태를 변경할 수 있는 생산 계획이 없거나, 이미 처리되었을 수 있습니다. (조건: " + mrpok + ")");
+
+	            return ResponseEntity.status(HttpStatus.OK).body(response); //
+	        }
+	        
+	        
+	    } catch (IllegalArgumentException e) {
+	        log.warn("작업 지시 생성 중 유효성 검사 오류: {}", e.getMessage());
+	        response.put("success", false);
+	        response.put("message", e.getMessage());
+	        return ResponseEntity.badRequest().body(response);
+	    } catch (Exception e) {
+	        log.error("작업 지시 생성 중 서버 오류 발생: {}", e.getMessage(), e);
+	        response.put("success", false);
+	        response.put("message", "작업 지시 생성 중 서버 오류가 발생했습니다.");
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+	    }
+	}
+	
+	
+	
 	//품목검색 api
 	@GetMapping("/api/item/search")
 	@ResponseBody
