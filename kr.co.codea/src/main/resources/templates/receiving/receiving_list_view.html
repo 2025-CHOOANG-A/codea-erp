@@ -7,9 +7,9 @@
 		<div class="row mb-3 align-items-end">
 			<div class="col-auto filter-group">
 				<div class="btn-group" role="group" aria-label="분류 필터">
-					<a href="#" class="btn btn-outline-primary">전체</a>
-					<a href="#" class="btn btn-outline-primary">자재 입고</a>
-					<a href="#" class="btn btn-outline-primary">생산 입고</a>
+					<a th:href="@{/receiving/list(field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.isEmpty(itemType)} ? ' active' : ''">전체</a>
+					<a th:href="@{/receiving/list(itemType='원자재', field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(itemType, '원자재')} ? ' active' : ''">자재 입고</a>
+					<a th:href="@{/receiving/list(itemType='완제품', field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(itemType, '완제품')} ? ' active' : ''">생산 입고</a>
 				</div>
 			</div>
 			<div class="col-auto search-form">
@@ -17,16 +17,16 @@
 					<input type="hidden" name="itemType" th:value="${itemType}">
 					<div class="col-auto">
 						<select class="form-select" name="field">
-							<option value="inoutId">입고 번호</option>
-							<option value="inoutTime">입고 일자</option>
-							<option value="itemId">제품 코드</option>
-							<option value="itemName">제품명</option>
-							<option value="sourceDocHeaderId">발주 및 생산 번호</option>
-							<option value="sourceDocDetailId">발주 및 생산 일자</option>
-							<option value="whCode">창고 코드</option>
-							<option value="whName">창고명</option>
-							<option value="empNo">담당자 코드</option>
-							<option value="empName">담당자명</option>
+							<option value="inoutId" th:selected="${field} == 'inoutId'">입고 번호</option>
+							<option value="inoutTime" th:selected="${field} == 'inoutTime'">입고 일자</option>
+							<option value="itemId" th:selected="${field} == 'itemId'">제품 코드</option>
+							<option value="itemName" th:selected="${field} == 'itemName'">제품명</option>
+							<option value="docNo" th:selected="${field} == 'docNo'">발주 및 생산 번호</option>
+							<option value="docDate" th:selected="${field} == 'docDate'">발주 및 생산 일자</option>
+							<option value="whCode" th:selected="${field} == 'whCode'">창고 코드</option>
+							<option value="whName" th:selected="${field} == 'whName'">창고명</option>
+							<option value="empNo" th:selected="${field} == 'empNo'">담당자 코드</option>
+							<option value="empName" th:selected="${field} == 'empName'">담당자명</option>
 						</select>
 					</div>
 					<div class="col-auto">
@@ -51,23 +51,48 @@
 								<th>제품 코드</th>
 								<th>제품명</th>
 								<th>제품 구분</th>
-								<th>발주 및 생산 번호</th>
-								<th>발주 및 생산 일자</th>
+								<th:block th:if="${#strings.isEmpty(itemType)}">
+									<th>발주 및 생산 번호</th>
+									<th>발주 및 생산 일자</th>
+								</th:block>
+								<th:block th:if="${#strings.equals(itemType, '원자재')}">
+									<th>발주 번호</th>
+									<th>발주 일자</th>
+								</th:block>
+								<th:block th:if="${#strings.equals(itemType, '완제품')}">
+									<th>생산 번호</th>
+									<th>생산 일자</th>
+								</th:block>
 								<th>입고 수량</th>
 								<th>창고명</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr th:each = "n : ${list}" th:onclick="|location.href='/receiving/detail?inoutId=${n.inoutId}'|" style="cursor:pointer;">
+							<tr th:each = "n : ${list}" th:onclick="|location.href='/receiving/detail?inoutId=${n.inoutId}&sourceDocType=${n.sourceDocType}'|" style="cursor:pointer;">
 								<td>[[${n.inoutId}]]</td>	<!-- 입고 번호 -->
 								<td>[[${n.inoutTime.substring(0, 10)}]]</td>	<!-- 입고 일자 -->
 								<td>[[${n.itemCode}]]</td>	<!-- 제품 코드 -->
 								<td>[[${n.itemName}]]</td>	<!-- 제품명 -->
 								<td>[[${n.itemType}]]</td>	<!-- 제품 구분 -->
-								<td>[[${n.purchaseOrPlanNo}]]</td>	<!-- 발주 및 생산 번호 -->
-								<td>[[${n.purchaseOrPlanDate.substring(0, 10)}]]</td>	<!-- 발주 및 생산 일자 -->
+								<td>[[${n.docNo}]]</td>	<!-- 발주 및 생산 번호 -->
+								<td>[[${n.docDate.substring(0, 10)}]]</td>	<!-- 발주 및 생산 일자 -->
 								<td>[[${n.quantity}]]</td>	<!-- 입고 수량 -->
 								<td>[[${n.whName}]]</td>	<!-- 창고명 -->
+							</tr>
+							
+							<!-- 결과가 없을 때 -->
+							<tr th:if="${#lists.isEmpty(list)}">
+								<td colspan="11" class="text-center text-muted">
+									<span th:if="${!#strings.isEmpty(keyword)}">
+										검색 결과가 없습니다. 검색 조건을 확인하세요.
+									</span>
+									<span th:if="${#strings.isEmpty(keyword) and !#strings.isEmpty(itemType)}">
+										해당 분류에 등록된 데이터가 없습니다.
+									</span>
+									<span th:if="${#strings.isEmpty(keyword) and #strings.isEmpty(itemType)}">
+										현재 등록된 입고 데이터가 없습니다.
+									</span>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -77,6 +102,9 @@
 
 		<!-- Pagination & Register Button -->
 		<div class="row align-items-center">
+			<div th:if="${!#strings.isEmpty(keyword)}" class="col-auto">
+				<a th:href="@{/receiving/list}" class="btn btn-secondary">전체 목록</a>
+			</div>
 			<div class="col text-center">
 				<nav>
 					<ul class="pagination justify-content-center my-2" id="pagination">

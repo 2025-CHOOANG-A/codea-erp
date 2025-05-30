@@ -40,7 +40,7 @@ public class InventoryController {
 	}
 	
 	@GetMapping("/detail")
-	public String detailPage(@RequestParam("inventoryId") int inventoryId, Model m) {	// 재고 상세 페이지
+	public String detailPage(@RequestParam(name="inventoryId") int inventoryId, Model m) {	// 재고 상세 페이지
 		InventoryDTO detail = this.dao.inv_detail(inventoryId);
 		m.addAttribute("detail", detail);
 		
@@ -122,7 +122,7 @@ public class InventoryController {
 	}
 	
 	@GetMapping("/modify")
-	public String modifyPage(@RequestParam("inventoryId") int inventoryId, Model m) {	// 재고 수정 페이지
+	public String modifyPage(@RequestParam(name="inventoryId") int inventoryId, Model m) {	// 재고 수정 페이지
 		InventoryDTO mod = this.dao.inv_mod(inventoryId);
 		m.addAttribute("mod", mod);
 		

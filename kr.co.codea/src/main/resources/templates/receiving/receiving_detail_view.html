@@ -49,27 +49,52 @@
 						</tr>
 					</tbody>
 				</table>
-				<h6 class="fw-bold mt-4 mb-3">발주 정보</h6>
-				<table class="table table-bordered align-middle mb-4">
-					<tbody>
-						<tr>
-							<th scope="row">발주 번호</th>
-							<td th:text="${detail.purchaseCode}"></td>
-						</tr>
-						<tr>
-							<th scope="row">발주 일자</th>
-							<td th:text="${detail.purchaseDate}"></td>
-						</tr>
-						<tr>
-							<th scope="row">발주 수량</th>
-							<td th:text="${detail.orderQty}"></td>
-						</tr>
-						<tr>
-							<th scope="row">발주 금액</th>
-							<td th:text="${detail.purchaseCost}"></td>
-						</tr>
-					</tbody>
-				</table>
+				<div th:if="${detail.sourceDocType == 41}">
+					<h6 class="fw-bold mt-4 mb-3">발주 정보</h6>
+					<table class="table table-bordered align-middle mb-4">
+						<tbody>
+							<tr>
+								<th scope="row">발주 번호</th>
+								<td th:text="${detail.docNo}"></td>
+							</tr>
+							<tr>
+								<th scope="row">발주 일자</th>
+								<td th:text="${detail.docDate}"></td>
+							</tr>
+							<tr>
+								<th scope="row">발주 수량</th>
+								<td th:text="${detail.docQty}"></td>
+							</tr>
+							<tr>
+								<th scope="row">발주 금액</th>
+								<td th:text="${detail.docCost}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div th:if="${detail.sourceDocType == 43}">
+					<h6 class="fw-bold mt-4 mb-3">생산 지시 정보</h6>
+					<table class="table table-bordered align-middle mb-4">
+						<tbody>
+							<tr>
+								<th scope="row">생산 계획 번호</th>
+								<td th:text="${detail.docNo}"></td>
+							</tr>
+							<tr>
+								<th scope="row">생산 종료 일자</th>
+								<td th:text="${detail.docDate}"></td>
+							</tr>
+							<tr>
+								<th scope="row">생산 수량</th>
+								<td th:text="${detail.docQty}"></td>
+							</tr>
+							<tr>
+								<th scope="row">생산 금액</th>
+								<td th:text="${detail.docCost}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 				<h6 class="fw-bold mt-4 mb-3">입고 내역</h6>
 				<table class="table table-bordered align-middle mb-4">
 					<tbody>
