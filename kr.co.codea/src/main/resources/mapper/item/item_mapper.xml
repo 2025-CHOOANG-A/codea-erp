@@ -44,23 +44,20 @@ LEFT JOIN BUSINESS_PARTNER P
 LEFT JOIN COMMON_CODE CC 
   ON A.UNIT_CODE = CC.CODE_ID 
   AND CC.CODE_TYPE = 'UNIT_CODE'
-WHERE A.ITEM_TYPE = '완제품' 
   AND P.BP_TYPE = '고객사' 
   <where>
+    <if test="itemType != null and itemType != ''">
+      A.ITEM_TYPE = #{itemType}
+    </if>
     <if test="keyword != null and keyword != ''">
       AND (
-        A.ITEM_CODE LIKE CONCAT('%', #{keyword}, '%')
-        OR A.ITEM_TYPE LIKE CONCAT('%', #{keyword}, '%')
-        OR A.ITEM_CAT_L LIKE CONCAT('%', #{keyword}, '%')
-        OR A.ITEM_CAT_S LIKE CONCAT('%', #{keyword}, '%')
-        OR A.SPEC LIKE CONCAT('%', #{keyword}, '%')
-        OR A.REMARK LIKE CONCAT('%', #{keyword}, '%')
-        OR P.BP_CODE LIKE CONCAT('%', #{keyword}, '%')
-        OR P.BP_NAME LIKE CONCAT('%', #{keyword}, '%')
+        A.ITEM_NAME LIKE CONCAT('%', #{keyword}, '%')
+        OR A.ITEM_CODE LIKE CONCAT('%', #{keyword}, '%')
       )
     </if>
   </where>
 </select>
+    
 <!-- 제품 상세 정보 -->
 <select id="item_detail" parameterType="int" resultType="kr.co.codea.item.itemDTO">
 SELECT 
@@ -107,7 +104,7 @@ SELECT
   catS.CATEGORY_NAME AS ITEM_CAT_S_NAME
 FROM ITEM i
 LEFT JOIN ITEM_CATEGORY catL ON i.ITEM_CAT_L = catL.CATEGORY_ID
-LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
+LEFT JOIN ITEM_CATEGORY catS ON .ITEM_CAT_S = catS.CATEGORY_ID
 </select>
 
 <!-- 대분류만 뽑기 -->
@@ -141,10 +138,6 @@ LEFT JOIN ITEM_CATEGORY catS ON i.ITEM_CAT_S = catS.CATEGORY_ID
     <result property="itemCatS" column="ITEM_CAT_S"/>
     <result property="spec" column="SPEC"/>
     <result property="reMark" column="REMARK"/>
-    <result property="inventoryCode" column="INVENTORY_CODE"/>
-    <result property="currentQty" column="CURRENT_QTY"/>
-    <result property="whId" column="WH_ID"/>
-    <result property="whCode" column="WH_CODE"/>
     <result property="price" column="PRICE"/>
     <result property="unitCode" column="UNIT_CODE"/>
     <result property="Code" column="CODE"/>

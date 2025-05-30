@@ -184,23 +184,24 @@ document
         }
       }
 
-      // 페이지네이션 클릭
-      document
-        .getElementById("pagination")
-        .addEventListener("click", function (e) {
-          if (e.target.tagName !== "A") return;
-          e.preventDefault();
-          const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-          let page = e.target.getAttribute("data-page");
-          if (page === "prev") currentPage = Math.max(1, currentPage - 1);
-          else if (page === "next")
-            currentPage = Math.min(totalPages, currentPage + 1);
-          else currentPage = parseInt(page);
-          renderTable();
-          renderPagination();
-        });
+	  // 비고 모달 열기 함수 (비고 내용확인)
+	  function showRemarkModal(button) {
+	    const remark = button.getAttribute("data-remark"); // th:data-remark 사용 시 변환됨
+	    const modalBody = document.getElementById("remarkModalBody");
 
-      // 비고 내용 모달
+	    if (remark && remark.trim() !== "") {
+	      modalBody.textContent = remark;
+	    } else {
+	      modalBody.textContent = "비고 내용이 없습니다.";
+	    }
+
+	    // 부트스트랩 모달 열기
+	    const remarkModal = new bootstrap.Modal(document.getElementById("remarkModal"));
+	    remarkModal.show();
+	  }
+		 
+		/*
+      // 비고 내용 모달(초반)
       document
         .getElementById("productTableBody")
         .addEventListener("click", function (e) {
@@ -219,6 +220,7 @@ document
             location.href=""
           }
         });
+		*/
       // 추가 버튼
       document.getElementById("addBtn").addEventListener("click", function (e) {
         e.preventDefault();
@@ -226,4 +228,4 @@ document
         location.href = "/item/item_write";
       });
       // 최초 렌더링
-      //filterAndRender();
+      filterAndRender();

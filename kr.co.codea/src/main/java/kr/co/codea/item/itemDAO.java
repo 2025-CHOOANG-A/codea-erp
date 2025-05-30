@@ -14,8 +14,7 @@ public class itemDAO implements item_service{
 	
 	@Override
 	public List<itemDTO> item_select() { //제품목록 페이지  
-		List<itemDTO> item_list = this.mp.item_select();
-		
+		List<itemDTO> item_list = this.mp.item_select(); //검색 		
 		return item_list;
 	}
 
@@ -65,6 +64,7 @@ public class itemDAO implements item_service{
 	List<itemDTO> item_detail_list = this.mp.item_detail();	   	   
 	return item_detail_list;
    }
+   
    
 
 }

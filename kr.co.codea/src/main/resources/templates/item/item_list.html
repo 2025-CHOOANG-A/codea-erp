@@ -318,13 +318,42 @@
           onsubmit="return false;"
         >
          -->
+         <!-- 검색 Form (method=get, 전체 검색조건 포함) -->
+<select class="form-select" name="itemType" id="categoryFilter" style="max-width: 140px">
+  <option value="" th:selected="${itemType == null or itemType == ''}">전체</option>
+  <option th:each="type : ${itemTypes}"
+          th:value="${type}"
+          th:text="${type}"
+          th:selected="${type == itemType}">
+  </option>
+</select>
+
+  <!-- 키워드 입력창 -->
+  <input
+    type="text"
+    class="form-control"
+    id="search_input"
+    name="keyword"
+    th:value="${keyword}"
+    placeholder="제품명, 코드 등 검색"
+    style="flex: 1; min-width: 200px; max-width: 320px"
+  />
+
+  <!-- 검색 버튼 -->
+  <button type="submit" class="btn btn-primary">검색</button>
+</form>
+         
+         
+         <!-- 
           <select class="form-select" id="categoryFilter" style="max-width: 140px">
-            <option value="전체">전체</option>
-            <option value="제품">제품</option>
-            <option value="자재">자재</option>
+            <option value="">전체</option>
+            <option value="">완제품</option>
+            <option value="자재">원자재</option>
           </select>
+           -->
           <!-- 검색버튼 -->
           <!-- keyword= 검색 파라미터값 -->
+          <!--  
          <form class="d-flex" method="get" th:action="@{/item_list}"> 
           <input
             type="text"
@@ -337,7 +366,7 @@
           />
           <button type="button" class="btn btn-primary" id="searchBtn">검색</button>
         </form>
-
+        -->
         <!-- 테이블칼럼-->
         <div class="table-responsive">
           <table
@@ -346,38 +375,55 @@
           >
             <thead>
               <tr>
-                <th>재고번호</th>
+                <th>제품코드</th>
+                <th>제품구분</th>                
+                <th>제품명</th>
                 <th>대분류</th>
                 <th>소분류</th>
-                <th>제품코드</th>
-                <th>제품명</th>
                 <th>규격</th>
                 <th>단가</th>
-                <th>보유수량</th>
-                <th>재고창고</th>
-                <th>창고코드</th>
+                <th>단위</th>
                 <th>비고</th>
               </tr>
             </thead>
             <tbody id="productTableBody">
               <!-- JS로 데이터 렌더링 -->           
          <tr th:each="item : ${item_list}">
-         <td th:text="${item.itemCatL}"></td>
-         <td th:text="${item.itemCatS}"></td>      
          <td th:text="${item.itemCode}"></td>
+         <td th:text="${item.itemType}"></td>
          <td>        
-        <a
-           th:href="@{/item/item_detail(itemId=${item.itemId})}"
+        <a th:href="@{/item/item_detail(itemId=${item.itemId})}"
            th:text="${item.itemName}"></a>
          </td>
+         <td th:text="${item.itemCatL}"></td>
+         <td th:text="${item.itemCatS}"></td>      
          <td th:text="${item.spec}"></td>
          <td th:text="${item.price}"></td>
-         <td th:text="${item.currentQty}"></td>
-         <td th:text="${item.whId}"></td>
-         <td th:text="${item.whCode}"></td>
+         <td th:text="${item.unitcodeValue}"></td>
+  <td>
+  <button class="btn btn-outline-secondary btn-sm"
+          onclick="showRemarkModal(this)"
+          th:data-remark="${item.reMark}">내용 확인</button>
+</td>
+         <!-- 
          <td th:text="${item.reMark}"></td>      
+          -->
           </tr> 
             </tbody>
+            <div class="modal fade" id="remarkModal" tabindex="-1" aria-labelledby="remarkModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="remarkModalLabel">비고 내용</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+      <div class="modal-body" id="remarkModalBody">
+        <!-- JavaScript로 내용 삽입 -->
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
           </table>
         </div>
         <!-- Table Footer: Pagination & Add Button -->
@@ -394,6 +440,8 @@
         </div>
       </div>
     </main>
+
+
 
     <!-- Remark Modal -->
     <div
