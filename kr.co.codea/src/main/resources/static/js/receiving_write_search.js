@@ -1,22 +1,54 @@
-// 제품 검색
+// 날짜 선택
+const DateInput_se = document.getElementById('rec_sea_date');
+const today_se = new Date();
+const yyyy_se = today.getFullYear();
+const mm_se = String(today.getMonth() + 1).padStart(2, '0');
+const dd_se = String(today.getDate()).padStart(2, '0');
+const todayStr_se = `${yyyy_se}-${mm_se}-${dd_se}`;
+
+DateInput_se.max = todayStr_se;
+
+// 발주 및 제품 검색
+document.getElementById("sourceDocType").addEventListener("change", function(){
+	const sourceDocType = this.value;
+	const header = document.querySelectorAll(".rec_sea_header");
+	
+	if(sourceDocType == "41"){
+		header[0].textContent = "발주 번호";
+		header[1].textContent = "발주 일자";
+		header[2].textContent = "발주 수량";
+	}
+	else if(sourceDocType == "43"){
+		header[0].textContent = "생산 계획 번호";
+		header[1].textContent = "생산 일자";
+		header[2].textContent = "생산 수량";
+	}
+});
+
 document.getElementById("searchProductBtn").addEventListener("click", () => {
-	const modal = new bootstrap.Modal(document.getElementById("item_sea"));
+	const modal = new bootstrap.Modal(document.getElementById("rec_sea"));
 	modal.show();
 });
 
-document.getElementById("item_sea_form").addEventListener("submit", function(e){
+document.getElementById("rec_sea_form").addEventListener("submit", function(e){
 	e.preventDefault();
 	
-	const keyword = document.getElementById("item_sea_in").value.trim();
+	const sourceDocType = document.getElementById("sourceDocType").value;
+	const keyword = document.getElementById("rec_sea_date").value.trim();
 	const tbody = document.querySelector("#item_sea_table tbody");
 	tbody.innerHTML = "";
 	
-	fetch(`/inventory/searchItem?itemName=${encodeURIComponent(keyword)}`)
+	if(!sourceDocType){
+		tbody.innerHTML = `<tr><td colspan="6" class="text-center">옵션을 선택해 주세요.</td></tr>`;
+		return;
+	}
+	
+	fetch(`/receiving/searchItem?sourceDocType=${sourceDocType}&docDate=${encodeURIComponent(keyword)}`)
 	.then(aa => {
 		return aa.json();
 	}).then(bb => {
 		if(bb.length == 0){
-			tbody.innerHTML = `<tr><td colspan='6'>검색 결과가 없습니다.</td></tr>`;
+			tbody.innerHTML = `<tr><td colspan="6" class="text-center">검색 결과가 없습니다.</td></tr>`;
 			return;
 		}
 		else{
@@ -24,11 +56,11 @@ document.getElementById("item_sea_form").addEventListener("submit", function(e){
 				const tr = document.createElement("tr");
 				
 				tr.innerHTML = `
+					<td>${item.docNo}</td>
+					<td>${item.docDate.substring(0, 10)}</td>
 					<td>${item.itemCode}</td>
 					<td>${item.itemName}</td>
-					<td>${item.itemType}</td>
-					<td>${item.spec}</td>
-					<td>${item.code}</td>
+					<td>${item.docQty}</td>
 					<td>
 						<button type="button" class="btn btn-sm btn-primary select-product">선택</button>
 					</td>
@@ -36,19 +68,23 @@ document.getElementById("item_sea_form").addEventListener("submit", function(e){
 				
 				// 선택 버튼 클릭
 				tr.querySelector(".select-product").addEventListener("click", () => {
-					console.log(item.docDate);
 					document.getElementById("itemCode").value = item.itemCode;
 					document.getElementById("itemName").value = item.itemName;
 					document.getElementById("itemType").value = item.itemType;
 					document.getElementById("spec").value = item.spec;
 					document.getElementById("code").value = item.code;
+					document.getElementById("price").value = item.price;
+					document.getElementById("docNo").value = item.docNo;
+					document.getElementById("docDate").value = item.docDate.substring(0, 10);
+					document.getElementById("docQty").value = item.docQty;
+					document.getElementById("docCost").value = item.docCost;
+					document.getElementById("qty").value = item.qty;
 					
 					document.getElementById("itemId").value = item.itemId;	// itemId 저장
-					
-					load_qty();	// 재고 등록시 보유 수량 자동 입력을 위해 필요
+					document.getElementById("itemUnitCost").value = item.itemUnitCost;	// itemUnitCost 저장
 					
 					// 닫기
-					bootstrap.Modal.getInstance(document.getElementById("item_sea")).hide();
+					bootstrap.Modal.getInstance(document.getElementById("rec_sea")).hide();
 				});
 				
 				tbody.appendChild(tr);
@@ -99,9 +135,7 @@ document.getElementById("wh_sea_form").addEventListener("submit", function(e){
 					document.getElementById("whName").value = wh.whName;
 					
 					document.getElementById("whId").value = wh.whId;	// whId 저장
-					
-					load_qty();	// 재고 등록시 보유 수량 자동 입력을 위해 필요
-					
+
 					// 닫기
 					bootstrap.Modal.getInstance(document.getElementById("wh_sea")).hide();
 				});
@@ -153,7 +187,7 @@ document.getElementById("emp_sea_form").addEventListener("submit", function(e){
 					document.getElementById("empName").value = emp.empName;
 					document.getElementById("hp").value = emp.hp;
 					
-					document.getElementById("empNo").value = emp.empNo;	// empNo 저장
+					document.getElementById("empId").value = emp.empId;	// empId 저장
 					
 					// 닫기
 					bootstrap.Modal.getInstance(document.getElementById("emp_sea")).hide();

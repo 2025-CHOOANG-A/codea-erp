@@ -14,7 +14,6 @@ DateInput.readOnly = true;	// 날짜 선택 불가
 function load_qty(){
 	const itemId = document.getElementById("itemId").value;
 	const whId = document.getElementById("whId").value;
-	const empNo = document.getElementById("empNo").value;
 	const itemType = document.getElementById("itemType").value;
 	
 	if(itemId && whId && itemType){	// itemId, whId, itemType.value 값이 존재할 때		

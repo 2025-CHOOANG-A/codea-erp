@@ -13,7 +13,7 @@ public class ReceivingDTO {
 	// 입출고 시각, 제품 코드, 창고 코드, 비고, 기록 생성 시각, 수정 시각
 	String inoutTime, itemCode, whCode, remark, createdAt, updatedAt;
 	
-	// 단가
+	// 입출고 테이블 단가
 	double itemUnitCost;
 	
 	// 원천 문서 유형, 원천 문서 헤더 ID, 원천 문서 상세 ID, 담당자 ID
@@ -26,14 +26,17 @@ public class ReceivingDTO {
 	int purchaseId, purchaseDetailId;
 	
 	// 발주 및 생산 번호, 발주 및 생산 일자
-	String purchaseOrPlanNo, purchaseOrPlanDate;
+	String docNo, docDate;
 	
 	// 규격, 단위, 발주 금액, 담당자 코드, 담당자명, 담당자 전화번호
 	String spec, code, empNo, empName, Hp;
 	
-	// 단가, 발주 수량
-	int price, orderQty;
+	// 제품 단가, 발주 수량, 생산 지시 수량, 발주 및 생산 수량
+	int price, orderQty, actualQty, docQty;
 	
-	// 발주 금액, 입고 총액
-	double purchaseCost, inCost;
+	// 입고 총액, 발주 및 생산 금액
+	double inCost, docCost;
+	
+	// 가입고 수량
+	int qty;
 }
