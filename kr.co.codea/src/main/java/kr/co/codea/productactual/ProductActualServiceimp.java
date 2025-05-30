@@ -17,6 +17,10 @@ public class ProductActualServiceimp implements ProductActualService {
 		return mapper.productActualList(dto);
 	}
 
+	
+	
+	
+	//일일생산실적 등록
 	@Override
 	public void registerProductActual(ProductActualDTO dto) {
         if (dto.getPlanId() == null || dto.getPlanId().isEmpty()) {

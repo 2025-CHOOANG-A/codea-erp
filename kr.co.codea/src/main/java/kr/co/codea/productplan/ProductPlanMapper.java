@@ -7,10 +7,10 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface ProductPlanMapper {
-    ProductPlanDTO findByPlanIdAndStatus(@Param("planId") String planId, @Param("status") String status);
+    
+	int materialout(); //작업시작에 따른 자재출고 mrp가없음
+	ProductPlanDTO findByPlanIdAndStatus(@Param("planId") String planId, @Param("status") String status);
     int updateStatus(@Param("planId") String planId, @Param("targetStatus") String targetStatus);
-
-	
 	List<ProductPlanDTO> ProductPlanList(ProductPlanDTO dto);
 	int insertProductPlan(ProductPlanDTO dto); //insert
 	List<ProductPlanDTO> searchItem(String query); //item 검색 api

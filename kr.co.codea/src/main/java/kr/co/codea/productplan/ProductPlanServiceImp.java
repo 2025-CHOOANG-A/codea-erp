@@ -43,6 +43,15 @@ public class ProductPlanServiceImp implements ProductPlanService {
 	@Transactional // 여러 건을 업데이트하므로 트랜잭션 처리
 	public int changePlansStatus(List<String> planIds, String targetStatus, String mrpok) {
 	        int updatedCount = 0;
+	        
+	        if(targetStatus.equals("작업지시")) {
+	        	
+	        	
+	        } else {
+	        	
+	        	
+	        }
+	        
 	        for (String planId : planIds) {
 
 	            ProductPlanDTO plan = mapper.findByPlanIdAndStatus(planId, targetStatus); // 예시 메소드
