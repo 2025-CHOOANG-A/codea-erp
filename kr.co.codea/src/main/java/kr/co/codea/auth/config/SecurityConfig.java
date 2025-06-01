@@ -82,8 +82,8 @@ public class SecurityConfig {
 
                 // 인증 필요 경로 (일반 사용자 접근 가능)
                 .requestMatchers("/index", "/employee", "/purchase/employees/search",
-                        "/purchase/suppliers/search",
-                        "/purchase/items/search").authenticated()
+                        "/purchase/**",
+                        "/order/**").authenticated()
 
                 // 나머지 모든 요청은 인증 필요
                 //  .anyRequest().authenticated()

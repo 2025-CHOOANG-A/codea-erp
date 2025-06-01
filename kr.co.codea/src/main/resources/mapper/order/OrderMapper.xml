@@ -4,13 +4,15 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.order.OrderMapper">
 
-    <!-- 주문 리스트 조회 -->
     <select id="selectOrderList" resultType="kr.co.codea.order.OrderDto$OrderDetailView">
         SELECT
             oh.ORD_ID AS ordId,
+            od.ORD_DETAIL_ID AS ordDetailId, -- 추가: 주문 상세 ID (INOUT 테이블 기록 시 필요)
+            i.ITEM_ID AS itemId,           -- 추가: 품목 ID (INOUT 테이블 기록 시 필요)
             oh.ORD_CODE AS ordCode,
             oh.ORDER_DATE AS orderDate,
-            oh.REMARK AS remark,
+            oh.REMARK AS remark,            -- ORD_HEADER.REMARK
+            od.REMARK AS orderDetailRemark, -- ORD_DETAIL.REMARK (필요시 별도 alias 사용)
             oh.STATUS AS status,
             bp.BP_NAME AS bpName,
             i.ITEM_NAME AS productName,
@@ -35,17 +37,18 @@
         <if test="endDate != null and endDate != ''">
             AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
         </if>
-        ORDER BY oh.ORDER_DATE DESC, oh.ORD_ID, i.ITEM_NAME
+        ORDER BY oh.ORDER_DATE DESC, oh.ORD_ID, od.ORD_DETAIL_ID
         OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
     </select>
 
-    <!-- 주문 전체 개수 -->
     <select id="orderCount" resultType="int">
-        SELECT COUNT(*)
+        SELECT COUNT(DISTINCT oh.ORD_ID)
         FROM ORD_HEADER oh
         JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
-        JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
-        JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
+        <if test="keyword != null and keyword != ''">
+            JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
+            JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
+        </if>
         WHERE 1 = 1
         <if test="keyword != null and keyword != ''">
             AND (bp.BP_NAME LIKE '%' || #{keyword} || '%' OR i.ITEM_NAME LIKE '%' || #{keyword} || '%')
@@ -60,5 +63,35 @@
             AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
         </if>
     </select>
+
+    <insert id="insertProvisionalShipmentToInOut" parameterType="kr.co.codea.order.OrderDto$ProvisionalShipmentRequest">
+        INSERT INTO INOUT (
+            INOUT_TYPE,          -- 가출고 유형 (공통코드: 24)
+            ITEM_ID,
+            QUANTITY,
+            SOURCE_DOC_TYPE,     -- 주문 유형 (공통코드: 42)
+            SOURCE_DOC_HEADER_ID,
+            SOURCE_DOC_DETAIL_ID,
+            WH_ID,
+            EMP_ID,
+            REMARK
+        ) VALUES (
+            24,                  -- 가출고 공통 코드 ID
+            #{itemId},
+            #{quantity},
+            42,                  -- 주문(SO) 공통 코드 ID
+            #{ordId},
+            #{orderDetailId},
+            #{whId},
+            #{empId, jdbcType=NUMERIC},
+            #{remark, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateOrderHeaderStatus">
+        UPDATE ORD_HEADER
+        SET STATUS = '완료',
+            UPDATED_AT = SYSDATE WHERE ORD_ID = #{ordId}
+    </update>
 
 </mapper>

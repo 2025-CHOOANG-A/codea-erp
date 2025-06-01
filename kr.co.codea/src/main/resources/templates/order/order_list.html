@@ -68,12 +68,10 @@
 
 <h2>주문 목록</h2>
 
-<!-- 에러 메시지 표시 -->
 <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
     <span th:text="${errorMessage}"></span>
 </div>
 
-<!-- 검색 폼 -->
 <div class="search-form">
     <form class="row g-2" method="get" th:action="@{/order}">
         <div class="col-md-4">
@@ -102,7 +100,6 @@
     </form>
 </div>
 
-<!-- 검색 결과 요약 -->
 <div class="mb-3">
     <span class="text-muted">
         총 <strong th:text="${totalCount ?: 0}">0</strong>건 검색됨 
@@ -110,7 +107,6 @@
     </span>
 </div>
 
-<!-- 주문 목록 테이블 -->
 <table class="table table-bordered table-hover">
     <thead class="table-light">
     <tr>
@@ -126,20 +122,19 @@
     </tr>
     </thead>
     <tbody>
-    <!-- 데이터가 없는 경우 -->
     <tr th:if="${#lists.isEmpty(pagedOrderDetails.content)}">
         <td colspan="9" class="text-center text-muted py-4">
             검색 결과가 없습니다.
         </td>
     </tr>
     
-    <!-- 주문 데이터 표시 -->
     <th:block th:each="order, stat : ${pagedOrderDetails.content}">
-        <!-- 현재 주문이 이전 주문과 다른지 체크 (첫 번째 상세인지 확인) -->
         <th:block th:with="isFirstDetail=${stat.index == 0 or order.ordId != pagedOrderDetails.content[stat.index - 1]?.ordId}">
             
-            <tr th:attr="data-order-id=${order.ordId}">
-                <!-- 주문 헤더 정보 (모든 행에 셀은 출력하되 내용은 첫 번째에만) -->
+            <tr th:attr="data-order-id=${order.ordId}" 
+                th:data-order-detail-id="${order.ordDetailId}" 
+                th:data-item-id="${order.itemId}"
+                th:data-wh-id="${order.whId ?: ''}">
                 <td th:text="${isFirstDetail ? order.ordCode : ''}" class="order-header merged-cell" data-type="orderCode"></td>
                 <td th:text="${isFirstDetail ? order.bpName : ''}" class="order-header merged-cell" data-type="bpName"></td>
                 <td th:text="${isFirstDetail ? #temporals.format(order.orderDate, 'yyyy-MM-dd') : ''}" class="order-header merged-cell" data-type="orderDate"></td>
@@ -152,26 +147,27 @@
                           th:text="${order.status}"></span>
                 </td>
                 
-                <!-- 주문 상세 정보 (모든 행에 표시) -->
                 <td th:text="${order.productName}"></td>
                 <td th:text="${#numbers.formatInteger(order.orderQty, 0, 'COMMA')}" class="text-end"></td>
                 <td th:text="${order.stockQty != null ? #numbers.formatInteger(order.stockQty, 0, 'COMMA') : '-'}" class="text-end"></td>
                 <td th:text="${order.requiredDate != null ? #temporals.format(order.requiredDate, 'yyyy-MM-dd') : '-'}"></td>
                 <td class="text-center">
-                    <!-- 출고 버튼 (보유수량이 주문수량보다 크거나 같을 때만 활성화) -->
-                    <th:block th:if="${order.stockQty != null and order.stockQty >= order.orderQty}">
+                    <th:block th:if="${order.status != '완료' and order.status != '취소' and order.stockQty != null and order.stockQty >= order.orderQty}">
                         <button type="button" class="btn btn-primary btn-sm shipment-btn" 
-                                th:attr="data-order-id=${order.ordId}, 
+                                th:attr="data-order-id=${order.ordId},
+                                         data-order-detail-id=${order.ordDetailId},
+                                         data-item-id=${order.itemId},
+                                         data-wh-id=${order.whId ?: ''},
                                          data-product-name=${order.productName},
-                                         data-order-qty=${order.orderQty},
-                                         data-stock-qty=${order.stockQty}"
+                                         data-order-qty=${order.orderQty}"
                                 onclick="handleShipment(this)">
                             <i class="bi bi-truck"></i> 출고
                         </button>
                     </th:block>
-                    <th:block th:if="${order.stockQty == null or order.stockQty < order.orderQty}">
-                        <button type="button" class="btn btn-secondary btn-sm" disabled>
-                            <i class="bi bi-exclamation-triangle"></i> 재고부족
+                    <th:block th:if="${order.status == '완료' or order.status == '취소' or order.stockQty == null or order.stockQty < order.orderQty}">
+                        <button type="button" class="btn btn-secondary btn-sm" disabled
+                                th:text="${order.status == '완료'} ? '처리완료' : (${order.status == '취소'} ? '주문취소' : '재고부족')">
+                            재고부족
                         </button>
                     </th:block>
                 </td>
@@ -181,17 +177,14 @@
     </tbody>
 </table>
 
-<!-- 페이징 -->
 <div class="d-flex justify-content-center align-items-center pagination-wrapper">
     <nav th:if="${pagedOrderDetails.totalPages > 1}">
         <ul class="pagination mb-0">
-            <!-- 이전 페이지 -->
             <li class="page-item" th:classappend="${pagedOrderDetails.currentPage == 0} ? 'disabled'">
                 <a class="page-link" 
                    th:href="@{/order(page=${pagedOrderDetails.currentPage - 1}, keyword=${param.keyword}, status=${param.status}, startDate=${param.startDate}, endDate=${param.endDate})}">이전</a>
             </li>
             
-            <!-- 페이지 번호들 -->
             <li th:each="i : ${#numbers.sequence(0, pagedOrderDetails.totalPages - 1)}"
                 class="page-item" 
                 th:classappend="${pagedOrderDetails.currentPage == i} ? 'active'">
@@ -200,7 +193,6 @@
                    th:text="${i + 1}">1</a>
             </li>
             
-            <!-- 다음 페이지 -->
             <li class="page-item" th:classappend="${pagedOrderDetails.currentPage == pagedOrderDetails.totalPages - 1} ? 'disabled'">
                 <a class="page-link" 
                    th:href="@{/order(page=${pagedOrderDetails.currentPage + 1}, keyword=${param.keyword}, status=${param.status}, startDate=${param.startDate}, endDate=${param.endDate})}">다음</a>
@@ -209,189 +201,141 @@
     </nav>
 </div>
 
-<!-- 주문 등록 버튼 (하단에 배치) -->
 <div class="d-flex justify-content-end register-button">
     <a th:href="@{/order/register}" class="btn btn-success btn-lg">
         <i class="bi bi-plus-circle me-2"></i>주문 등록
     </a>
 </div>
 
-<!-- Bootstrap JavaScript (Optional - 필요시 사용) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- 커스텀 JavaScript -->
-<script>
-    // 페이지 로드 시 실행
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    
     document.addEventListener('DOMContentLoaded', function() {
-        // 테이블 rowspan 처리를 JavaScript로 수행
         processTableRowspan();
-        
-        // 출고 버튼 상태 업데이트
-        updateShipmentButtons();
-        
-        // 검색 폼 초기화 기능
-        const resetButton = document.getElementById('resetSearchForm');
-        if (resetButton) {
-            resetButton.addEventListener('click', function() {
-                document.querySelector('form').reset();
-                window.location.href = '/order';
-            });
-        }
-        
-        // 테이블 행 hover 효과
-        const tableRows = document.querySelectorAll('tbody tr');
-        tableRows.forEach(row => {
-            row.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = '#f8f9fa';
-            });
-            row.addEventListener('mouseleave', function() {
-                this.style.backgroundColor = '';
-            });
-        });
-        
-        // 숫자 포맷팅 확인 (이미 서버에서 처리되지만 클라이언트에서도 확인)
-        const numberCells = document.querySelectorAll('.text-end');
-        numberCells.forEach(cell => {
-            const text = cell.textContent.trim();
-            if (text !== '-' && !isNaN(text.replace(/,/g, ''))) {
-                cell.style.fontFamily = 'monospace';
-            }
-        });
     });
     
-    // 테이블 rowspan 처리 함수
     function processTableRowspan() {
         const tbody = document.querySelector('tbody');
         if (!tbody) return;
-        
         const rows = Array.from(tbody.querySelectorAll('tr'));
         if (rows.length === 0) return;
-        
-        // 주문 ID별로 그룹핑
         const orderGroups = {};
-        
-        rows.forEach((row, index) => {
+        rows.forEach((row) => {
             const orderId = row.getAttribute('data-order-id');
             if (!orderId) return;
-            
             if (!orderGroups[orderId]) {
                 orderGroups[orderId] = [];
             }
-            orderGroups[orderId].push({row, index});
+            orderGroups[orderId].push(row);
         });
-        
-        // 각 주문 그룹에 대해 rowspan 처리
         Object.values(orderGroups).forEach(group => {
             if (group.length <= 1) return;
-            
-            const firstRow = group[0].row;
+            const firstRow = group[0];
             const rowspan = group.length;
-            
-            // 첫 번째 행의 주문 헤더 셀들에 rowspan 적용
             const headerCells = firstRow.querySelectorAll('.order-header');
             headerCells.forEach(cell => {
                 cell.rowSpan = rowspan;
             });
-            
-            // 나머지 행들의 주문 헤더 셀들 숨기기
             for (let i = 1; i < group.length; i++) {
-                const row = group[i].row;
-                const headerCells = row.querySelectorAll('.order-header');
-                headerCells.forEach(cell => {
+                const row = group[i];
+                const cellsToHide = row.querySelectorAll('.order-header');
+                cellsToHide.forEach(cell => {
                     cell.style.display = 'none';
                 });
             }
         });
     }
     
-    // 출고 처리 함수
     function handleShipment(button) {
-        const orderId = button.getAttribute('data-order-id');
+        const ordId = button.getAttribute('data-order-id');
+        const orderDetailId = button.getAttribute('data-order-detail-id');
+        const itemId = button.getAttribute('data-item-id');
+        const whIdString = button.getAttribute('data-wh-id'); // 일단 문자열로 가져옵니다.
         const productName = button.getAttribute('data-product-name');
-        const orderQty = button.getAttribute('data-order-qty');
-        const stockQty = button.getAttribute('data-stock-qty');
+        const orderQty = parseInt(button.getAttribute('data-order-qty'));
+
+        console.log("버튼에서 읽은 data-wh-id 값:", whIdString);
+
+        if (whIdString == null || whIdString.trim() === '') {
+            alert('출고할 창고 정보(whId)가 설정되지 않았습니다. 버튼의 data-wh-id 속성 또는 백엔드 DTO 설정을 확인해주세요.');
+            button.disabled = false;
+            button.innerHTML = '<i class="bi bi-truck"></i> 출고';
+            return; 
+        }
         
-        // 확인 메시지
-        const message = `출고 처리하시겠습니까?\n\n제품명: ${productName}\n주문수량: ${Number(orderQty).toLocaleString()}개\n보유수량: ${Number(stockQty).toLocaleString()}개`;
+        const whId = whIdString;
+
+        const message = `다음 항목을 가출고 처리하고 주문을 완료하시겠습니까?\n\n제품명: ${productName}\n주문수량: ${orderQty.toLocaleString()}개\n창고ID: ${whId}`;
         
         if (confirm(message)) {
-            // 버튼 상태 변경 (로딩 상태)
             button.disabled = true;
             button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>처리중...';
             
-            // 실제 출고 처리 API 호출 (예시)
-            fetch('/api/shipment', {
+            const payload = {
+                ordId: ordId,
+                orderDetailId: orderDetailId,
+                itemId: itemId,
+                quantity: orderQty,
+                whId: whId
+            };
+            
+            console.log("서버로 전송할 payload:", payload);
+
+            fetch(/*[[@{/order/api/shipment}]]*/ '/order/api/shipment', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    orderId: orderId,
-                    productName: productName,
-                    orderQty: orderQty
-                })
+                body: JSON.stringify(payload)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errData => {
+                        throw new Error(errData.message || `서버 오류 (HTTP ${response.status})`);
+                    }).catch(() => {
+                        throw new Error(`서버 요청 실패 (HTTP ${response.status})`);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // 성공 시
-                    button.className = 'btn btn-success btn-sm';
-                    button.innerHTML = '<i class="bi bi-check-circle"></i> 완료';
-                    
-                    // 성공 알림
-                    alert('출고 처리가 완료되었습니다.');
-                    
-                    // 페이지 새로고침 또는 데이터 업데이트
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
+                    alert('가출고 처리 및 주문 완료 처리가 성공적으로 완료되었습니다.');
+                    location.reload();
                 } else {
-                    // 실패 시
-                    throw new Error(data.message || '출고 처리에 실패했습니다.');
+                    throw new Error(data.message || '알 수 없는 오류로 처리하지 못했습니다.');
                 }
             })
             .catch(error => {
-                console.error('출고 처리 오류:', error);
-                alert('출고 처리 중 오류가 발생했습니다: ' + error.message);
-                
-                // 버튼 상태 복원
+                console.error('가출고 처리 오류:', error);
+                alert('가출고 처리 중 오류가 발생했습니다: ' + error.message);
                 button.disabled = false;
                 button.innerHTML = '<i class="bi bi-truck"></i> 출고';
             });
+        } else {
+            button.disabled = false;
+            button.innerHTML = '<i class="bi bi-truck"></i> 출고';
         }
     }
     
-    // 출고 상태 확인 및 버튼 상태 업데이트
-    function updateShipmentButtons() {
-        const buttons = document.querySelectorAll('.shipment-btn');
-        buttons.forEach(button => {
-            const orderQty = parseInt(button.getAttribute('data-order-qty'));
-            const stockQty = parseInt(button.getAttribute('data-stock-qty'));
-            
-            // 재고 부족 시 버튼 비활성화
-            if (isNaN(stockQty) || stockQty < orderQty) {
-                button.disabled = true;
-                button.className = 'btn btn-secondary btn-sm';
-                button.innerHTML = '<i class="bi bi-exclamation-triangle"></i> 재고부족';
-            }
-        });
-    }
-    
-    // 검색 폼 유효성 검사
     function validateSearchForm() {
-        const startDate = document.querySelector('input[name="startDate"]').value;
-        const endDate = document.querySelector('input[name="endDate"]').value;
+        const startDateInput = document.querySelector('input[name="startDate"]');
+        const endDateInput = document.querySelector('input[name="endDate"]');
+        if (!startDateInput || !endDateInput) return true; 
+
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
         
         if (startDate && endDate && startDate > endDate) {
             alert('시작일이 종료일보다 늦을 수 없습니다.');
             return false;
         }
-        
         return true;
     }
     
-    // 검색 폼에 유효성 검사 추가
-    const searchForm = document.querySelector('form');
+    const searchForm = document.querySelector('.search-form form');
     if (searchForm) {
         searchForm.addEventListener('submit', function(e) {
             if (!validateSearchForm()) {
@@ -399,6 +343,8 @@
             }
         });
     }
+
+    /*]]>*/
 </script>
 
 </body>
