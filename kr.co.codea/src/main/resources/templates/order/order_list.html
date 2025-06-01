@@ -1,162 +1,309 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>주문목록</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .main-content {
-      padding: 2rem;
-    }
-
-    .status-badge {
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-
-    .status-임시 {
-      background: #f8d7da;
-      color: #842029;
-      border: 1px solid #f5c2c7;
-    }
-
-    .status-접수 {
-      background: #fff3cd;
-      color: #664d03;
-      border: 1px solid #ffecb5;
-    }
-
-    .status-진행중 {
-      background: #cff4fc;
-      color: #055160;
-      border: 1px solid #b6effb;
-    }
-
-    .status-완료 {
-      background: #d1e7dd;
-      color: #0f5132;
-      border: 1px solid #badbcc;
-    }
-
-    .status-취소 {
-      background: #e2e3e5;
-      color: #41464b;
-      border: 1px solid #d3d6d8;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>주문 목록</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* 테이블 셀 수직 정렬 */
+        .table td {
+            vertical-align: middle;
+        }
+        
+        /* 병합된 셀의 텍스트 중앙 정렬 */
+        .table .merged-cell {
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        /* 상태 배지 스타일 개선 */
+        .status-badge {
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+        }
+        
+        /* 검색 폼 여백 조정 */
+        .search-form {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* 페이징 여백 */
+        .pagination-wrapper {
+            margin: 2rem 0;
+        }
+        
+        /* 주문 등록 버튼 여백 */
+        .register-button {
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        /* 숨겨진 셀 스타일 */
+        .order-header[style*="display: none"] {
+            display: none !important;
+        }
+    </style>
 </head>
-<body>
+<body class="container mt-4">
 
-  <div class="top-bar d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-white">
-    <button class="btn btn-sm btn-outline-secondary" onclick="toggleSidebar()">☰</button>
-    <h3 class="fw-bold m-0">CodeA</h3>
-    <div></div>
-  </div>
+<h2>주문 목록</h2>
 
-  <div class="main-content">
-    <h4 class="fw-bold mb-3">주문 목록</h4>
+<!-- 에러 메시지 표시 -->
+<div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+    <span th:text="${errorMessage}"></span>
+</div>
 
-    <!-- 검색 필터 -->
-    <form method="get" th:action="@{/order}" class="d-flex gap-2 mb-3">
-      <input type="text" name="keyword" class="form-control" placeholder="주문코드/거래처명" th:value="${params['keyword']}" />
-      <select name="status" class="form-select">
-        <option value="" th:selected="${params['status'] == null}">전체</option>
-        <option value="임시" th:selected="${params['status'] == '임시'}">임시</option>
-        <option value="접수" th:selected="${params['status'] == '접수'}">접수</option>
-        <option value="진행중" th:selected="${params['status'] == '진행중'}">진행중</option>
-        <option value="완료" th:selected="${params['status'] == '완료'}">완료</option>
-        <option value="취소" th:selected="${params['status'] == '취소'}">취소</option>
-      </select>
-      <input type="date" name="startDate" class="form-control" th:value="${params['startDate']}" />
-      <input type="date" name="endDate" class="form-control" th:value="${params['endDate']}" />
-      <button type="submit" class="btn btn-primary">검색</button>
+<!-- 검색 폼 -->
+<div class="search-form">
+    <form class="row g-2" method="get" th:action="@{/order}">
+        <div class="col-md-4">
+            <input type="text" class="form-control" name="keyword" placeholder="거래처명 또는 제품명"
+                   th:value="${param.keyword}">
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="status">
+                <option value="">전체 상태</option>
+                <option value="임시" th:selected="${param.status == '임시'}">임시</option>
+                <option value="접수" th:selected="${param.status == '접수'}">접수</option>
+                <option value="진행중" th:selected="${param.status == '진행중'}">진행중</option>
+                <option value="완료" th:selected="${param.status == '완료'}">완료</option>
+                <option value="취소" th:selected="${param.status == '취소'}">취소</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="date" class="form-control" name="startDate" th:value="${param.startDate}">
+        </div>
+        <div class="col-md-2">
+            <input type="date" class="form-control" name="endDate" th:value="${param.endDate}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">검색</button>
+        </div>
     </form>
+</div>
 
-    <!-- 주문 목록 테이블 -->
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>주문코드</th>
-            <th>주문일</th>
-            <th class="text-start">거래처명</th>
-            <th class="text-end">총주문금액</th>
-            <th class="text-start">비고</th>
-            <th>상태</th>
-            <th>작업</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:if="${#lists.isEmpty(orderList)}">
-            <td colspan="7" class="text-center">조회된 주문이 없습니다.</td>
-          </tr>
-          <tr th:each="order : ${orderList}">
-            <td>
-              <a class="text-decoration-none fw-semibold text-primary"
-                 th:href="@{/order/{id}(id=${order.ordId})}"
-                 th:text="${order.ordCode}"></a>
-            </td>
-            <td th:text="${#dates.format(order.orderDate, 'yyyy-MM-dd')}"></td>
-            <td class="text-start" th:text="${order.bpName}"></td>
-            <td class="text-end" th:text="${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')}"></td>
-            <td class="text-start">
-              <span th:if="${order.remark != null and order.remark != ''}">O</span>
-              <span th:if="${order.remark == null or order.remark == ''}">-</span>
-            </td>
-            <td>
-              <span class="status-badge" th:classappend="'status-' + ${order.status}" th:text="${order.status}"></span>
-            </td>
-            <td>
-              <a th:href="@{/order/{id}(id=${order.ordId})}" class="btn btn-outline-secondary btn-sm">작업</a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<!-- 검색 결과 요약 -->
+<div class="mb-3">
+    <span class="text-muted">
+        총 <strong th:text="${totalCount ?: 0}">0</strong>건 검색됨 
+        (현재 페이지: <strong th:text="${currentPageSize ?: 0}">0</strong>건)
+    </span>
+</div>
 
-    <!-- 페이지네이션 + 등록 버튼 -->
-    <div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages > 0}">
-      <nav>
-        <ul class="pagination pagination-sm mb-0">
-          <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
-            <a class="page-link" th:href="@{/order(page=${currentPage - 1}, keyword=${params['keyword']}, status=${params['status']}, startDate=${params['startDate']}, endDate=${params['endDate']})}">&laquo;</a>
-          </li>
-          <li class="page-item" th:each="pageNum : ${#numbers.sequence(startPage, endPage)}"
-              th:classappend="${pageNum == currentPage} ? 'active'">
-            <a class="page-link"
-               th:href="@{/order(page=${pageNum}, keyword=${params['keyword']}, status=${params['status']}, startDate=${params['startDate']}, endDate=${params['endDate']})}"
-               th:text="${pageNum}"></a>
-          </li>
-          <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
-            <a class="page-link"
-               th:href="@{/order(page=${currentPage + 1}, keyword=${params['keyword']}, status=${params['status']}, startDate=${params['startDate']}, endDate=${params['endDate']})}">&raquo;</a>
-          </li>
+<!-- 주문 목록 테이블 -->
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+    <tr>
+        <th>주문코드</th>
+        <th>거래처</th>
+        <th>주문일</th>
+        <th>상태</th>
+        <th>제품명</th>
+        <th>주문수량</th>
+        <th>보유수량</th>
+        <th>납기일</th>
+        <th>비고</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- 데이터가 없는 경우 -->
+    <tr th:if="${#lists.isEmpty(pagedOrderDetails.content)}">
+        <td colspan="9" class="text-center text-muted py-4">
+            검색 결과가 없습니다.
+        </td>
+    </tr>
+    
+    <!-- 주문 데이터 표시 -->
+    <th:block th:each="order, stat : ${pagedOrderDetails.content}">
+        <!-- 현재 주문이 이전 주문과 다른지 체크 (첫 번째 상세인지 확인) -->
+        <th:block th:with="isFirstDetail=${stat.index == 0 or order.ordId != pagedOrderDetails.content[stat.index - 1]?.ordId}">
+            
+            <tr th:attr="data-order-id=${order.ordId}">
+                <!-- 주문 헤더 정보 (모든 행에 셀은 출력하되 내용은 첫 번째에만) -->
+                <td th:text="${isFirstDetail ? order.ordCode : ''}" class="order-header merged-cell" data-type="orderCode"></td>
+                <td th:text="${isFirstDetail ? order.bpName : ''}" class="order-header merged-cell" data-type="bpName"></td>
+                <td th:text="${isFirstDetail ? #temporals.format(order.orderDate, 'yyyy-MM-dd') : ''}" class="order-header merged-cell" data-type="orderDate"></td>
+                <td class="order-header merged-cell" data-type="status">
+                    <span th:if="${isFirstDetail}" class="badge status-badge" 
+                          th:classappend="${order.status == '완료'} ? 'bg-success' : 
+                                         (${order.status == '진행중'} ? 'bg-primary' : 
+                                         (${order.status == '접수'} ? 'bg-info' : 
+                                         (${order.status == '취소'} ? 'bg-danger' : 'bg-secondary')))"
+                          th:text="${order.status}"></span>
+                </td>
+                
+                <!-- 주문 상세 정보 (모든 행에 표시) -->
+                <td th:text="${order.productName}"></td>
+                <td th:text="${#numbers.formatInteger(order.orderQty, 0, 'COMMA')}" class="text-end"></td>
+                <td th:text="${order.stockQty != null ? #numbers.formatInteger(order.stockQty, 0, 'COMMA') : '-'}" class="text-end"></td>
+                <td th:text="${order.requiredDate != null ? #temporals.format(order.requiredDate, 'yyyy-MM-dd') : '-'}"></td>
+                <td th:text="${order.remark ?: '-'}"></td>
+            </tr>
+        </th:block>
+    </th:block>
+    </tbody>
+</table>
+
+<!-- 페이징 -->
+<div class="d-flex justify-content-center align-items-center pagination-wrapper">
+    <nav th:if="${pagedOrderDetails.totalPages > 1}">
+        <ul class="pagination mb-0">
+            <!-- 이전 페이지 -->
+            <li class="page-item" th:classappend="${pagedOrderDetails.currentPage == 0} ? 'disabled'">
+                <a class="page-link" 
+                   th:href="@{/order(page=${pagedOrderDetails.currentPage - 1}, keyword=${param.keyword}, status=${param.status}, startDate=${param.startDate}, endDate=${param.endDate})}">이전</a>
+            </li>
+            
+            <!-- 페이지 번호들 -->
+            <li th:each="i : ${#numbers.sequence(0, pagedOrderDetails.totalPages - 1)}"
+                class="page-item" 
+                th:classappend="${pagedOrderDetails.currentPage == i} ? 'active'">
+                <a class="page-link" 
+                   th:href="@{/order(page=${i}, keyword=${param.keyword}, status=${param.status}, startDate=${param.startDate}, endDate=${param.endDate})}" 
+                   th:text="${i + 1}">1</a>
+            </li>
+            
+            <!-- 다음 페이지 -->
+            <li class="page-item" th:classappend="${pagedOrderDetails.currentPage == pagedOrderDetails.totalPages - 1} ? 'disabled'">
+                <a class="page-link" 
+                   th:href="@{/order(page=${pagedOrderDetails.currentPage + 1}, keyword=${param.keyword}, status=${param.status}, startDate=${param.startDate}, endDate=${param.endDate})}">다음</a>
+            </li>
         </ul>
-      </nav>
-      <button class="btn btn-dark" onclick="goToOrderCreatePage()">주문 등록</button>
-    </div>
-    <div class="d-flex justify-content-end mt-3" th:if="${totalPages == 0}">
-      <button class="btn btn-dark" onclick="goToOrderCreatePage()">주문 등록</button>
-    </div>
-  </div>
+    </nav>
+</div>
 
-  <script>
-    function goToOrderCreatePage() {
-      if (confirm('주문 등록 페이지로 이동하시겠습니까?')) {
-        window.location.href = '/order/create';
-      }
-    }
+<!-- 주문 등록 버튼 (하단에 배치) -->
+<div class="d-flex justify-content-end register-button">
+    <a th:href="@{/order/register}" class="btn btn-success btn-lg">
+        <i class="bi bi-plus-circle me-2"></i>주문 등록
+    </a>
+</div>
 
-    function toggleSidebar() {
-      // 필요 시 구현
+<!-- Bootstrap JavaScript (Optional - 필요시 사용) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 커스텀 JavaScript -->
+<script>
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', function() {
+        // 테이블 rowspan 처리를 JavaScript로 수행
+        processTableRowspan();
+        
+        // 검색 폼 초기화 기능
+        const resetButton = document.getElementById('resetSearchForm');
+        if (resetButton) {
+            resetButton.addEventListener('click', function() {
+                document.querySelector('form').reset();
+                window.location.href = '/order';
+            });
+        }
+        
+        // 테이블 행 hover 효과
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+        
+        // 숫자 포맷팅 확인 (이미 서버에서 처리되지만 클라이언트에서도 확인)
+        const numberCells = document.querySelectorAll('.text-end');
+        numberCells.forEach(cell => {
+            const text = cell.textContent.trim();
+            if (text !== '-' && !isNaN(text.replace(/,/g, ''))) {
+                cell.style.fontFamily = 'monospace';
+            }
+        });
+    });
+    
+    // 테이블 rowspan 처리 함수
+    function processTableRowspan() {
+        const tbody = document.querySelector('tbody');
+        if (!tbody) return;
+        
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        if (rows.length === 0) return;
+        
+        // 주문 ID별로 그룹핑
+        const orderGroups = {};
+        
+        rows.forEach((row, index) => {
+            const orderId = row.getAttribute('data-order-id');
+            if (!orderId) return;
+            
+            if (!orderGroups[orderId]) {
+                orderGroups[orderId] = [];
+            }
+            orderGroups[orderId].push({row, index});
+        });
+        
+        // 각 주문 그룹에 대해 rowspan 처리
+        Object.values(orderGroups).forEach(group => {
+            if (group.length <= 1) return;
+            
+            const firstRow = group[0].row;
+            const rowspan = group.length;
+            
+            // 첫 번째 행의 주문 헤더 셀들에 rowspan 적용
+            const headerCells = firstRow.querySelectorAll('.order-header');
+            headerCells.forEach(cell => {
+                cell.rowSpan = rowspan;
+            });
+            
+            // 나머지 행들의 주문 헤더 셀들 숨기기
+            for (let i = 1; i < group.length; i++) {
+                const row = group[i].row;
+                const headerCells = row.querySelectorAll('.order-header');
+                headerCells.forEach(cell => {
+                    cell.style.display = 'none';
+                });
+            }
+        });
     }
-  </script>
+    
+    // rowspan 설정 함수
+    function setRowspan(row, rowspan) {
+        if (!row || rowspan <= 1) return;
+        
+        const cells = row.cells;
+        if (cells.length >= 4) {
+            // 주문코드, 거래처, 주문일, 상태 셀에 rowspan 적용
+            cells[0].rowSpan = rowspan;
+            cells[1].rowSpan = rowspan;
+            cells[2].rowSpan = rowspan;
+            cells[3].rowSpan = rowspan;
+        }
+    }
+    
+    // 검색 폼 유효성 검사
+    function validateSearchForm() {
+        const startDate = document.querySelector('input[name="startDate"]').value;
+        const endDate = document.querySelector('input[name="endDate"]').value;
+        
+        if (startDate && endDate && startDate > endDate) {
+            alert('시작일이 종료일보다 늦을 수 없습니다.');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // 검색 폼에 유효성 검사 추가
+    const searchForm = document.querySelector('form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            if (!validateSearchForm()) {
+                e.preventDefault();
+            }
+        });
+    }
+</script>
+
 </body>
 </html>

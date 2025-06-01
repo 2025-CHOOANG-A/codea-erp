@@ -1,63 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.order.OrderMapper">
-	<!-- 주문 목록 조회 -->
-	<select id="selectOrderList"
-		resultType="kr.co.codea.order.OrderDto" parameterType="map">
-		SELECT
-		oh.ORD_ID AS orderId,
-		oh.ORD_CODE AS ordCode,
-		oh.ORDER_DATE AS orderDate,
-		bp.BP_NAME AS bpName,
-		(
-		SELECT SUM(ORDER_QTY * UNIT_PRICE)
-		FROM ORD_DETAIL
-		WHERE ORD_ID = oh.ORD_ID
-		) AS totalAmount,
-		oh.REMARK AS remark,
-		oh.STATUS AS status
-		FROM ORD_HEADER oh
-		JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
-		WHERE 1 = 1
-		<if test="keyword != null and keyword != ''">
-			AND (oh.ORD_CODE LIKE '%' || #{keyword} || '%' OR bp.BP_NAME LIKE '%' ||
-			#{keyword} || '%')
-		</if>
-		<if test="status != null and status != ''">
-			AND oh.STATUS = #{status}
-		</if>
-		<if test="startDate != null and startDate != ''">
-			AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-		</if>
-		<if test="endDate != null and endDate != ''">
-			AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-		</if>
-		ORDER BY oh.ORDER_DATE DESC
-		OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
-	</select>
 
-	<!-- 총 개수 조회 -->
-	<select id="countOrders" resultType="int" parameterType="map">
-		SELECT COUNT(*)
-		FROM ORD_HEADER oh
-		JOIN BUSINESS_PARTNER bp ON oh.BP_ID
-		= bp.BP_ID
-		WHERE 1 = 1
-		<if test="keyword != null and keyword != ''">
-			AND (oh.ORD_CODE LIKE '%' || #{keyword} || '%' OR
-			bp.BP_NAME LIKE '%' ||
-			#{keyword} || '%')
-		</if>
-		<if test="status != null and status != ''">
-			AND oh.STATUS = #{status}
-		</if>
-		<if test="startDate != null and startDate != ''">
-			AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate},
-			'YYYY-MM-DD')
-		</if>
-		<if test="endDate != null and endDate != ''">
-			AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-		</if>
-	</select>
+    <!-- 주문 리스트 조회 -->
+    <select id="selectOrderList" resultType="kr.co.codea.order.OrderDto$OrderDetailView">
+        SELECT
+            oh.ORD_ID AS ordId,
+            oh.ORD_CODE AS ordCode,
+            oh.ORDER_DATE AS orderDate,
+            oh.REMARK AS remark,
+            oh.STATUS AS status,
+            bp.BP_NAME AS bpName,
+            i.ITEM_NAME AS productName,
+            od.ORDER_QTY AS orderQty,
+            inv.CURRENT_QTY AS stockQty,
+            od.REQUIRED_DELIVERY_DATE AS requiredDate
+        FROM ORD_HEADER oh
+        JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
+        JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
+        JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
+        LEFT JOIN INVENTORY inv ON od.ITEM_ID = inv.ITEM_ID
+        WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+            AND (bp.BP_NAME LIKE '%' || #{keyword} || '%' OR i.ITEM_NAME LIKE '%' || #{keyword} || '%')
+        </if>
+        <if test="status != null and status != ''">
+            AND oh.STATUS = #{status}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+        </if>
+        ORDER BY oh.ORDER_DATE DESC, oh.ORD_ID, i.ITEM_NAME
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <!-- 주문 전체 개수 -->
+    <select id="orderCount" resultType="int">
+        SELECT COUNT(*)
+        FROM ORD_HEADER oh
+        JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
+        JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
+        JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
+        WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+            AND (bp.BP_NAME LIKE '%' || #{keyword} || '%' OR i.ITEM_NAME LIKE '%' || #{keyword} || '%')
+        </if>
+        <if test="status != null and status != ''">
+            AND oh.STATUS = #{status}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+        </if>
+    </select>
 
 </mapper>

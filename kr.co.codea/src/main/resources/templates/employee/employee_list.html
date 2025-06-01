@@ -154,49 +154,7 @@
     </style>
 </head>
 <body>
-    <nav id="sidebar" class="sidebar">
-      <div class="sidebar-header">메뉴</div>
-      <div class="menu-title">기준정보관리</div>
-      <ul class="nav flex-column mb-2">
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/business-unit}">사업장관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/accounts}">거래처관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/warehouse}">창고관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/products}">제품관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/items}">품목관리</a></li>
-        <li class="nav-item">
-          <a class="nav-link active" th:href="@{/employee}">사원관리</a>
-        </li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/notice}">공지사항</a></li>
-      </ul>
-      <div class="menu-title">구매영업관리</div>
-      <ul class="nav flex-column mb-2">
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/purchase-orders}">발주관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/sales-orders}">주문관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/shipments}">출고관리</a></li>
-        <li class="nav-item">
-          <a class="nav-link" th:href="@{/placeholder/mrp}">자재소요량계산</a>
-        </li>
-      </ul>
-      <div class="menu-title">자재관리</div>
-      <ul class="nav flex-column mb-2">
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/receiving}">입고관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/inventory}">재고관리</a></li>
-      </ul>
-      <div class="menu-title">생산관리</div>
-      <ul class="nav flex-column mb-2">
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/production-plan}">생산계획</a></li>
-      </ul>
-    </nav>
-
-    <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="사이드바 열기/닫기">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-        <rect width="16" height="2" y="2" rx="1" /><rect width="16" height="2" y="7" rx="1" /><rect width="16" height="2" y="12" rx="1" />
-      </svg>
-    </button>
-
-    <header class="header">
-      <a th:href="@{/index}" style="text-decoration: none;"><span class="logo">CodeA</span></a>
-    </header>
+    <div th:replace="~{fragments/sidebar :: layout}"></div>
 
     <div class="main-content" id="mainContent">
       <div class="container-fluid">
