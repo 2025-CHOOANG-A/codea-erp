@@ -95,11 +95,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:if="${productionPlans.isEmpty()}" id="noDataRow">
+                        <tr th:if="${productActual.isEmpty()}" id="noDataRow">
                             <td colspan="14" class="text-center text-secondary">데이터가 없습니다.</td>
                         </tr>
-                        <th:block th:unless="${productionPlans.isEmpty()}">
-                            <tr th:each="plan, i : ${productionPlans}">
+                        <th:block th:unless="${productActual.isEmpty()}">
+                            <tr th:each="plan, i : ${productActual}">
                                 <td class="text-center">
                                     <input type="radio" name="selectedPlan" class="row-radio form-check-input"
                                            th:data-plan-id="${plan.planId}"
@@ -108,7 +108,7 @@
                                            th:data-status="${plan.status}"
                                            th:data-start-date="${plan.startDate}" th:data-due-date="${plan.dueDate}">
                                 </td>
-                                <td th:text="${i.size - i.index}"></td>
+                                <td th:text="${pageInfo.total - (pageInfo.pageNum - 1) * pageInfo.pageSize - i.index}"></td>
                                 <td th:text="${plan.planId}"></td>
                                 <td th:text="${plan.itemCode}"></td>
                                 <td th:text="${plan.itemName}"></td>
@@ -141,11 +141,84 @@
                 </table>
             </div>
 
-            <div class="table-footer-row flex justify-between items-center mt-4">
-                <nav>
-                    <ul id="pagination" class="pagination justify-content-center mb-0">
+<div class="table-footer-row d-flex justify-content-between align-items-center mt-4">
+<!--                 왼쪽: 목록 버튼
+                <div>
+                    <a href="/productplan" class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i> 목록
+                    </a>
+                </div> -->
+                
+                <!-- 가운데: 부트스트랩 페이징 - 항상 표시 -->
+                <nav aria-label="생산실적 페이지네이션" th:if="${pageInfo != null}">
+                    <ul class="pagination mb-0">
+                        <!-- 첫 페이지 -->
+                        <li class="page-item" th:classappend="${!pageInfo.hasPreviousPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/productactual(page=1, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:unless="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-double-left"></i> 처음
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-double-left"></i> 처음
+                            </span>
+                        </li>
+
+                        <!-- 이전 페이지 -->
+                        <li class="page-item" th:classappend="${!pageInfo.hasPreviousPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/productactual(page=${pageInfo.prePage}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:unless="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-left"></i> 이전
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-left"></i> 이전
+                            </span>
+                        </li>
+
+                        <!-- 페이지 번호들 -->
+                        <li class="page-item" 
+                            th:each="pageNum : ${pageInfo.navigatepageNums}"
+                            th:classappend="${pageNum == pageInfo.pageNum} ? 'active'">
+                            <a class="page-link" 
+                               th:href="@{/productactual(page=${pageNum}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:text="${pageNum}"
+                               th:unless="${pageNum == pageInfo.pageNum}">
+                            </a>
+                            <span class="page-link" th:if="${pageNum == pageInfo.pageNum}" th:text="${pageNum}"></span>
+                        </li>
+
+                        <!-- 다음 페이지 -->
+                        <li class="page-item" th:classappend="${!pageInfo.hasNextPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/productactual(page=${pageInfo.nextPage}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:unless="${!pageInfo.hasNextPage}">
+                                다음 <i class="bi bi-chevron-right"></i>
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasNextPage}">
+                                다음 <i class="bi bi-chevron-right"></i>
+                            </span>
+                        </li>
+
+                        <!-- 마지막 페이지 -->
+                        <li class="page-item" th:classappend="${!pageInfo.hasNextPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/productactual(page=${pageInfo.pages}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:unless="${!pageInfo.hasNextPage}">
+                                마지막 <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasNextPage}">
+                                마지막 <i class="bi bi-chevron-double-right"></i>
+                            </span>
+                        </li>
                     </ul>
                 </nav>
+
+<!--                 오른쪽: 등록 버튼
+                <div>
+                    <a href="#" class="btn btn-primary add-btn" data-bs-toggle="modal" data-bs-target="#productionPlanRegisterModal"
+                       data-mode="register">생산 계획 등록</a>
+                </div> -->
             </div>
 
             <div id="selectedPlanDetailAndActuals" class="p-3 border rounded-md shadow-lg bg-white mt-4"> <div class="d-flex justify-content-between align-items-center mb-2"> <h5 class="mb-0 text-primary-dark">선택된 생산 계획 상세</h5> </div>

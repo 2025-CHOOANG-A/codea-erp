@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.github.pagehelper.PageInfo;
+
 import jakarta.validation.Valid;
 
 
@@ -186,12 +188,41 @@ public class ProductPlanController {
 	    }
 	}
 	
+	//생산계획 페이징 엔드포인트
+	  @GetMapping("/page")
+    public String page(Model m, 
+                      ProductPlanDTO dto,
+                      @RequestParam(defaultValue = "1") int page,
+                      @RequestParam(defaultValue = "10") int size) {
+	 PageInfo<ProductPlanDTO> pageInfo = service.getpages(dto, page, size);
+	 
+     m.addAttribute("productionPlans",pageInfo.getList()); //페이징목록
+     m.addAttribute("pageInfo",pageInfo); //페이징 정보
+
+     m.addAttribute("searchDto", dto); 
+		
+     m.addAttribute("templateName", "productplan/productplan_list");
+     m.addAttribute("fragmentName", "contentFragment");
+     
+		return "productplan/productplan_default";
+	}
+	
+	
 	
 	//생산계획 리스트
 	@GetMapping
-	public String productPlanList(Model m, ProductPlanDTO dto) {
+	public String productPlanList(Model m, ProductPlanDTO dto,
+			@RequestParam(name = "page", defaultValue = "1") int page,
+			@RequestParam(name = "size", defaultValue = "10") int size
+			) {
+		
+		//페이징
+		PageInfo<ProductPlanDTO> pageInfo = service.getpages(dto, page, size);
+		
 		List<ProductPlanDTO> list = service.ProductPlanList(dto);
-        m.addAttribute("productionPlans", list);
+        m.addAttribute("productionPlans",pageInfo.getList()); //페이징목록
+        m.addAttribute("pageInfo",pageInfo); //페이징 정보
+
         m.addAttribute("searchDto", dto); 
 		
         m.addAttribute("templateName", "productplan/productplan_list");

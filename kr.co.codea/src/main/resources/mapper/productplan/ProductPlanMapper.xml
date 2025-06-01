@@ -65,9 +65,13 @@ VALUES (
 <!--아이템 코드 조회 api  -->
       <select id="searchItem" resultType="kr.co.codea.productplan.ProductPlanDTO"> 
         SELECT
-            ITEM_CODE, ITEM_NAME FROM
-            ITEM  <where>
+            ITEM_CODE, ITEM_NAME
+		FROM
+            ITEM 
+            <where>
+           ITEM_TYPE = '완제품'
             <if test="query != null and !query.isEmpty()">
+          AND
                 (LOWER(ITEM_CODE) LIKE '%' || LOWER(#{query}) || '%' OR
                  LOWER(ITEM_NAME) LIKE '%' || LOWER(#{query}) || '%')
             </if>

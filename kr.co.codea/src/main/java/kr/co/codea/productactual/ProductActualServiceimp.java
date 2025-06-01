@@ -4,6 +4,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+
+import kr.co.codea.productplan.ProductPlanDTO;
+
 @Service
 public class ProductActualServiceimp implements ProductActualService {
 	private final ProductActualMapper mapper;
@@ -49,6 +54,14 @@ public class ProductActualServiceimp implements ProductActualService {
 	@Override
 	public List<ProductActualDTO> getDailyActualsByPlanId(String planId) {
 		return mapper.getDailyActualsByPlanId(planId);
+	}
+
+	@Override
+	public PageInfo<ProductActualDTO> getpages(ProductActualDTO dto, int page, int size) {
+		PageHelper.startPage(page, size);
+		List<ProductActualDTO> list = mapper.productActualList(dto);
+		
+		return new PageInfo<>(list);
 	}
 
 }
