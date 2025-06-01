@@ -160,9 +160,50 @@
     document.getElementById("btnList").addEventListener("click", function () {
       alert("목록 페이지로 이동");
     });
+	
+	document.getElementById("btnEdit").addEventListener("click", function () {
+	  alert("수정 페이지로 이동");
+
+	  // 🔥 여기서 bomCode 가져오기
+	  const bomCode = document.getElementById("bomCode").value;
+
+	  if (bomCode) {
+	    location.href = "/bom/bom_edit?bomCode=" + bomCode;
+	  } else {
+	    alert("BOM 코드가 없습니다.");
+	  }
+	});
+	
+	
+	document.addEventListener("DOMContentLoaded", function () {
+	  const editBtn = document.getElementById("btnEdit");
+
+	  if (editBtn) {
+	    editBtn.addEventListener("click", function () {
+	      const bomCode = document.getElementById("bomCode").value;
+	      if (bomCode) {
+	        location.href = "/bom/bom_edit?bomCode=" + bomCode;
+	      } else {
+	        alert("BOM 코드가 없습니다.");
+	      }
+	    });
+	  }
+	});
+	/*
+	document.getElementById("btnEdit").addEventListener("click", function () {
+	  const bomCode = document.getElementById("bomCode").value;
+	  if (bomCode) {
+	       location.href = "/bom/bom_detail?bomCode=" + bomCode;
+	  } else {
+	    alert("BOM 코드가 없습니다.");
+	  }
+	});
+*/	
+/*
     document.getElementById("btnEdit").addEventListener("click", function () {
       alert("수정 페이지로 이동");
     });
+*/
     document
       .getElementById("btnDelete")
       .addEventListener("click", function () {

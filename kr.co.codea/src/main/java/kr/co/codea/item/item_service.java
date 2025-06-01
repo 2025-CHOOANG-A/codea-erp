@@ -21,10 +21,15 @@ public interface item_service {
 	    /*제품 상세 정보*/
         public List<itemDTO> item_detail(); //id로 경로 전송해서 띄우기 
 	    
-        
-	/*주문등록용 */     
+         
+	   /*주문등록용 */     
 	   int insert_item(itemDTO dto);//제품등록
 	 
-	    
+	    /*제품 수정, 삭제*/
+	   int update_item(itemDTO dto);
+	   int delete_item(String itemCode);
+	   
+	   /*수정, 삭제를 위해 불러옴*/
+	   public itemDTO select_item_by_code(String itemCode);
 	   
 }

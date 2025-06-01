@@ -265,6 +265,7 @@
         </form>
 
         <!-- Table -->
+        <!--  -->
         <div class="table-responsive">
           <table id="bomTable" class="table table-hover align-middle mb-0">
             <thead class="table-light">
@@ -273,64 +274,51 @@
                 <th scope="col">BOM 코드</th>
                 <th scope="col">제품 코드</th>
                 <th scope="col">제품 명</th>
-                <th scope="col">자재 코드</th>
-                <th scope="col">자재 명</th>
-                <th scope="col">규격</th>
-                <th scope="col">단위(EA)</th>
-                <th scope="col">단가</th>
-                <th scope="col">자재소요량</th>
-                <th scope="col">비고</th>
+                <th scope="col">자재 현황</th>
                 <th scope="col">내용 확인</th>
               </tr>
-    <tbody>
+  </thead>
+<tbody>
   <tr th:each="bom : ${select_bomList}">
-    <!-- 체크박스 -->
     <td><input type="checkbox" name="selected" th:value="${bom.bomCode}" /></td>
-
-    <!-- BOM 정보 출력 -->
-       <!-- 
     <td th:text="${bom.bomCode}">BOM_CODE</td>
-    <td th:text="${bom.productCode}">ITEM_CODE</td>
-    <td th:text="${bom.productName}">ITEM_NAME</td>
- -->
-    <!-- 자재 정보 출력 -->
-    <!-- 
-    <td th:text="${bom.materialCode}">MATERIAL_CODE</td>
-    <td th:text="${bom.materialName}">MATERIAL_NAME</td>
-    <td th:text="${bom.spec}">SPEC</td>
-    <td th:text="${bom.unit}">UNIT</td>
-    <td th:text="${#numbers.formatInteger(bom.price, 3, 'COMMA')}">PRICE</td>
-    <td th:text="${bom.qty}">QTY</td>
-    <td th:text="${bom.remark}">REMARK</td>
- -->
-    <!-- 상세 확인 버튼 -->
     <td>
-      <a th:href="@{/item/item_detail(id=${bom.itemId})}" class="btn btn-outline-primary btn-sm">
-        보기
+      <a th:href="@{/bom/bom_detail(bomCode=${bom.bomCode})}" th:text="${bom.productCode}">제품코드</a>
+    </td>
+    <td th:text="${bom.productName}">제품명</td>
+    <td>
+   <table class="table align-middle mb-0">
+   <thead class="table-light">
+   <tr align="center">
+   <th scope="col">자재 코드</th>
+   <th scope="col">자재 명</th>
+   <th scope="col">규격</th>
+   <th scope="col">단위(EA)</th>
+   <th scope="col">단가</th>
+   <th scope="col">자재소요량</th>
+   </tr>
+   </thead>
+   <tbody>
+   <!-- 반복문 -->
+   <tr align="center">
+    <td th:text="${bom.materialCode}">자재코드</td>
+    <td th:text="${bom.materialName}">자재명</td>
+    <td th:text="${bom.spec}">규격</td>
+    <td th:text="${bom.unitUnicode}">단위</td>
+    <td th:text="${#numbers.formatInteger(bom.price, 3, 'COMMA')}">단가</td>
+    <td th:text="${bom.quantity}">수량</td>
+   </tr>
+   <!-- 반복문 -->
+   </tbody>
+    </table>
+    </td>
+    <td>
+      <a th:href="@{/bom_detail(bomCode=${bom.bomCode})}" class="btn btn-outline-primary btn-sm">
+        확인
       </a>
     </td>
   </tr>
 </tbody>
-</table>
-        </div>
-
-        <!-- Table Footer: Paging & Add/Delete Button -->
-        <div class="table-footer-row">
-          <nav>
-            <ul id="pagination" class="pagination justify-content-center mb-0">
-              <!-- JS로 페이징 렌더링 -->
-            </ul>
-          </nav>
-          <div>
-            <a href="#" class="btn btn-success add-btn">추가</a>
-            <button type="button" class="btn btn-outline-danger delete-btn">
-              삭제
-            </button>
-          </div>
-        </div>
-      </div>
-    </main>
-
     <!-- Modal for Detail View -->
     <div
       class="modal fade"
@@ -362,6 +350,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-       <script src="/js/bom_list.js?v=1"></script>
+       <script src="/js/bom_list.js?v=3"></script>
   </body>
 </html>

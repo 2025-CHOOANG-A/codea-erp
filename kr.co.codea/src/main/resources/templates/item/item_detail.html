@@ -276,7 +276,7 @@
         <!-- 하단 버튼 -->
         <div class="btn-group-bottom">
           <a href="/item/item_list"  class="btn btn-outline-secondary">목록</a>
-          <a href="/item/item_modify" class="btn btn-outline-primary">수정</a>
+         <a th:href="@{/item/item_edite(itemCode=${item.itemCode})}" class="btn btn-outline-primary">수정</a>
           <a href="/item/item_list" class="btn btn-outline-danger">삭제</a>
         </div>
       </section>

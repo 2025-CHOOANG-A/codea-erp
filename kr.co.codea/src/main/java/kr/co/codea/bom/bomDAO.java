@@ -34,4 +34,69 @@ public class bomDAO implements bom_service{
 		return select_bomList;
 	}
 	
+	@Override
+	public bomDTO selectBomHeaderByCode(String bomCode) {
+		 return b_mp.selectBomHeaderByCode(bomCode);  
+	}
+	 
+	
+	//제품 상단조회
+	@Override
+	public List<bomDTO> selectBomHeaderByBomCode(String bomCode) {
+		 List<bomDTO> select_header_list = this.b_mp.selectBomProductByCode();
+		return select_header_list;
+	}
+	
+	//자재 하단 조회
+	@Override
+	public List<bomDTO> selectBomDetailByBomCode(String bomCode) {
+		List<bomDTO> select_detail_list = this.b_mp.selectBomProductByCode();
+		return select_detail_list;
+	}
+	
+	
+	//BOM등록
+	//Header(제품 조회 등록)
+    @Override
+    public int insert_bom_header(bomDTO dto) {
+    	return b_mp.insert_bom_header(dto);
+    }
+	   
+    //BOM 상세정보(디테일)
+	@Override
+    public int insert_bom_detail(bomDTO dto) {
+	  return b_mp.insert_bom_detail(dto);
+    }
+	
+	//BOM 전체삭제 
+   @Override
+    public int delete_bom_details(String bomCode) {
+    	return b_mp.delete_bom_details(bomCode);
+    }   
+ 
+   
+   
+   @Override
+   public int modify_bom_detail(bomDTO dto) {
+       int result = 0;
+
+       // 1. 기존 자재 전체 삭제
+       b_mp.delete_bom_details(dto.getBomCode());
+
+       // 2. 새 자재 목록 등록
+       if (dto.getMaterials() != null) {
+           for (bomDTO material : dto.getMaterials()) {
+               if (material.getMaterialCode() != null && !material.getMaterialCode().isBlank()) {
+                   material.setBomHeaderId(dto.getBomCode()); // 부모 BOM ID 세팅
+                   result += b_mp.insert_bom_detail(material); // 등록된 행 수 누적
+               }
+           }
+       }
+
+       return result; // 총 몇 건 등록됐는지 반환
+   }
+   
+   
+   
+   
 }
