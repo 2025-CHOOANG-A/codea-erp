@@ -197,49 +197,7 @@
   </head>
   <body>
     <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar collapsed">
-      <div class="sidebar-header">메뉴</div>
-      <div class="menu-title">기준정보관리</div>
-      <a class="nav-link" href="#">사업장관리</a>
-      <a class="nav-link" href="#">거래처관리</a>
-      <a class="nav-link" href="#">창고관리</a>
-      <a class="nav-link" href="#">제품관리</a>
-      <a class="nav-link" href="#">품목관리</a>
-      <a class="nav-link" href="#">사원관리</a>
-      <a class="nav-link" href="#">공지사항</a>
-      <div class="menu-title">구매영업관리</div>
-      <a class="nav-link" href="#">발주관리</a>
-      <a class="nav-link" href="#">주문관리</a>
-      <a class="nav-link" href="#">출고관리</a>
-      <a class="nav-link" href="#">자재소요량계산</a>
-      <div class="menu-title">자재관리</div>
-      <a class="nav-link" href="#">입고관리</a>
-      <a class="nav-link" href="#">재고관리</a>
-      <div class="menu-title">생산관리</div>
-      <a class="nav-link" href="#">생산계획</a>
-    </nav>
-
-    <!-- Header -->
-    <header class="header">
-      <button
-        class="sidebar-toggle-btn"
-        id="sidebarToggle"
-        aria-label="사이드바 열기/닫기"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="currentColor"
-          viewBox="0 0 16 16"
-        >
-          <rect width="16" height="2" y="2" rx="1" />
-          <rect width="16" height="2" y="7" rx="1" />
-          <rect width="16" height="2" y="12" rx="1" />
-        </svg>
-      </button>
-      <div class="logo">CodeA</div>
-    </header>
+    <div th:replace="~{fragments/sidebar :: layout}"></div>
 
     <!-- Main Content -->
     <main class="content">
