@@ -77,7 +77,8 @@
               <td th:text="${row.actualQty != null ? #numbers.formatInteger(row.actualQty, 0, 'COMMA') : '-'}"></td>
               <td><span th:text="${row.status != null ? row.status : '-'}" class="text-secondary fw-bold"></span></td>
               <td th:text="${row.empNo != null ? row.empNo : '-'}"></td>
-              <td th:text="${#temporals.format(row.createdAt, 'yyyy-MM-dd HH:mm')}"></td> <!-- 추가 -->
+              <td th:text="${row.createdAt != null ? #temporals.format(row.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+
               <td>
                 <button type="button" class="btn btn-outline-info btn-sm detail-btn"
                   th:data-detail="'담당자: ' + (${row.empName} != null ? ${row.empName} : '-')">상세</button>
@@ -107,7 +108,76 @@
           <button type="button" class="btn btn-outline-secondary btn-sm" id="requirementResetBtn">초기화</button>
         </form>
         <div id="requirementList">
-          <!-- 동적 소요량 계산 결과 테이블 삽입 위치 -->
+            <div class="table-responsive">
+    <table class="table table-bordered align-middle mb-0" id="requirementResultTable">
+      <thead>
+        <tr>
+          <th>NO</th>
+          <th>생산계획 번호</th> <!-- PLAN_ID -->
+          <th>제품 번호</th>    <!-- ITEM_ID -->
+          <th>제품 코드</th>    <!-- ITEM_CODE -->
+          <th>제품 명</th>      <!-- ITEM_NAME -->
+          <th>제품 타입</th>    <!-- ITEM_TYPE -->
+          <th>제품 가격</th>    <!-- DISPLAY_PRICE -->
+          <th>단위</th>        <!-- UNIT -->
+          <th>리드타임</th>    <!-- LEAD_TIME -->
+          <th>자재 코드</th>   <!-- CHILD_ID -->
+          <th>자재 소요 계수</th> <!-- QUANTITY -->
+          <th>자재 가격</th>   <!-- PRICE -->
+          <th>생산계획수량</th>  <!-- PLAN_QTY -->
+          <th>소요량</th>      <!-- REQUIRED_QTY -->
+          <th>사원번호</th>    <!-- EMP_NO -->
+          <th>상태</th>        <!-- STATUS -->
+          <th>현재재고</th>    <!-- CURRENT_QTY -->
+          <th>생산계획시작일</th> <!-- START_DATE -->
+          <th>생산완료계획일</th> <!-- DUE_DATE -->
+          <th>입고 시점</th>   <!-- REQUIRED_DATE -->
+          <th>발주 시점</th>   <!-- PLANNED_ORDERDATE -->
+          <th>납기일</th>      <!-- DDUE_DATE -->
+          <th>예상 금액</th>   <!-- EXPECTED_AMOUNT -->
+          <th>계산된 시간</th> <!-- SELECT_TIME -->
+          <th>비고</th>        <!-- REMARK -->
+          <th>확인</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr th:each="row : ${requirementResults}">
+  <td th:text="${row.planId}"></td>
+  <td th:text="${row.itemId}"></td>
+  <td th:text="${row.itemCode}"></td>
+  <td th:text="${row.itemName}"></td>
+  <td th:text="${row.itemType}"></td>
+  <td th:text="${row.displayPrice != null ? #numbers.formatInteger(row.displayPrice, 0, 'COMMA') : '-'}"></td>
+  <td th:text="${row.unit}"></td>
+  <td th:text="${row.leadTime}"></td>
+  <td th:text="${row.childId}"></td>
+  <td th:text="${row.quantity}"></td>
+  <td th:text="${row.price != null ? #numbers.formatInteger(row.price, 0, 'COMMA') : '-'}"></td>
+  <td th:text="${row.planQty != null ? #numbers.formatInteger(row.planQty, 0, 'COMMA') : '-'}"></td>
+  <td th:text="${row.requiredQty != null ? #numbers.formatInteger(row.requiredQty, 0, 'COMMA') : '-'}"></td>
+  <td th:text="${row.empNo}"></td>
+  <td th:text="${row.status}"></td>
+  <td th:text="${row.currentQty != null ? #numbers.formatInteger(row.currentQty, 0, 'COMMA') : '-'}"></td>
+  <td th:text="${row.startDate}"></td>
+  <td th:text="${row.dueDate}"></td>
+  <td th:text="${row.requiredDate}"></td>
+  <td th:text="${row.plannedOrderDate}"></td>
+  <td th:text="${row.ddueDate}"></td>
+  <td th:text="${row.expectedAmount != null ? #numbers.formatInteger(row.expectedAmount, 0, 'COMMA') : '-'}"></td>
+  <td th:text="${row.selectTime}"></td>
+  <td>
+    <span th:if="${row.remark != null}">
+      <button type="button" class="btn btn-outline-secondary btn-sm remark-btn" th:data-remark="${row.remark}">내용 확인</button>
+    </span>
+    <span th:if="${row.remark == null}">-</span>
+  </td>
+</tr>
+<tr th:if="${requirementResults == null or requirementResults.isEmpty()}">
+  <td colspan="25" class="text-center">데이터가 없습니다</td>
+</tr>
+      </tbody>
+    </table>
+  </div>
         </div>
         <div class="requirement-footer">
           <nav>
@@ -154,21 +224,111 @@
       }
     });
   });
+  
+
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+	  // === 생산계획표의 '확인' 미확인 → 계산완료 ===
+	  const calcBtn = document.getElementById("calcSelectedBtn");
+	  calcBtn.addEventListener("click", function () {
+	    const checked = Array.from(document.querySelectorAll('.row-check:checked'));
+	    if (checked.length === 0) {
+	      alert("계산할 생산계획을 선택하세요.");
+	      return;
+	    }
+
+	    // 1. 생산계획표에서 체크된 행의 '확인' 텍스트를 '계산완료'로 변경
+	    checked.forEach(cb => {
+	      // .row-check가 있는 tr에서 마지막 td(확인)
+	      const tr = cb.closest("tr");
+	      const confirmTd = tr.querySelector("td:last-child span");
+	      if(confirmTd) {
+	        confirmTd.classList.remove("text-secondary");
+	        confirmTd.classList.add("text-success");
+	        confirmTd.textContent = "계산완료";
+	      }
+	    });
+
+	    // 2. 소요량 계산 fetch
+	    const planIds = checked.map(cb => cb.value);
+
+	    fetch('/mrp/calculate', {
+	      method: 'POST',
+	      headers: { 'Content-Type': 'application/json' },
+	      body: JSON.stringify(planIds)
+	    })
+	    .then(res => {
+	      if (!res.ok) throw new Error('서버 오류');
+	      return res.json();
+	    })
+	    .then(data => renderRequirementResult(data))
+	    .catch(e => {
+	      alert("소요량 계산 결과를 불러오지 못했습니다.");
+	      console.error(e);
+	    });
+	  });
+
+	  // === 소요량 결과 표 동적 렌더링 ===
+	  function renderRequirementResult(data) {
+	    // NO: 역순 (ex. 3개면 3,2,1)
+	    const tbody = data && data.length ? data.map((row, i) => `
+	      <tr>
+	        <td>${data.length - i}</td>
+	        <td>${row.planId ?? '-'}</td>
+	        <td>${row.itemId ?? '-'}</td>
+	        <td>${row.itemCode ?? '-'}</td>
+	        <td>${row.itemName ?? '-'}</td>
+	        <td>${row.itemType ?? '-'}</td>
+	        <td>${row.displayPrice != null ? numberFormat(row.displayPrice) : '-'}</td>
+	        <td>${row.unit ?? '-'}</td>
+	        <td>${row.leadTime ?? '-'}</td>
+	        <td>${row.childId ?? '-'}</td>
+	        <td>${row.quantity ?? '-'}</td>
+	        <td>${row.price != null ? numberFormat(row.price) : '-'}</td>
+	        <td>${row.planQty != null ? numberFormat(row.planQty) : '-'}</td>
+	        <td>${row.requiredQty != null ? numberFormat(row.requiredQty) : '-'}</td>
+	        <td>${row.empNo ?? '-'}</td>
+	        <td>${row.status ?? '-'}</td>
+	        <td>${row.currentQty != null ? numberFormat(row.currentQty) : '-'}</td>
+	        <td>${row.startDate ?? '-'}</td>
+	        <td>${row.dueDate ?? '-'}</td>
+	        <td>${row.requiredDate ?? '-'}</td>
+	        <td>${row.plannedOrderDate ?? '-'}</td>
+	        <td>${row.ddueDate ?? '-'}</td>
+	        <td>${row.expectedAmount != null ? numberFormat(row.expectedAmount) : '-'}</td>
+	        <td>${row.selectTime ?? '-'}</td>
+	        <td>
+	          ${row.remark
+	            ? `<button type="button" class="btn btn-outline-secondary btn-sm remark-btn" data-remark="${row.remark}">내용 확인</button>`
+	            : '-'}
+	        </td>
+	        <td>
+	        <button type="button" class="btn btn-outline-primary btn-sm">확인</button>
+	        </td>
+	      </tr>
+	    `).join('') : `<tr><td colspan="27" class="text-center">데이터가 없습니다</td></tr>`;
+
+	    document.querySelector("#requirementResultTable tbody").innerHTML = tbody;
+	  }
+
+	  function numberFormat(num) {
+	    if (typeof num === 'string') num = Number(num);
+	    return num?.toLocaleString('ko-KR');
+	  }
+
+	  // === 비고 모달 이벤트는 기존대로 ===
 	  document.body.addEventListener("click", function (e) {
 	    if (e.target.classList.contains("remark-btn")) {
-	      // 버튼의 data-remark 속성에서 remark 값을 가져옴
 	      const remark = e.target.getAttribute("data-remark");
 	      document.getElementById("remarkModalBody").textContent = remark;
-	      // Bootstrap 모달 열기
 	      var modal = new bootstrap.Modal(document.getElementById("remarkModal"));
 	      modal.show();
 	    }
 	  });
 	});
 </script>
+
 <script th:src="@{/js/sidebar.js}"></script>
   </body>
 </html>
