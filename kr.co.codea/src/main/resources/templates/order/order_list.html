@@ -45,6 +45,23 @@
         .order-header[style*="display: none"] {
             display: none !important;
         }
+        
+        /* 출고 버튼 스타일 */
+        .shipment-btn {
+            min-width: 70px;
+            font-weight: 500;
+        }
+        
+        .shipment-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* 재고부족 버튼 스타일 */
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body class="container mt-4">
@@ -105,7 +122,7 @@
         <th>주문수량</th>
         <th>보유수량</th>
         <th>납기일</th>
-        <th>비고</th>
+        <th>출고작업</th>
     </tr>
     </thead>
     <tbody>
@@ -140,7 +157,24 @@
                 <td th:text="${#numbers.formatInteger(order.orderQty, 0, 'COMMA')}" class="text-end"></td>
                 <td th:text="${order.stockQty != null ? #numbers.formatInteger(order.stockQty, 0, 'COMMA') : '-'}" class="text-end"></td>
                 <td th:text="${order.requiredDate != null ? #temporals.format(order.requiredDate, 'yyyy-MM-dd') : '-'}"></td>
-                <td th:text="${order.remark ?: '-'}"></td>
+                <td class="text-center">
+                    <!-- 출고 버튼 (보유수량이 주문수량보다 크거나 같을 때만 활성화) -->
+                    <th:block th:if="${order.stockQty != null and order.stockQty >= order.orderQty}">
+                        <button type="button" class="btn btn-primary btn-sm shipment-btn" 
+                                th:attr="data-order-id=${order.ordId}, 
+                                         data-product-name=${order.productName},
+                                         data-order-qty=${order.orderQty},
+                                         data-stock-qty=${order.stockQty}"
+                                onclick="handleShipment(this)">
+                            <i class="bi bi-truck"></i> 출고
+                        </button>
+                    </th:block>
+                    <th:block th:if="${order.stockQty == null or order.stockQty < order.orderQty}">
+                        <button type="button" class="btn btn-secondary btn-sm" disabled>
+                            <i class="bi bi-exclamation-triangle"></i> 재고부족
+                        </button>
+                    </th:block>
+                </td>
             </tr>
         </th:block>
     </th:block>
@@ -191,6 +225,9 @@
     document.addEventListener('DOMContentLoaded', function() {
         // 테이블 rowspan 처리를 JavaScript로 수행
         processTableRowspan();
+        
+        // 출고 버튼 상태 업데이트
+        updateShipmentButtons();
         
         // 검색 폼 초기화 기능
         const resetButton = document.getElementById('resetSearchForm');
@@ -267,18 +304,77 @@
         });
     }
     
-    // rowspan 설정 함수
-    function setRowspan(row, rowspan) {
-        if (!row || rowspan <= 1) return;
+    // 출고 처리 함수
+    function handleShipment(button) {
+        const orderId = button.getAttribute('data-order-id');
+        const productName = button.getAttribute('data-product-name');
+        const orderQty = button.getAttribute('data-order-qty');
+        const stockQty = button.getAttribute('data-stock-qty');
         
-        const cells = row.cells;
-        if (cells.length >= 4) {
-            // 주문코드, 거래처, 주문일, 상태 셀에 rowspan 적용
-            cells[0].rowSpan = rowspan;
-            cells[1].rowSpan = rowspan;
-            cells[2].rowSpan = rowspan;
-            cells[3].rowSpan = rowspan;
+        // 확인 메시지
+        const message = `출고 처리하시겠습니까?\n\n제품명: ${productName}\n주문수량: ${Number(orderQty).toLocaleString()}개\n보유수량: ${Number(stockQty).toLocaleString()}개`;
+        
+        if (confirm(message)) {
+            // 버튼 상태 변경 (로딩 상태)
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>처리중...';
+            
+            // 실제 출고 처리 API 호출 (예시)
+            fetch('/api/shipment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderId: orderId,
+                    productName: productName,
+                    orderQty: orderQty
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 성공 시
+                    button.className = 'btn btn-success btn-sm';
+                    button.innerHTML = '<i class="bi bi-check-circle"></i> 완료';
+                    
+                    // 성공 알림
+                    alert('출고 처리가 완료되었습니다.');
+                    
+                    // 페이지 새로고침 또는 데이터 업데이트
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    // 실패 시
+                    throw new Error(data.message || '출고 처리에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('출고 처리 오류:', error);
+                alert('출고 처리 중 오류가 발생했습니다: ' + error.message);
+                
+                // 버튼 상태 복원
+                button.disabled = false;
+                button.innerHTML = '<i class="bi bi-truck"></i> 출고';
+            });
         }
+    }
+    
+    // 출고 상태 확인 및 버튼 상태 업데이트
+    function updateShipmentButtons() {
+        const buttons = document.querySelectorAll('.shipment-btn');
+        buttons.forEach(button => {
+            const orderQty = parseInt(button.getAttribute('data-order-qty'));
+            const stockQty = parseInt(button.getAttribute('data-stock-qty'));
+            
+            // 재고 부족 시 버튼 비활성화
+            if (isNaN(stockQty) || stockQty < orderQty) {
+                button.disabled = true;
+                button.className = 'btn btn-secondary btn-sm';
+                button.innerHTML = '<i class="bi bi-exclamation-triangle"></i> 재고부족';
+            }
+        });
     }
     
     // 검색 폼 유효성 검사
