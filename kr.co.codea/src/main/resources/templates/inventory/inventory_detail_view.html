@@ -41,7 +41,7 @@
 						</tr>
 						<tr>
 							<th scope="row">평균 단가</th>
-							<td th:text="${detail.averageCost}"></td>
+							<td th:text="${#numbers.formatInteger(detail.averageCost, 0, 'COMMA')} + ' 원'"></td>
 						</tr>
 						<tr>
 							<th scope="row">단위</th>

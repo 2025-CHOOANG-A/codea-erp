@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="kr.co.codea.receiving.ReceivingMapper">
+<mapper namespace="kr.co.codea.shipment.ShipmentMapper">
 
 <!-- 목록 페이지 -->
-<select id="rec_list" resultType="kr.co.codea.receiving.ReceivingDTO">
+<select id="ship_list" resultType="kr.co.codea.shipment.ShipmentDTO">
 SELECT A.INOUT_ID, A.INOUT_TIME, A.SOURCE_DOC_TYPE, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE,
 CASE
-	WHEN A.SOURCE_DOC_TYPE = 41 THEN C.PURCHASE_CODE
+	WHEN A.SOURCE_DOC_TYPE = 42 THEN C.ORD_CODE
 	WHEN A.SOURCE_DOC_TYPE = 43 THEN D.PLAN_ID
 END AS DOC_NO,
 CASE
-	WHEN A.INOUT_TYPE = 23 THEN C.PURCHASE_DATE
-	WHEN A.INOUT_TYPE = 22 THEN D.COMPLETION_DATE
+	WHEN A.INOUT_TYPE = 25 THEN C.ORDER_DATE
+	WHEN A.INOUT_TYPE = 26 THEN D.COMPLETION_DATE
 END AS DOC_DATE,
 A.QUANTITY, E.WH_CODE, E.WH_NAME, F.EMP_NO, F.EMP_NAME
 FROM INOUT A
 JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
-LEFT JOIN PURCHASE_HEADER C ON A.SOURCE_DOC_HEADER_ID = C.PURCHASE_ID AND A.SOURCE_DOC_TYPE = 41
+LEFT JOIN ORD_HEADER C ON A.SOURCE_DOC_HEADER_ID = C.ORD_ID AND A.SOURCE_DOC_TYPE = 42
 LEFT JOIN PRODUCTION_PLAN D ON TO_CHAR(A.SOURCE_DOC_HEADER_ID) = D.PLAN_ID AND A.SOURCE_DOC_TYPE = 43
 JOIN WAREHOUSE E ON A.WH_ID = E.WH_ID
 JOIN EMPLOYEE F ON A.EMP_ID = F.EMP_ID
 <where>
-	A.INOUT_TYPE IN (22, 23)
+	A.INOUT_TYPE IN (25, 26)
 	
 	<if test="sourceDocType != null and sourceDocType != ''">
 		AND A.SOURCE_DOC_TYPE = #{sourceDocType}
@@ -42,11 +42,11 @@ JOIN EMPLOYEE F ON A.EMP_ID = F.EMP_ID
 				AND B.ITEM_NAME LIKE '%' || #{keyword} || '%'
 			</when>
 			<when test="field.equals('docNo')">
-				AND (C.PURCHASE_CODE LIKE '%' || #{keyword} || '%' OR D.PLAN_ID LIKE '%' || #{keyword} || '%')
+				AND (C.ORD_CODE LIKE '%' || #{keyword} || '%' OR D.PLAN_ID LIKE '%' || #{keyword} || '%')
 			</when>
 			<when test="field.equals('docDate')">
 				AND (
-					TO_CHAR(C.PURCHASE_DATE, 'YYYY-MM-DD') LIKE '%' || #{keyword} || '%' OR TO_CHAR(C.PURCHASE_DATE, 'YYYYMMDD') LIKE '%' || #{keyword} || '%'
+					TO_CHAR(C.ORD_DATE, 'YYYY-MM-DD') LIKE '%' || #{keyword} || '%' OR TO_CHAR(C.ORD_DATE, 'YYYYMMDD') LIKE '%' || #{keyword} || '%'
 					OR TO_CHAR(D.COMPLETION_DATE, 'YYYY-MM-DD') LIKE '%' || #{keyword} || '%' OR TO_CHAR(D.COMPLETION_DATE, 'YYYYMMDD') LIKE '%' || #{keyword} || '%'
 				)
 			</when>
@@ -69,13 +69,13 @@ ORDER BY A.INOUT_ID DESC
 </select>
 
 <!-- 상세 페이지 -->
-<select id="rec_detail" resultType="kr.co.codea.receiving.ReceivingDTO">
+<select id="ship_detail" resultType="kr.co.codea.shipment.ShipmentDTO">
 SELECT A.INOUT_ID, A.INOUT_TIME, A.SOURCE_DOC_TYPE,
 B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, C.CODE, B.PRICE,
 
-<if test="sourceDocType == 41">
-	D.PURCHASE_CODE AS DOC_NO,
-	D.PURCHASE_DATE AS DOC_DATE,
+<if test="sourceDocType == 42">
+	D.ORD_CODE AS DOC_NO,
+	D.ORDER_DATE AS DOC_DATE,
 	E.ORDER_QTY AS DOC_QTY,
 	E.ORDER_QTY * E.UNIT_PRICE AS DOC_COST,
 </if>
@@ -86,7 +86,7 @@ B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, C.CODE, B.PRICE,
 	F.ACTUAL_QTY * B.PRICE AS DOC_COST,
 </if>
 
-A.QUANTITY, A.QUANTITY * A.ITEM_UNIT_COST AS IN_COST,
+A.QUANTITY, A.QUANTITY * A.ITEM_UNIT_COST AS OUT_COST,
 G.WH_CODE, G.WH_NAME,
 H.EMP_NO, H.EMP_NAME, H.HP,
 A.REMARK
@@ -95,9 +95,9 @@ FROM INOUT A
 JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
 JOIN COMMON_CODE C ON B.UNIT_CODE = C.CODE_ID
 
-<if test="sourceDocType == 41">
-	JOIN PURCHASE_HEADER D ON A.SOURCE_DOC_HEADER_ID = D.PURCHASE_ID
-	JOIN PURCHASE_DETAIL E ON D.PURCHASE_ID = E.PURCHASE_ID AND A.SOURCE_DOC_DETAIL_ID = E.PURCHASE_DETAIL_ID
+<if test="sourceDocType == 42">
+	JOIN ORD_HEADER D ON A.SOURCE_DOC_HEADER_ID = D.ORD_ID
+	JOIN ORD_DETAIL E ON D.ORD_ID = E.ORD_ID AND A.SOURCE_DOC_DETAIL_ID = E.ORD_DETAIL_ID
 </if>
 <if test="sourceDocType == 43">
 	JOIN PRODUCTION_PLAN F ON TO_CHAR(A.SOURCE_DOC_HEADER_ID) = F.PLAN_ID
@@ -109,13 +109,13 @@ WHERE A.INOUT_ID = #{inoutId} AND A.SOURCE_DOC_TYPE = #{sourceDocType}
 </select>
 
 <!-- 등록 페이지 제품 검색 -->
-<select id="rec_sea_item" resultType="kr.co.codea.receiving.ReceivingDTO">
+<select id="ship_sea_item" resultType="kr.co.codea.shipment.ShipmentDTO">
 SELECT A.INOUT_ID, A.INOUT_TIME, A.SOURCE_DOC_TYPE, A.SOURCE_DOC_HEADER_ID, A.SOURCE_DOC_DETAIL_ID,
 B.ITEM_ID, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, C.CODE, B.PRICE,
 
-<if test="sourceDocType == 41">
-	D.PURCHASE_CODE AS DOC_NO,
-	TO_CHAR(D.PURCHASE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS DOC_DATE,
+<if test="sourceDocType == 42">
+	D.ORD_CODE AS DOC_NO,
+	TO_CHAR(D.ORDER_DATE, 'YYYY-MM-DD HH24:MI:SS') AS DOC_DATE,
 	E.ORDER_QTY AS DOC_QTY,
 	E.ORDER_QTY * E.UNIT_PRICE AS DOC_COST,
 </if>
@@ -132,9 +132,9 @@ FROM INOUT A
 JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
 JOIN COMMON_CODE C ON B.UNIT_CODE = C.CODE_ID
 
-<if test="sourceDocType == 41">
-	JOIN PURCHASE_HEADER D ON A.SOURCE_DOC_HEADER_ID = D.PURCHASE_ID
-	JOIN PURCHASE_DETAIL E ON D.PURCHASE_ID = E.PURCHASE_ID AND A.SOURCE_DOC_DETAIL_ID = E.PURCHASE_DETAIL_ID
+<if test="sourceDocType == 42">
+	JOIN ORD_HEADER D ON A.SOURCE_DOC_HEADER_ID = D.ORD_ID
+	JOIN ORD_DETAIL E ON D.ORD_ID = E.ORD_ID AND A.SOURCE_DOC_DETAIL_ID = E.ORD_DETAIL_ID
 </if>
 <if test="sourceDocType == 43">
 	JOIN PRODUCTION_PLAN F ON TO_CHAR(A.SOURCE_DOC_HEADER_ID) = F.PLAN_ID
@@ -144,9 +144,9 @@ JOIN WAREHOUSE G ON A.WH_ID = G.WH_ID
 JOIN EMPLOYEE H ON A.EMP_ID = H.EMP_ID
 
 <where>
-A.INOUT_TYPE = 21
-	<if test="sourceDocType == 41">
-		AND TO_CHAR(D.PURCHASE_DATE, 'YYYY-MM-DD') LIKE '%' || #{docDate} || '%'
+A.INOUT_TYPE = 24
+	<if test="sourceDocType == 42">
+		AND TO_CHAR(D.ORDER_DATE, 'YYYY-MM-DD') LIKE '%' || #{docDate} || '%'
 	</if>
 	<if test="sourceDocType == 43">
 		AND TO_CHAR(F.COMPLETION_DATE, 'YYYY-MM-DD') LIKE '%' || #{docDate} || '%'
@@ -155,28 +155,28 @@ A.INOUT_TYPE = 21
 </select>
 
 <!-- 등록 페이지 창고 검색 -->
-<select id="rec_sea_wh" resultType="kr.co.codea.receiving.ReceivingDTO">
+<select id="ship_sea_wh" resultType="kr.co.codea.shipment.ShipmentDTO">
 SELECT WH_ID, WH_CODE, WH_NAME, ADDRESS, ADDRESS_DETAIL
 FROM WAREHOUSE
 WHERE WH_NAME LIKE '%' || #{whName} || '%'
 </select>
 
 <!-- 등록 페이지 담당자 검색 -->
-<select id="rec_sea_emp" resultType="kr.co.codea.receiving.ReceivingDTO">
+<select id="ship_sea_emp" resultType="kr.co.codea.shipment.ShipmentDTO">
 SELECT EMP_ID, EMP_NO, EMP_NAME, HP
 FROM EMPLOYEE
 WHERE EMP_NAME LIKE '%' || #{empName} || '%'
 </select>
 
-<!-- 입고 중복 체크 -->
-<select id="rec_check" resultType="int">
+<!-- 출고 중복 체크 -->
+<select id="ship_check" resultType="int">
 SELECT COUNT(*)
 FROM INOUT
-WHERE SOURCE_DOC_TYPE = #{sourceDocType} AND SOURCE_DOC_HEADER_ID = #{sourceDocHeaderId} AND ITEM_ID = #{itemId} AND INOUT_TYPE IN (22,23)
+WHERE SOURCE_DOC_TYPE = #{sourceDocType} AND SOURCE_DOC_HEADER_ID = #{sourceDocHeaderId} AND ITEM_ID = #{itemId} AND INOUT_TYPE IN (25,26)
 </select>
 
-<!-- 입고 등록 -->
-<insert id="rec_insert" parameterType="kr.co.codea.receiving.ReceivingDTO">
+<!-- 출고 등록 -->
+<insert id="ship_insert" parameterType="kr.co.codea.shipment.ShipmentDTO">
 INSERT INTO INOUT(INOUT_TIME, INOUT_TYPE, ITEM_ID, WH_ID, QUANTITY, ITEM_UNIT_COST, SOURCE_DOC_TYPE, SOURCE_DOC_HEADER_ID, SOURCE_DOC_DETAIL_ID, EMP_ID, REMARK, CREATED_AT)
 VALUES (SYSDATE, #{inoutType}, #{itemId}, #{whId}, #{quantity}, #{itemUnitCost}, #{sourceDocType}, #{sourceDocHeaderId}, #{sourceDocDetailId}, #{empId}, #{remark}, SYSDATE)
 </insert>

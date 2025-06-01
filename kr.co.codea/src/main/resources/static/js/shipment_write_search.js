@@ -1,5 +1,5 @@
 // 날짜 선택
-const DateInput_se = document.getElementById('rec_sea_date');
+const DateInput_se = document.getElementById('ship_sea_date');
 const today_se = new Date();
 const yyyy_se = today_se.getFullYear();
 const mm_se = String(today_se.getMonth() + 1).padStart(2, '0');
@@ -8,15 +8,15 @@ const todayStr_se = `${yyyy_se}-${mm_se}-${dd_se}`;
 
 DateInput_se.max = todayStr_se;
 
-// 발주 및 제품 검색
+// 주문 및 제품 검색
 document.getElementById("sourceDocType_sel").addEventListener("change", function(){
 	const sourceDocType = this.value;
-	const header = document.querySelectorAll(".rec_sea_header");
+	const header = document.querySelectorAll(".ship_sea_header");
 	
-	if(sourceDocType == "41"){
-		header[0].textContent = "발주 번호";
-		header[1].textContent = "발주 일자";
-		header[2].textContent = "발주 수량";
+	if(sourceDocType == "42"){
+		header[0].textContent = "주문 번호";
+		header[1].textContent = "주문 일자";
+		header[2].textContent = "주문 수량";
 	}
 	else if(sourceDocType == "43"){
 		header[0].textContent = "생산 계획 번호";
@@ -26,15 +26,15 @@ document.getElementById("sourceDocType_sel").addEventListener("change", function
 });
 
 document.getElementById("searchProductBtn").addEventListener("click", () => {
-	const modal = new bootstrap.Modal(document.getElementById("rec_sea"));
+	const modal = new bootstrap.Modal(document.getElementById("ship_sea"));
 	modal.show();
 });
 
-document.getElementById("rec_sea_form").addEventListener("submit", function(e){
+document.getElementById("ship_sea_form").addEventListener("submit", function(e){
 	e.preventDefault();
 	
 	const sourceDocType = document.getElementById("sourceDocType_sel").value;
-	const keyword = document.getElementById("rec_sea_date").value.trim();
+	const keyword = document.getElementById("ship_sea_date").value.trim();
 	const tbody = document.querySelector("#item_sea_table tbody");
 	tbody.innerHTML = "";
 	
@@ -43,7 +43,7 @@ document.getElementById("rec_sea_form").addEventListener("submit", function(e){
 		return;
 	}
 	
-	fetch(`/receiving/searchItem?sourceDocType=${sourceDocType}&docDate=${encodeURIComponent(keyword)}`)
+	fetch(`/shipment/searchItem?sourceDocType=${sourceDocType}&docDate=${encodeURIComponent(keyword)}`)
 	.then(aa => {
 		return aa.json();
 	}).then(bb => {
@@ -92,13 +92,13 @@ document.getElementById("rec_sea_form").addEventListener("submit", function(e){
 					document.getElementById("sourceDocHeaderId").value = item.sourceDocHeaderId;	// sourceDocHeaderId 저장
 					document.getElementById("sourceDocDetailId").value = item.sourceDocDetailId;	// sourceDocDetailId 저장
 					
-					if(item.sourceDocType == "41"){
-						docNoLabel.textContent = "발주 번호";
-						docDateLabel.textContent = "발주 일자";
-						docQtyLabel.textContent = "발주 수량";
-						docCostLabel.textContent = "발주 총액";
+					if(item.sourceDocType == "42"){
+						docNoLabel.textContent = "주문 번호";
+						docDateLabel.textContent = "주문 일자";
+						docQtyLabel.textContent = "주문 수량";
+						docCostLabel.textContent = "주문 총액";
 
-						inoutType.value = "23";
+						inoutType.value = "25";
 					}
 					if(item.sourceDocType == "43"){
 						docNoLabel.textContent = "생산 계획 번호";
@@ -106,11 +106,11 @@ document.getElementById("rec_sea_form").addEventListener("submit", function(e){
 						docQtyLabel.textContent = "생산 수량";
 						docCostLabel.textContent = "생산 총액";
 
-						inoutType.value = "22";
+						inoutType.value = "26";
 					}
 					
 					// 닫기
-					bootstrap.Modal.getInstance(document.getElementById("rec_sea")).hide();
+					bootstrap.Modal.getInstance(document.getElementById("ship_sea")).hide();
 				});
 				
 				tbody.appendChild(tr);
@@ -134,7 +134,7 @@ document.getElementById("wh_sea_form").addEventListener("submit", function(e){
 	const tbody = document.querySelector("#wh_sea_table tbody");
 	tbody.innerHTML = "";
 	
-	fetch(`/receiving/searchWh?whName=${encodeURIComponent(keyword)}`)
+	fetch(`/shipment/searchWh?whName=${encodeURIComponent(keyword)}`)
 	.then(aa => {
 		return aa.json();
 	}).then(bb => {
@@ -187,7 +187,7 @@ document.getElementById("emp_sea_form").addEventListener("submit", function(e){
 	const tbody = document.querySelector("#emp_sea_table tbody");
 	tbody.innerHTML = "";
 	
-	fetch(`/receiving/searchEmp?empName=${encodeURIComponent(keyword)}`)
+	fetch(`/shipment/searchEmp?empName=${encodeURIComponent(keyword)}`)
 	.then(aa => {
 		return aa.json();
 	}).then(bb => {

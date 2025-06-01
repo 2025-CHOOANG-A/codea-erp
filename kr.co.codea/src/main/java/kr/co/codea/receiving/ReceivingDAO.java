@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 
 @Service
 public class ReceivingDAO implements ReceivingService {
@@ -13,8 +12,8 @@ public class ReceivingDAO implements ReceivingService {
 	private ReceivingMapper mp;
 	
 	@Override
-	public List<ReceivingDTO> rec_list(String itemType, String field, String keyword) {	// 목록 페이지
-		List<ReceivingDTO> list = this.mp.rec_list(itemType, field, keyword);
+	public List<ReceivingDTO> rec_list(Integer sourceDocType, String field, String keyword) {	// 목록 페이지
+		List<ReceivingDTO> list = this.mp.rec_list(sourceDocType, field, keyword);
 		
 		return list;
 	}
@@ -45,5 +44,28 @@ public class ReceivingDAO implements ReceivingService {
 		List<ReceivingDTO> sea_emp = this.mp.rec_sea_emp(empName);
 		
 		return sea_emp;
+	}
+	
+	@Override
+	public String check(int sourceDocType, int sourceDocHeaderId, int itemId) {	// 입고 중복 체크
+		String msg = "";
+		
+		Integer rec_ck = this.mp.rec_check(sourceDocType, sourceDocHeaderId, itemId);
+		
+		if(rec_ck != null && rec_ck > 0) {	// 이미 등록이 되었을 경우
+			msg = "exist";
+		}
+		else {
+			msg = "ok";
+		}
+		
+		return msg;
+	}
+	
+	@Override
+	public Integer rec_insert(ReceivingDTO dto) {	// 입고 등록
+		int result = this.mp.rec_insert(dto);
+		
+		return result;
 	}
 }
