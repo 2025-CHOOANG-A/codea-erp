@@ -75,9 +75,27 @@
                     />
                 </div>
 
+                <!-- 페이지 크기 선택 추가 -->
+                <div class="flex items-center gap-2">
+                    <label for="pageSize" class="text-sm text-gray-700 whitespace-nowrap">페이지 크기:</label>
+                    <select name="size" id="pageSize" class="form-select" style="width: auto;">
+                        <option value="10" th:selected="${pageInfo?.pageSize == 10}">10개</option>
+                        <option value="20" th:selected="${pageInfo?.pageSize == 20}">20개</option>
+                        <option value="50" th:selected="${pageInfo?.pageSize == 50}">50개</option>
+                    </select>
+                </div>
+
                 <button id="searchBtn" type="submit" class="btn btn-primary ml-auto">검색</button>
             </form>
-
+			          <!-- 페이지 정보 표시 -->
+            <div class="d-flex justify-content-between align-items-center mb-3" th:if="${pageInfo != null}">
+                <div class="text-muted">
+                    <span th:text="|총 ${pageInfo.total}건 중 ${pageInfo.startRow}-${pageInfo.endRow}번째 표시|"></span>
+                </div>
+                <div class="text-muted">
+                    <span th:text="|${pageInfo.pageNum}/${pageInfo.pages} 페이지|"></span>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table
                     id="productionPlanTable"
@@ -111,7 +129,7 @@
                                 <td class="text-center">
                                     <input type="checkbox" class="row-checkbox form-check-input" th:data-plan-id="${plan.planId}">
                                 </td>
-                                <td th:text="${i.size - i.index}"></td>
+                                <td th:text="${pageInfo.total - (pageInfo.pageNum - 1) * pageInfo.pageSize - i.index}"></td>
                                 <td th:text="${plan.planId}"></td>
                                 <td th:text="${plan.itemCode}"></td>
                                 <td th:text="${plan.itemName}"></td>
@@ -144,22 +162,89 @@
                 </table>
             </div>
 
-            <div class="table-footer-row flex justify-between items-center mt-4">
-                <nav>
-                    <ul id="pagination" class="pagination justify-content-center mb-0">
+<div class="table-footer-row d-flex justify-content-between align-items-center mt-4">
+                <!-- 왼쪽: 목록 버튼 -->
+                <div>
+                    <a href="/productplan" class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i> 목록
+                    </a>
+                </div>
+                
+                <!-- 가운데: 부트스트랩 페이징 - 항상 표시 -->
+                <nav aria-label="생산계획 페이지네이션" th:if="${pageInfo != null}">
+                    <ul class="pagination mb-0">
+                        <!-- 첫 페이지 -->
+                        <li class="page-item" th:classappend="${!pageInfo.hasPreviousPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/productplan(page=1, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:unless="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-double-left"></i> 처음
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-double-left"></i> 처음
+                            </span>
+                        </li>
+
+                        <!-- 이전 페이지 -->
+                        <li class="page-item" th:classappend="${!pageInfo.hasPreviousPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/productplan(page=${pageInfo.prePage}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:unless="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-left"></i> 이전
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-left"></i> 이전
+                            </span>
+                        </li>
+
+                        <!-- 페이지 번호들 -->
+                        <li class="page-item" 
+                            th:each="pageNum : ${pageInfo.navigatepageNums}"
+                            th:classappend="${pageNum == pageInfo.pageNum} ? 'active'">
+                            <a class="page-link" 
+                               th:href="@{/productplan(page=${pageNum}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:text="${pageNum}"
+                               th:unless="${pageNum == pageInfo.pageNum}">
+                            </a>
+                            <span class="page-link" th:if="${pageNum == pageInfo.pageNum}" th:text="${pageNum}"></span>
+                        </li>
+
+                        <!-- 다음 페이지 -->
+                        <li class="page-item" th:classappend="${!pageInfo.hasNextPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/productplan(page=${pageInfo.nextPage}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:unless="${!pageInfo.hasNextPage}">
+                                다음 <i class="bi bi-chevron-right"></i>
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasNextPage}">
+                                다음 <i class="bi bi-chevron-right"></i>
+                            </span>
+                        </li>
+
+                        <!-- 마지막 페이지 -->
+                        <li class="page-item" th:classappend="${!pageInfo.hasNextPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/productplan(page=${pageInfo.pages}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, startDate=${searchDto.startDate}, endDate=${searchDto.endDate}, status=${searchDto.status}, empNo=${searchDto.empNo})}"
+                               th:unless="${!pageInfo.hasNextPage}">
+                                마지막 <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasNextPage}">
+                                마지막 <i class="bi bi-chevron-double-right"></i>
+                            </span>
+                        </li>
                     </ul>
                 </nav>
-                <div class="flex gap-2">
+
+                <!-- 오른쪽: 등록 버튼 -->
+                <div>
                     <a href="#" class="btn btn-primary add-btn" data-bs-toggle="modal" data-bs-target="#productionPlanRegisterModal"
                        data-mode="register">생산 계획 등록</a>
-                       
-<!--                     <button type="button" class="btn btn-outline-danger delete-btn">
-                        선택된 계획 삭제
-                    </button> -->
                 </div>
             </div>
-        </div>
-    </main>
+            </div>
+  
+       
+
 
 
     <div class="modal fade" id="productionPlanRegisterModal" tabindex="-1" aria-labelledby="productionPlanRegisterModalLabel" aria-hidden="true">
@@ -172,9 +257,9 @@
                 <div class="modal-body">
                     <form id="productionPlanForm">
                         <div class="mb-3">
-                            <label for="itemNameDisplay" class="form-label">품목</label>
+                            <label for="itemNameDisplay" class="form-label">완제품</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="itemNameDisplay" placeholder="선택된 품목명" readonly>
+                                <input type="text" class="form-control" id="itemNameDisplay" placeholder="선택된 완제품명" readonly>
                                 <input type="hidden" id="itemCode" name="itemCode">
                                 <button class="btn btn-primary" type="button" id="openItemSearchInputBtn">품목 검색</button>
                             </div>
@@ -294,8 +379,41 @@
             </div>
         </div>
     </div>
-
-
+    </main>
+ <!-- 페이징 검색 조건 유지를 위한 JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 폼 제출시 페이지를 1로 리셋
+            const filterForm = document.getElementById('filterForm');
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(filterForm);
+                const params = new URLSearchParams();
+                
+                // 검색 조건들 추가
+                for (let [key, value] of formData.entries()) {
+                    if (value.trim() !== '') {
+                        params.append(key, value);
+                    }
+                }
+                
+                // 검색시엔 항상 첫 페이지로
+                params.set('page', '1');
+                
+                // 페이지 이동
+                window.location.href = '/productplan?' + params.toString();
+            });
+            
+            // 페이지 크기 변경시 자동 검색
+            const pageSizeSelect = document.getElementById('pageSize');
+            pageSizeSelect.addEventListener('change', function() {
+                filterForm.dispatchEvent(new Event('submit'));
+            });
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script th:src="@{/js/productplan_list.js}"></script> 
-</div>
+
+
+  </div>

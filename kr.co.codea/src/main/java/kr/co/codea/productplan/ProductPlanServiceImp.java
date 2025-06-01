@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 @Service
 
 public class ProductPlanServiceImp implements ProductPlanService {
@@ -66,6 +69,14 @@ public class ProductPlanServiceImp implements ProductPlanService {
 	        }
 	        return updatedCount;
 	    }
+
+	@Override
+	public PageInfo<ProductPlanDTO> getpages(ProductPlanDTO dto, int page, int size) {
+		PageHelper.startPage(page, size);
+		List<ProductPlanDTO> list = mapper.ProductPlanList(dto);
+
+		return new PageInfo<>(list);
+	}
 	   
 
 }

@@ -39,6 +39,8 @@ dependencies {
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // MyBatis 프레임워크 연동
 	// implementation 'org.springframework.boot:spring-boot-starter-data-mongodb' // MongoDB
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11' // Oracle JDBC 드라이버
+	// Mybatis 페이징
+	implementation("com.github.pagehelper:pagehelper-spring-boot-starter:2.1.0")
     
     // ===== [세션 관리] =====
 	// implementation 'org.springframework.session:spring-session-core' // Spring 세션 기본 추상화
