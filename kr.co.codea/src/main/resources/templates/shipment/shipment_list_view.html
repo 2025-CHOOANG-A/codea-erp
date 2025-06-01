@@ -1,88 +1,121 @@
 <div th:fragment="view">
 
 <!-- Main Content -->
-<main class="container-fluid" style="padding-top:2rem; max-width: 1600px;">
-	<!-- Filter & Search -->
-	<div class="row mb-3 align-items-end">
-		<div class="col-auto">
-			<div class="btn-group" role="group" aria-label="분류 필터">
-				<input type="radio" class="btn-check" name="category" id="categoryAll" value="전체" checked>
-				<label class="btn btn-outline-secondary" for="categoryAll">전체</label>
-				<input type="radio" class="btn-check" name="category" id="category출고" value="출고">
-				<label class="btn btn-outline-secondary" for="category출고">출고</label>
-				<input type="radio" class="btn-check" name="category" id="category생산" value="생산">
-				<label class="btn btn-outline-secondary" for="category생산">생산</label>
+<div class="main-content" id="mainContent">
+	<div class="container-fluid py-4">
+		<!-- 분류 및 검색 -->
+		<div class="row mb-3 align-items-end">
+			<div class="col-auto filter-group">
+				<div class="btn-group" role="group" aria-label="분류 필터">
+					<a th:href="@{/shipment/list(field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.isEmpty(sourceDocType)} ? ' active' : ''">전체</a>
+					<a th:href="@{/shipment/list(sourceDocType=43, field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(sourceDocType, 43)} ? ' active' : ''">자재 출고</a>
+					<a th:href="@{/shipment/list(sourceDocType=42, field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(sourceDocType, 42)} ? ' active' : ''">제품 출고</a>
+				</div>
+			</div>
+			<div class="col-auto search-form">
+				<form class="row gx-2 gy-1 align-items-end" autocomplete="off">
+					<div class="col-auto">
+						<select class="form-select" name="field">
+							<option value="inoutId" th:selected="${field} == 'inoutId'">출고 번호</option>
+							<option value="inoutTime" th:selected="${field} == 'inoutTime'">출고 일자</option>
+							<option value="itemCode" th:selected="${field} == 'itemCode'">제품 코드</option>
+							<option value="itemName" th:selected="${field} == 'itemName'">제품명</option>
+							<option value="docNo" th:selected="${field} == 'docNo'">주문 및 생산 번호</option>
+							<option value="docDate" th:selected="${field} == 'docDate'">주문 및 생산 일자</option>
+							<option value="whCode" th:selected="${field} == 'whCode'">창고 코드</option>
+							<option value="whName" th:selected="${field} == 'whName'">창고명</option>
+							<option value="empNo" th:selected="${field} == 'empNo'">담당자 코드</option>
+							<option value="empName" th:selected="${field} == 'empName'">담당자명</option>
+						</select>
+					</div>
+					<div class="col-auto">
+						<input type="text" class="form-control" name="keyword" placeholder="Search..." style="min-width:160px;">
+					</div>
+					<div class="col-auto">
+						<button type="submit" class="btn btn-primary">검색</button>
+					</div>
+				</form>
 			</div>
 		</div>
-		<div class="col-auto flex-grow-1">
-			<form class="d-flex search-form" id="searchForm" autocomplete="off" onsubmit="return false;">
-				<select class="form-select" id="searchField" style="max-width:180px;">
-					<option value="출고번호">출고번호</option>
-					<option value="출고일">출고일</option>
-					<option value="제품코드">제품코드</option>
-					<option value="제품명">제품명</option>
-					<option value="주문번호">주문번호</option>
-					<option value="주문일자">주문일자</option>
-					<option value="고객사코드">고객사코드</option>
-					<option value="고객사명">고객사명</option>
-					<option value="창고코드">창고코드</option>
-					<option value="창고명">창고명</option>
-					<option value="담당자코드">담당자코드</option>
-					<option value="담당자명">담당자명</option>
-					<option value="담당자전화번호">담당자전화번호</option>
-				</select>
-				<input type="text" class="form-control" id="searchInput" placeholder="검색어 입력" style="max-width:220px;">
-				<button class="btn btn-primary" id="searchBtn" type="submit">검색</button>
-			</form>
-		</div>
-	</div>
 
-	<!-- Table -->
-	<div class="row justify-content-center">
-		<div class="col-12">
-			<div class="table-responsive" style="background:#fff; border-radius:0.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-				<table class="table table-bordered align-middle mb-0" id="outTable">
-					<thead class="table-light">
-						<tr>
-							<th style="width:40px;"><input type="checkbox" id="checkAll"></th>
-							<th>출고번호</th>
-							<th>출고일</th>
-							<th>제품코드</th>
-							<th>제품명</th>
-							<th>규격</th>
-							<th>단가</th>
-							<th>출고수량</th>
-							<th>단위</th>
-							<th>총액</th>
-							<th>분류</th>
-							<th>주문번호</th>
-							<th>주문일자</th>
-							<th>고객사명</th>
-							<th>창고명</th>
-							<th>담당자명</th>
-						</tr>
-					</thead>
-					<tbody id="outTableBody">
-						<!-- JS로 데이터 렌더링 -->
-					</tbody>
-				</table>
+		<!-- Table -->
+		<div class="row justify-content-center">
+			<div class="col-12">
+				<div class="table-responsive mb-2">
+					<table class="table table-bordered align-middle mb-0" id="stockTable">
+						<thead class="table-light">
+							<tr>
+								<th>출고 번호</th>
+								<th>출고 일자</th>
+								<th>제품 코드</th>
+								<th>제품명</th>
+								<th>제품 구분</th>
+								<th:block th:if="${#strings.isEmpty(sourceDocType)}">
+									<th>주문 및 생산 번호</th>
+									<th>주문 및 생산 일자</th>
+								</th:block>
+								<th:block th:if="${#strings.equals(sourceDocType, 42)}">
+									<th>주문 번호</th>
+									<th>주문 일자</th>
+								</th:block>
+								<th:block th:if="${#strings.equals(sourceDocType, 43)}">
+									<th>생산 번호</th>
+									<th>생산 일자</th>
+								</th:block>
+								<th>출고 수량</th>
+								<th>창고명</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each = "n : ${list}" th:onclick="|location.href='/shipment/detail?inoutId=${n.inoutId}&sourceDocType=${n.sourceDocType}'|" style="cursor:pointer;">
+								<td>[[${n.inoutId}]]</td>	<!-- 출고 번호 -->
+								<td>[[${n.inoutTime.substring(0, 10)}]]</td>	<!-- 출고 일자 -->
+								<td>[[${n.itemCode}]]</td>	<!-- 제품 코드 -->
+								<td>[[${n.itemName}]]</td>	<!-- 제품명 -->
+								<td>[[${n.itemType}]]</td>	<!-- 제품 구분 -->
+								<td>[[${n.docNo}]]</td>	<!-- 발주 및 생산 번호 -->
+								<td>[[${n.docDate.substring(0, 10)}]]</td>	<!-- 발주 및 생산 일자 -->
+								<td>[[${n.quantity}]]</td>	<!-- 출고 수량 -->
+								<td>[[${n.whName}]]</td>	<!-- 창고명 -->
+							</tr>
+							
+							<!-- 결과가 없을 때 -->
+							<tr th:if="${#lists.isEmpty(list)}">
+								<td colspan="11" class="text-center text-muted">
+									<span th:if="${!#strings.isEmpty(keyword)}">
+										검색 결과가 없습니다. 검색 조건을 확인하세요.
+									</span>
+									<span th:if="${#strings.isEmpty(keyword) and !#strings.isEmpty(sourceDocType)}">
+										해당 분류에 등록된 데이터가 없습니다.
+									</span>
+									<span th:if="${#strings.isEmpty(keyword) and #strings.isEmpty(sourceDocType)}">
+										현재 등록된 출고 데이터가 없습니다.
+									</span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<!-- Pagination & Register Button -->
+		<div class="row align-items-center">
+			<div th:if="${!#strings.isEmpty(keyword)}" class="col-auto">
+				<a th:href="@{/shipment/list}" class="btn btn-secondary">전체 목록</a>
+			</div>
+			<div class="col text-center">
+				<nav>
+					<ul class="pagination justify-content-center my-2" id="pagination">
+						<!-- JS로 페이지네이션 렌더링 -->
+					</ul>
+				</nav>
+			</div>
+			<div class="col-auto ms-auto">
+				<a href="/shipment/write" class="btn btn-success" id="ship_add">등록</a>
 			</div>
 		</div>
 	</div>
-
-	<!-- Pagination & Register Button -->
-	<div class="row align-items-center mt-3">
-		<div class="col">
-			<nav>
-				<ul class="pagination justify-content-center mb-0" id="pagination">
-					<!-- JS로 페이지네이션 렌더링 -->
-				</ul>
-			</nav>
-		</div>
-		<div class="col-auto">
-			<a href="#" class="btn btn-success" id="registerBtn">등록</a>
-		</div>
-	</div>
-</main>
+</div>
 
 </div>

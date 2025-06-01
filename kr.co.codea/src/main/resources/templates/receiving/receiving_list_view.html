@@ -7,19 +7,18 @@
 		<div class="row mb-3 align-items-end">
 			<div class="col-auto filter-group">
 				<div class="btn-group" role="group" aria-label="분류 필터">
-					<a th:href="@{/receiving/list(field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.isEmpty(itemType)} ? ' active' : ''">전체</a>
-					<a th:href="@{/receiving/list(itemType='원자재', field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(itemType, '원자재')} ? ' active' : ''">자재 입고</a>
-					<a th:href="@{/receiving/list(itemType='완제품', field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(itemType, '완제품')} ? ' active' : ''">생산 입고</a>
+					<a th:href="@{/receiving/list(field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.isEmpty(sourceDocType)} ? ' active' : ''">전체</a>
+					<a th:href="@{/receiving/list(sourceDocType=41, field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(sourceDocType, 41)} ? ' active' : ''">자재 입고</a>
+					<a th:href="@{/receiving/list(sourceDocType=43, field=${field}, keyword=${keyword})}" class="btn btn-outline-primary" th:classappend="${#strings.equals(sourceDocType, 43)} ? ' active' : ''">생산 입고</a>
 				</div>
 			</div>
 			<div class="col-auto search-form">
 				<form class="row gx-2 gy-1 align-items-end" autocomplete="off">
-					<input type="hidden" name="itemType" th:value="${itemType}">
 					<div class="col-auto">
 						<select class="form-select" name="field">
 							<option value="inoutId" th:selected="${field} == 'inoutId'">입고 번호</option>
 							<option value="inoutTime" th:selected="${field} == 'inoutTime'">입고 일자</option>
-							<option value="itemId" th:selected="${field} == 'itemId'">제품 코드</option>
+							<option value="itemCode" th:selected="${field} == 'itemCode'">제품 코드</option>
 							<option value="itemName" th:selected="${field} == 'itemName'">제품명</option>
 							<option value="docNo" th:selected="${field} == 'docNo'">발주 및 생산 번호</option>
 							<option value="docDate" th:selected="${field} == 'docDate'">발주 및 생산 일자</option>
@@ -51,15 +50,15 @@
 								<th>제품 코드</th>
 								<th>제품명</th>
 								<th>제품 구분</th>
-								<th:block th:if="${#strings.isEmpty(itemType)}">
+								<th:block th:if="${#strings.isEmpty(sourceDocType)}">
 									<th>발주 및 생산 번호</th>
 									<th>발주 및 생산 일자</th>
 								</th:block>
-								<th:block th:if="${#strings.equals(itemType, '원자재')}">
+								<th:block th:if="${#strings.equals(sourceDocType, 41)}">
 									<th>발주 번호</th>
 									<th>발주 일자</th>
 								</th:block>
-								<th:block th:if="${#strings.equals(itemType, '완제품')}">
+								<th:block th:if="${#strings.equals(sourceDocType, 43)}">
 									<th>생산 번호</th>
 									<th>생산 일자</th>
 								</th:block>
@@ -86,10 +85,10 @@
 									<span th:if="${!#strings.isEmpty(keyword)}">
 										검색 결과가 없습니다. 검색 조건을 확인하세요.
 									</span>
-									<span th:if="${#strings.isEmpty(keyword) and !#strings.isEmpty(itemType)}">
+									<span th:if="${#strings.isEmpty(keyword) and !#strings.isEmpty(sourceDocType)}">
 										해당 분류에 등록된 데이터가 없습니다.
 									</span>
-									<span th:if="${#strings.isEmpty(keyword) and #strings.isEmpty(itemType)}">
+									<span th:if="${#strings.isEmpty(keyword) and #strings.isEmpty(sourceDocType)}">
 										현재 등록된 입고 데이터가 없습니다.
 									</span>
 								</td>

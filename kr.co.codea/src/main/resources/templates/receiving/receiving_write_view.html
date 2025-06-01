@@ -5,8 +5,13 @@
 	<form autocomplete="off" id="frm" method="POST" action="/receiving/writeInsert">
 		<input type="hidden" id="itemId" name="itemId">
 		<input type="hidden" id="whId" name="whId">
-		<input type="hidden" id="empNo" name="empID">
+		<input type="hidden" id="empId" name="empId">
 		<input type="hidden" id="itemUnitCost" name="itemUnitCost">
+		<input type="hidden" id="inCost" name="inCost">
+		<input type="hidden" id="inoutType" name="inoutType">
+		<input type="hidden" id="sourceDocType" name="sourceDocType">
+		<input type="hidden" id="sourceDocHeaderId" name="sourceDocHeaderId">
+		<input type="hidden" id="sourceDocDetailId" name="sourceDocDetailId">
 		
 		<!-- 입고 정보 -->
 		<div class="mb-4">
@@ -17,7 +22,7 @@
 					<input type="text" class="form-control" value="입고 번호는 자동으로 생성됩니다." readonly style="background:#e9ecef;">
 				</div>
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="createdAt">입고 등록일자</label>
+					<label class="form-label mb-1" for="inoutTime">입고 등록일자</label>
 					<input type="date" id="inoutTime" class="form-control">
 				</div>
 			</div>
@@ -60,14 +65,14 @@
 		
 		<!-- 발주 정보 -->
 		<div class="mb-4">
-			<div class="form-section-title">발주 정보 <span class="text-danger">*</span></div>
+			<div class="form-section-title">발주 및 생산 계획 정보 <span class="text-danger">*</span></div>
 			<div class="row g-2 align-items-center mb-2">
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="docNo">발주 번호</label>
-					<input type="text" id="docNo" name="docNo" class="form-control" readonly style="background:#e9ecef;">
+					<label class="form-label mb-1" for="docNo">발주 및 생산 계획 번호</label>
+					<input type="text" id="docNo" name="sourceDocHeaderId" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="docDate">발주 일자</label>
+					<label class="form-label mb-1" for="docDate">발주 및 생산 일자</label>
 					<div class="input-group">
 						<input type="text" id="docDate" class="form-control" readonly style="background:#e9ecef;">
 						<button class="btn btn-outline-secondary" type="button" id="searchProductBtn">
@@ -78,11 +83,11 @@
 			</div>
 			<div class="row g-2 align-items-center mb-2">
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="docQty">발주 수량</label>
+					<label class="form-label mb-1" for="docQty">발주 및 생산 수량</label>
 					<input type="text" id="docQty" name="docQty" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="docCost">발주 총액</label>
+					<label class="form-label mb-1" for="docCost">발주 및 생산 총액</label>
 					<input type="text" id="docCost" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 			</div>
@@ -90,19 +95,19 @@
 		
 		<!-- 입고 정보 -->
 		<div class="mb-4">
-			<div class="form-section-title">입고 정보 <span class="text-danger">*</span></div>
+			<div class="form-section-title">입고 정보</div>
 			<div class="row g-2 align-items-center mb-2">
 				<div class="col-md-6">
 					<label class="form-label mb-1" for="qty">가입고 수량</label>
 					<input type="text" id="qty" name="qty" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 				<div class="col-md-6">
-					<label class="form-label mb-1" for="quantity">입고 수량</label>
+					<label class="form-label mb-1" for="quantity">입고 수량  <span class="text-danger">*</span></label>
 					<input type="text" id="quantity" name="quantity" class="form-control">
 				</div>
 				<div class="col-md-6">
 					<label class="form-label mb-1" for="inCost">입고 총액</label>
-					<input type="text" id="inCost" class="form-control" readonly style="background:#e9ecef;">
+					<input type="text" id="dis_inCost" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 			</div>
 		</div>
@@ -153,10 +158,15 @@
 			<textarea class="form-control" rows="3" id="remark" name="remark"></textarea>
 		</div>
 
+		<!-- 중복 체크 -->
+		<div class="d-flex justify-content-end mb-2">
+			<button type="button" class="btn btn-outline-success" id="reck" onclick="rec_check()">중복 체크</button>
+		</div>
+		
 		<!-- 버튼 -->
 		<div class="d-flex justify-content-end gap-2">
-			<button type="button" class="btn btn-primary" onclick="in_add()">등록</button>
-			<button type="button" class="btn btn-secondary" onclick="in_can()">취소</button>
+			<button type="button" class="btn btn-primary" onclick="rec_add()">등록</button>
+			<button type="button" class="btn btn-secondary" onclick="rec_can()">취소</button>
 		</div>
 	</form>
 </main>
@@ -172,7 +182,7 @@
 			<div class="modal-body">
 				<form class="mb-3" id="rec_sea_form" autocomplete="off">
 					<div class="input-group" style="max-width:600px;">
-						<select class="form-select" id="sourceDocType" style="width:50px;">
+						<select class="form-select" id="sourceDocType_sel" name="sourceDocType" style="width:50px;">
 							<option value="">발주 및 생산을 선택해주세요.</option>
 							<option value="41">발주</option>
 							<option value="43">생산 지시</option>
@@ -221,7 +231,7 @@
 				<div class="table-responsive">
 					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="wh_sea_table">
 						<thead class="table-light">
-							<tr>
+							<tr class="text-center">
 								<th>창고 코드</th>
 								<th>창고명</th>
 								<th>창고 주소</th>
@@ -256,7 +266,7 @@
 				<div class="table-responsive">
 					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="emp_sea_table">
 						<thead class="table-light">
-							<tr>
+							<tr class="text-center">
 								<th>담당자 코드</th>
 								<th>담당자명</th>
 								<th>전화번호</th>

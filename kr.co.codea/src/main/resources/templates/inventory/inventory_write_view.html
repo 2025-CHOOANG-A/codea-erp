@@ -50,6 +50,16 @@
 					<input type="text" id="spec" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 			</div>
+			<div class="row g-2 align-items-center mb-2">
+				<div class="col-md-6">
+					<label class="form-label mb-1" for="code">단위</label>
+					<input type="text" id="code" name="code" class="form-control" readonly style="background:#e9ecef;">
+				</div>
+				<div class="col-md-6">
+					<label class="form-label mb-1" for="price">단가</label>
+					<input type="text" id="price" class="form-control" readonly style="background:#e9ecef;">
+				</div>
+			</div>
 		</div>
 		
 		<!-- 창고 정보 -->
@@ -79,10 +89,6 @@
 				<div class="col-md-6">
  					<label class="form-label mb-1" for="currentQty">보유 수량</label>
 					<input type="number" id="currentQty" name="currentQty" class="form-control" min="0" readonly style="background:#e9ecef;">
-				</div>
-				<div class="col-md-6">
-					<label class="form-label mb-1" for="code">단위</label>
-					<input type="text" id="code" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 				<div class="form-text text-secondary fw-semibold mt-2"> ※ 제품과 창고 선택 시 보유 수량이 자동 입력됩니다.</div>
 			</div>
@@ -145,7 +151,7 @@
 				<div class="table-responsive">
 					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="item_sea_table">
 						<thead class="table-light">
-							<tr>
+							<tr class="text-center">
 								<th>제품 코드</th>
 								<th>제품명</th>
 								<th>제품 구분</th>
@@ -182,7 +188,7 @@
 				<div class="table-responsive">
 					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="wh_sea_table">
 						<thead class="table-light">
-							<tr>
+							<tr class="text-center">
 								<th>창고 코드</th>
 								<th>창고명</th>
 								<th>창고 주소</th>
@@ -217,7 +223,7 @@
 				<div class="table-responsive">
 					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="emp_sea_table">
 						<thead class="table-light">
-							<tr>
+							<tr class="text-center">
 								<th>담당자 코드</th>
 								<th>담당자명</th>
 								<th>전화번호</th>

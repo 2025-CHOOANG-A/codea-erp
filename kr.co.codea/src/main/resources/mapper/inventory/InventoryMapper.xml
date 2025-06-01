@@ -55,9 +55,9 @@ JOIN COMMON_CODE E ON B.UNIT_CODE = E.CODE_ID
 WHERE A.INVENTORY_ID = #{inventoryId}
 </select>
 
-<!-- 등록 및 페이지 제품 검색 -->
+<!-- 등록 및 수정 페이지 제품 검색 -->
 <select id="inv_sea_item" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT A.ITEM_ID, A.ITEM_CODE, A.ITEM_NAME, A.ITEM_TYPE, A.SPEC, B.CODE
+SELECT A.ITEM_ID, A.ITEM_CODE, A.ITEM_NAME, A.ITEM_TYPE, A.SPEC, B.CODE, A.PRICE
 FROM ITEM A
 JOIN COMMON_CODE B ON A.UNIT_CODE = B.CODE_ID
 WHERE A.ITEM_NAME LIKE '%' || #{itemName} || '%'
@@ -167,7 +167,7 @@ VALUES (SEQ_INV_ID.NEXTVAL, #{itemId}, #{whId}, #{currentQty}, #{expectedQty}, #
 
 <!-- 수정 페이지 -->
 <select id="inv_mod" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT A.INVENTORY_ID, A.INVENTORY_CODE, A.ITEM_ID, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, A.CURRENT_QTY, E.CODE, C.WH_ID, C.WH_CODE, C.WH_NAME
+SELECT A.INVENTORY_ID, A.INVENTORY_CODE, A.ITEM_ID, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, B.PRICE, E.CODE, A.CURRENT_QTY, C.WH_ID, C.WH_CODE, C.WH_NAME
 FROM INVENTORY A 
 JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
 JOIN WAREHOUSE C ON A.WH_ID = C.WH_ID

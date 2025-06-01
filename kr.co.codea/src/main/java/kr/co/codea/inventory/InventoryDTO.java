@@ -28,7 +28,7 @@ public class InventoryDTO {
 	// 수량
 	int quantity;
 	
-	// 입고 단가
+	// 입출고 단가
 	double itemUnitCost;
 	
 	// 로그 ID, 변경 전 보유 수량, 변경 후 보유 수량
@@ -39,4 +39,7 @@ public class InventoryDTO {
 	
 	// 변경 사유, 변경 일자
 	String reason, editDate;
+	
+	// 제품 단가
+	int price;
 }

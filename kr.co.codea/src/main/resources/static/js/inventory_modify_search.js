@@ -28,12 +28,12 @@ document.getElementById("emp_sea_form").addEventListener("submit", function(e){
 					<td>${emp.empName}</td>
 					<td>${emp.hp}</td>
 					<td>
-						<button type="button" class="btn btn-sm btn-primary select-product">선택</button>
+						<button type="button" class="btn btn-sm btn-primary select-emp">선택</button>
 					</td>
 				`;
 				
 				// 선택 버튼 클릭
-				tr.querySelector(".select-product").addEventListener("click", () => {
+				tr.querySelector(".select-emp").addEventListener("click", () => {
 					document.getElementById("empName").value = emp.empName;
 					document.getElementById("hp").value = emp.hp;
 					

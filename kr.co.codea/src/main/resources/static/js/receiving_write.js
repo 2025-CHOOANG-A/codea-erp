@@ -10,12 +10,77 @@ DateInput.max = todayStr;
 DateInput.value = todayStr;
 DateInput.readOnly = true;	// 날짜 선택 불가
 
-// 입고 수량 자동 계산
+// 입고 총액 자동 계산
 document.getElementById("quantity").addEventListener("input", function(){
 	const quantity = this.value;
 	const itemUnitCost = document.getElementById("itemUnitCost").value;
 	
 	const total = quantity * itemUnitCost;
 	
-	document.getElementById("inCost").value = total;
+	document.getElementById("dis_inCost").value = total.toLocaleString() + " 원";	// 화면에 보여지는 금액
+	document.getElementById("inCost").value = total;	// 서버에 전송되는 금액
 });
+
+// 중복 체크
+function rec_check(){
+	if(docNo.value == ""){
+		alert("발주 및 생산 계획 정보를 입력하세요.");
+	}
+	else{
+		const sourceDocType = document.getElementById("sourceDocType").value;
+		const sourceDocHeaderId = document.getElementById("sourceDocHeaderId").value;
+		const itemId = document.getElementById("itemId").value;
+		
+		fetch(`/receiving/writeCk?sourceDocType=${sourceDocType}&sourceDocHeaderId=${sourceDocHeaderId}&itemId=${itemId}`)
+		.then(aa => {
+			return aa.text();
+		}).then(bb => {
+			if(bb == "ok"){
+				alert("해당 제품은 입고 등록이 가능합니다.");
+				reck.value = "Y";
+			}
+			else if(bb == "exist"){
+				alert("해당 제품은 이미 입고 처리된 상태입니다.");
+				reck.value = "N";
+			}
+		}).catch(error => {
+			console.log(error);
+		});
+	}
+}
+
+const qty = document.getElementById("qty");
+
+// 등록 버튼
+function rec_add(){
+	if(docNo.value == ""){
+		alert("발주 및 생산 계획 정보를 입력하세요.");
+	}
+	else if(quantity.value == ""){
+		alert("입고 수량을 입력하세요.");
+	}
+	else if(Number(quantity.value) > Number(qty.value)){
+		alert("입고 수량은 가입고 수량을 초과할 수 없습니다.");
+		frm.quantity.value = "";
+		frm.quantity.focus();
+	}
+	else if(whCode.value == ""){
+		alert("창고 정보를 입력하세요.");
+	}
+	else if(hp.value == ""){
+		alert("담당자 정보를 입력하세요.");
+	}
+	else if(reck.value != "Y"){
+		alert("중복 여부를 먼저 확인해 주세요.");
+	}
+	else{
+		frm.submit();
+	}
+}
+
+// 취소 버튼
+function rec_can(){
+	if(confirm('입고 등록을 취소하겠습니까?')){
+		location.href="/receiving/list";
+	}
+}

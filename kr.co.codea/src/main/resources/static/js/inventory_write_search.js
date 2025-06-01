@@ -36,12 +36,12 @@ document.getElementById("item_sea_form").addEventListener("submit", function(e){
 				
 				// 선택 버튼 클릭
 				tr.querySelector(".select-product").addEventListener("click", () => {
-					console.log(item.docDate);
 					document.getElementById("itemCode").value = item.itemCode;
 					document.getElementById("itemName").value = item.itemName;
 					document.getElementById("itemType").value = item.itemType;
 					document.getElementById("spec").value = item.spec;
 					document.getElementById("code").value = item.code;
+					document.getElementById("price").value = item.price.toLocaleString() + " 원";
 					
 					document.getElementById("itemId").value = item.itemId;	// itemId 저장
 					
@@ -89,12 +89,12 @@ document.getElementById("wh_sea_form").addEventListener("submit", function(e){
 					<td>${wh.whName}</td>
 					<td>${wh.address}${wh.addressDetail}</td>
 					<td>
-						<button type="button" class="btn btn-sm btn-primary select-product">선택</button>
+						<button type="button" class="btn btn-sm btn-primary select-wh">선택</button>
 					</td>
 				`;
 				
 				// 선택 버튼 클릭
-				tr.querySelector(".select-product").addEventListener("click", () => {
+				tr.querySelector(".select-wh").addEventListener("click", () => {
 					document.getElementById("whCode").value = wh.whCode;
 					document.getElementById("whName").value = wh.whName;
 					
@@ -144,12 +144,12 @@ document.getElementById("emp_sea_form").addEventListener("submit", function(e){
 					<td>${emp.empName}</td>
 					<td>${emp.hp}</td>
 					<td>
-						<button type="button" class="btn btn-sm btn-primary select-product">선택</button>
+						<button type="button" class="btn btn-sm btn-primary select-emp">선택</button>
 					</td>
 				`;
 				
 				// 선택 버튼 클릭
-				tr.querySelector(".select-product").addEventListener("click", () => {
+				tr.querySelector(".select-emp").addEventListener("click", () => {
 					document.getElementById("empName").value = emp.empName;
 					document.getElementById("hp").value = emp.hp;
 					

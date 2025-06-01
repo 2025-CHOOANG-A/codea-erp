@@ -45,7 +45,7 @@
 						</tr>
 						<tr>
 							<th scope="row">단가</th>
-							<td th:text="${detail.price}"></td>
+							<td th:text="${#numbers.formatInteger(detail.price, 0, 'COMMA')} + ' 원'"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -67,7 +67,7 @@
 							</tr>
 							<tr>
 								<th scope="row">발주 금액</th>
-								<td th:text="${detail.docCost}"></td>
+								<td th:text="${#numbers.formatInteger(detail.docCost, 0, 'COMMA')} + ' 원'"></td>
 							</tr>
 						</tbody>
 					</table>
@@ -90,7 +90,7 @@
 							</tr>
 							<tr>
 								<th scope="row">생산 금액</th>
-								<td th:text="${detail.docCost}"></td>
+								<td th:text="${#numbers.formatInteger(detail.docCost, 0, 'COMMA')} + ' 원'"></td>
 							</tr>
 						</tbody>
 					</table>
@@ -104,7 +104,7 @@
 						</tr>
 						<tr>
 							<th scope="row">총액</th>
-							<td th:text="${detail.inCost}"></td>
+							<td th:text="${#numbers.formatInteger(detail.inCost, 0, 'COMMA')} + ' 원'"></td>
 						</tr>
 					</tbody>
 				</table>
