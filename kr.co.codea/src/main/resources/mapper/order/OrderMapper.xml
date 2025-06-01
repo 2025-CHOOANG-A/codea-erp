@@ -18,6 +18,7 @@
             i.ITEM_NAME AS productName,
             od.ORDER_QTY AS orderQty,
             inv.CURRENT_QTY AS stockQty,
+            inv.WH_ID      AS whId,
             od.REQUIRED_DELIVERY_DATE AS requiredDate
         FROM ORD_HEADER oh
         JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID

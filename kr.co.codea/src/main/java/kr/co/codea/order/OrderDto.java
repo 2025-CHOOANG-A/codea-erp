@@ -16,16 +16,17 @@ public class OrderDto {
         private Long ordId;                 // 주문 ID (ORD_HEADER.ORD_ID)
         private Long ordDetailId;           // 주문 상세 ID (ORD_DETAIL.ORD_DETAIL_ID)
         private Long itemId;                // 품목 ID (ITEM.ITEM_ID)
-        private Long whId;                  // 창고 ID (WAREHOUSE.WH_ID 또는 해당 주문/품목의 출고 창고 ID) - 추가됨
         private String ordCode;             // 주문 코드 (ORD_HEADER.ORD_CODE)
         private LocalDate orderDate;        // 주문일 (ORD_HEADER.ORDER_DATE)
         private String remark;              // 주문 헤더 비고 (ORD_HEADER.REMARK)
+        private String orderDetailRemark; 
         // private String orderDetailRemark; // 주문 상세 비고 (ORD_DETAIL.REMARK) - 필요시 OrderMapper.xml에서 alias 설정 후 추가
         private String status;              // 주문 상태 (ORD_HEADER.STATUS)
         private String bpName;              // 거래처명 (BUSINESS_PARTNER.BP_NAME)
         private String productName;         // 제품명 (ITEM.ITEM_NAME)
         private int orderQty;               // 주문 수량 (ORD_DETAIL.ORDER_QTY)
         private Integer stockQty;           // 보유 수량 (INVENTORY.CURRENT_QTY) - Integer로 변경 (NULL 가능성)
+        private Integer whId;
         private LocalDate requiredDate;     // 납기일 (ORD_DETAIL.REQUIRED_DELIVERY_DATE)
     }
 
