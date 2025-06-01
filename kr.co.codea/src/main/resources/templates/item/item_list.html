@@ -337,6 +337,9 @@
          <td th:text="${item.reMark}"></td>      
           -->
           </tr> 
+          
+          
+          
             </tbody>
             <div class="modal fade" id="remarkModal" tabindex="-1" aria-labelledby="remarkModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -360,7 +363,44 @@
             <nav>
               <ul class="pagination" id="pagination">
                 <!-- JS로 페이지네이션 렌더링 -->
+                <!-- 아래 페이지네이션 영역에 추가 -->
+                
+   <nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li th:classappend="${currentPage == 1} ? 'disabled'">
+      <a class="page-link" th:href="@{/item_list(page=${currentPage - 1}, keyword=${keyword}, itemType=${itemType})}">이전</a>
+    </li>
+    
+    <li th:each="i : ${#numbers.sequence(1, totalPages)}"
+        th:classappend="${i == currentPage} ? 'active'">
+      <a class="page-link" th:href="@{/item_list(page=${i}, keyword=${keyword}, itemType=${itemType})}" 
+         th:text="${i}">1</a>
+    </li>
+    
+    <li th:classappend="${currentPage == totalPages} ? 'disabled'">
+      <a class="page-link" th:href="@{/item_list(page=${currentPage + 1}, keyword=${keyword}, itemType=${itemType})}">다음</a>
+    </li>
+  </ul>
+</nav>             
+                
+<!-- <ul class="pagination"> -->
+<!--  
+  <li th:if="${currentPage > 1}" class="page-item">
+    <a class="page-link" th:href="@{/item_list(page=${currentPage - 1}, keyword=${keyword}, itemType=${itemType})}">이전</a>
+  </li>
+
+  <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+      th:classappend="${i == currentPage} ? 'active'">
+    <a class="page-link" th:href="@{/item_list(page=${i}, keyword=${keyword}, itemType=${itemType})}"
+       th:text="${i}">1</a>
+  </li>
+
+  <li th:if="${currentPage < totalPages}" class="page-item">
+    <a class="page-link" th:href="@{/item_list(page=${currentPage + 1}, keyword=${keyword}, itemType=${itemType})}">다음</a>
+  </li>
+</ul>
               </ul>
+              -->
             </nav>
           </div>
         <a href="#" class="btn btn-success" id="addBtn">추가</a> 

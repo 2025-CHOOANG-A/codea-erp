@@ -409,17 +409,17 @@
             </thead>
             <tbody id="modalProductResult">
               <!-- Thymeleaf 예시 -->
-              <tr th:each="item : ${productList}" 
-                  th:data-code="${item.itemCode}" 
-                  th:data-name="${item.itemName}" 
-                  th:data-spec="${item.spec}" 
-                  th:data-unit="${item.unitCode}"
-                  onclick="selectProduct(this)">
-                <td th:text="${item.itemCode}"></td>
-                <td th:text="${item.itemName}"></td>
-                <td th:text="${item.spec}"></td>
-                <td th:text="${item.unitCode}"></td>
-              </tr>
+              <tr th:each="bom_y : ${bom_item_y_list}"
+               th:data-code="${bom_y.itemCode}" 
+               th:data-name="${bom_y.itemName}" 
+               th:data-spec="${bom_y.spec}" 
+               th:data-unit="${bom_y.unitCode}"
+               onclick="selectProduct(this)">
+              <td th:text="${bom_y.itemCode}"></td>
+              <td th:text="${bom_y.itemName}"></td>
+               <td th:text="${bom_y.spec}"></td>
+             <td th:text="${bom_y.unitCode}"></td>
+             </tr>
             </tbody>
           </table>
         </div>
@@ -448,6 +448,7 @@
             </div>
           </div>
           <div class="table-responsive">
+          <!--  -->
             <table
               class="table table-hover align-middle mb-0"
               id="materialTable"
@@ -455,7 +456,7 @@
               <thead class="table-light">
                 <tr>
                   <th><input type="checkbox" id="selectAllMaterial" /></th>
-                  <th>BOM 코드</th>
+                  <th>BOM 코드</th>                  
                   <th>자재 코드</th>
                   <th>자재 명</th>
                   <th>규격</th>
@@ -464,8 +465,18 @@
                   <th>자재소요량</th>
                 </tr>
               </thead>
-              <tbody>
-                <!-- JS로 자재 목록 렌더링 -->
+              <tbody th:each="bom_j : ${bom_item_j_list}">
+              <td>
+              <input type="checkbox" name="selectedBom" th:value="${bom_j.bomCode}" />
+               </td>
+               <td th:text="${bom_j.bomCode}"></td>
+               <td th:text="${bom_j.materialCode}"></td>
+               <td th:text="${bom_j.materialName}"></td>
+               <td th:text="${bom_j.unitName}"></td>
+                 <td th:text="${bom_j.spec}"></td>
+                 <td th:text="${bom_j.unitName}"></td>
+               <td th:text="${bom_j.price}"></td>
+               <td th:text="${bom_j.quantity}"></td>
               </tbody>
             </table>
           </div>
@@ -514,8 +525,8 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="bomCode"
-                  id="modalBomCode"
+                  name="bomHeaderId"
+                  id="bomHeaderId"
                   readonly
                 />
               </div>
@@ -524,7 +535,8 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="materialCode"
+                  name="bomHeaderId"
+                  id="bomHeaderId"
                   maxlength="20"
                   required
                 />
@@ -534,7 +546,8 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="materialName"
+                  name="itemId"
+                  id="bomHeaderId"
                   maxlength="20"
                   required
                 />
@@ -595,7 +608,7 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/bom_write.js?v=2"></script>
   </body>
+    <script src="/js/bom_write.js?v=2"></script>
   
 </html>

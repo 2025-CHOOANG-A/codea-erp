@@ -33,7 +33,14 @@ public interface item_mapper {
 	//item_detail 상세조회 경로 전송 (ITEM_ID)
 	List<itemDTO> item_detail();
 	
-
+    //item_수정 , 삭제	
+    int update_item(itemDTO dto);
+    int delete_item(String itemCode);
+	
+    //수정을 하기위해 item 코드불러오기 
+    itemDTO select_item_by_code(String itemCode);
+	
+	
 	
 	// 조건 검색용
 	//keyword => 검색창 작동

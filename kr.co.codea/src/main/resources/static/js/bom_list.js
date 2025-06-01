@@ -15,8 +15,9 @@
      handleResize();
 
      // 샘플 BOM 데이터 (제품별로 여러 자재)
+	 /*
      const bomData = [
-		/*
+		
        {
          id: 1,
          bomCode: "BOM001",
@@ -102,10 +103,9 @@
              note: "",
            },
          ],
-       },
-	   */
+       },	   
      ];
-
+*/
      let currentPage = 1;
      const rowsPerPage = 10;
      let filteredData = bomData.slice();

@@ -65,6 +65,22 @@ public class itemDAO implements item_service{
 	return item_detail_list;
    }
    
+   /*제품삭제*/
+   @Override
+   public int delete_item(String itemCode) {
+	return mp.delete_item(itemCode);
+}
    
-
+   //제품수정
+   @Override
+    public int update_item(itemDTO dto) {
+	return mp.update_item(dto);
+}
+   
+   //수정시 필요한 번호 불러옴 
+   @Override
+public itemDTO select_item_by_code(String itemCode) {
+	   return mp.select_item_by_code(itemCode);
+}
+   
 }

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>제품 정보 입력/수정 - CodeA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap 5.3 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 250px;
+        min-height: 100vh;
+        background: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1040;
+        transition: transform 0.3s;
+      }
+      .sidebar.closed {
+        transform: translateX(-100%);
+      }
+      .sidebar .nav-link,
+      .sidebar .sidebar-toggle {
+        color: #fff;
+      }
+      .sidebar .nav-link.active,
+      .sidebar .nav-link:hover {
+        background: #495057;
+        color: #fff;
+      }
+      .sidebar .sidebar-toggle {
+        background: #23272b;
+        border: none;
+        width: 100%;
+        text-align: left;
+        padding: 1rem;
+        font-size: 1.25rem;
+      }
+      .header {
+        height: 56px;
+        background: #23272b;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+      }
+      .header .sidebar-toggle-btn {
+        position: absolute;
+        left: 1rem;
+        background: #343a40;
+        border: none;
+        color: #fff;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      @media (max-width: 991.98px) {
+        .sidebar {
+          width: 200px;
+        }
+      }
+      .form-section-title {
+        background: #f8f9fa;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #dee2e6;
+      }
+      .table-form th {
+        width: 160px;
+        background: #f8f9fa;
+        vertical-align: middle;
+      }
+      .table-form td {
+        vertical-align: middle;
+      }
+      .required {
+        color: #dc3545;
+        margin-left: 0.25rem;
+        font-size: 1rem;
+      }
+      .modal-dialog {
+        max-width: 500px;
+      }
+      /* 메인 컨텐츠 위치 조정 */
+      .main-content-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: calc(100vh - 56px);
+        margin-top: 56px;
+        transition: margin-left 0.3s;
+      }
+      .main-content {
+        width: 100%;
+        max-width: 700px;
+        padding-top: 2rem;
+      }
+      @media (min-width: 992px) {
+        .main-content-wrapper {
+          margin-left: 250px;
+        }
+        .sidebar.closed ~ .main-content-wrapper {
+          margin-left: 0;
+        }
+      }
+      @media (max-width: 991.98px) {
+        .main-content-wrapper {
+          margin-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar closed">
+      <button
+        class="sidebar-toggle d-lg-none"
+        id="sidebarCloseBtn"
+        aria-label="사이드바 닫기"
+      >
+        <span>&#10005; 메뉴 닫기</span>
+      </button>
+      <div class="p-3">
+        <div class="mb-2 fw-bold text-uppercase small">기준정보관리</div>
+        <ul class="nav flex-column mb-3">
+          <li class="nav-item"><a class="nav-link" href="#">사업장관리</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">거래처관리</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">창고관리</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">제품관리</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">품목관리</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">사원관리</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">공지사항</a></li>
+        </ul>
+        <div class="mb-2 fw-bold text-uppercase small">구매영업관리</div>
+        <ul class="nav flex-column mb-3">
+          <li class="nav-item"><a class="nav-link" href="#">발주관리</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">주문관리</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">출고관리</a></li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">자재소요량계산</a>
+          </li>
+        </ul>
+        <div class="mb-2 fw-bold text-uppercase small">자재관리</div>
+        <ul class="nav flex-column mb-3">
+          <li class="nav-item"><a class="nav-link" href="#">입고관리</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">재고관리</a></li>
+        </ul>
+        <div class="mb-2 fw-bold text-uppercase small">생산관리</div>
+        <ul class="nav flex-column mb-3">
+          <li class="nav-item"><a class="nav-link" href="#">생산계획</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="header">
+      <button
+        class="sidebar-toggle-btn d-lg-none"
+        id="sidebarOpenBtn"
+        aria-label="사이드바 열기"
+      >
+        <span class="me-1">&#9776;</span>
+        <span>메뉴</span>
+      </button>
+      <span class="mx-auto fs-4 fw-bold">CodeA</span>
+    </header>
+
+    <!-- Main Content Wrapper for Centering -->
+    <div class="main-content-wrapper">
+      <main class="main-content">
+        <form id="productForm" autocomplete="off">
+          <!-- 제품 정보 -->
+          <div class="form-section-title">제품 정보</div>
+          <table class="table table-bordered align-middle table-form mb-4">
+            <tbody>
+              <tr>
+                <th>제품코드 <span class="required">*</span></th>
+                <td>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="productCode"
+                    value="PRD20240601"
+                    readonly
+                  />
+                </td>
+                <th>제품구분 <span class="required">*</span></th>
+                <td>
+                  <select class="form-select" id="productType" required>
+                    <option value="">선택</option>
+                    <option value="제품">제품</option>
+                    <option value="자재">자재</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <th>대분류 <span class="required">*</span></th>
+                <td>
+                  <select class="form-select" id="mainCategory" required>
+                    <option value="">선택</option>
+                    <option value="전자">전자</option>
+                    <option value="화학">화학</option>
+                    <option value="식품">식품</option>
+                  </select>
+                </td>
+                <th>소분류 <span class="required">*</span></th>
+                <td>
+                  <select class="form-select" id="subCategory" required>
+                    <option value="">선택</option>
+                    <option value="센서">센서</option>
+                    <option value="회로">회로</option>
+                    <option value="원료">원료</option>
+                    <option value="포장">포장</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <th>제품명 <span class="required">*</span></th>
+                <td>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="productName"
+                    required
+                  />
+                </td>
+                <th>규격 <span class="required">*</span></th>
+                <td>
+                  <input type="text" class="form-control" id="spec" required />
+                </td>
+              </tr>
+              <tr>
+                <th>단위 <span class="required">*</span></th>
+                <td>
+                  <select class="form-select" id="unit" required>
+                    <option value="">선택</option>
+                    <option value="EA">EA</option>
+                    <option value="개">개</option>
+                    <option value="g">g</option>
+                    <option value="L">L</option>
+                  </select>
+                </td>
+                <th>단가 <span class="required">*</span></th>
+                <td>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="price"
+                    min="0"
+                    required
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 거래처 정보 -->
+          <div class="form-section-title">거래처 정보</div>
+          <table class="table table-bordered align-middle table-form mb-4">
+            <tbody>
+              <tr>
+                <th>거래처 <span class="required">*</span></th>
+                <td>
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="clientName"
+                      placeholder="거래처 검색"
+                      readonly
+                      required
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      id="searchClientBtn"
+                    >
+                      검색
+                    </button>
+                  </div>
+                </td>
+                <th>거래처 코드 <span class="required">*</span></th>
+                <td>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="clientCode"
+                    readonly
+                    required
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>거래처 전화번호 <span class="required">*</span></th>
+                <td colspan="3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="clientPhone"
+                    readonly
+                    required
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 비고 -->
+          <div class="form-section-title">비고</div>
+          <table class="table table-bordered align-middle table-form mb-4">
+            <tbody>
+              <tr>
+                <th>비고</th>
+                <td colspan="3">
+                  <textarea
+                    class="form-control"
+                    id="remark"
+                    rows="2"
+                    placeholder="비고 내용을 입력하세요"
+                  ></textarea>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 에러 메시지 -->
+          <div
+            id="formError"
+            class="text-danger mb-3"
+            style="display: none"
+          ></div>
+
+          <!-- 버튼 -->
+          <div class="text-end mb-5">
+            <button type="submit" class="btn btn-primary">저장</button>
+            <button
+              type="button"
+              class="btn btn-secondary ms-2"
+              onclick="window.location.reload()"
+            >
+              취소
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <!-- 거래처 검색 모달 -->
+    <div
+      class="modal fade"
+      id="clientSearchModal"
+      tabindex="-1"
+      aria-labelledby="clientSearchModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="clientSearchModalLabel">거래처 검색</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="닫기"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input
+              type="text"
+              class="form-control mb-3"
+              id="clientSearchInput"
+              placeholder="거래처명 입력"
+            />
+            <table class="table table-hover table-bordered mb-0">
+              <thead>
+                <tr>
+                  <th>거래처명</th>
+                  <th>코드</th>
+                  <th>전화번호</th>
+                </tr>
+              </thead>
+              <tbody id="clientSearchResult">
+                <!-- 샘플 데이터 -->
+                <tr
+                  data-name="삼성전자"
+                  data-code="C001"
+                  data-phone="02-1234-5678"
+                >
+                  <td>삼성전자</td>
+                  <td>C001</td>
+                  <td>02-1234-5678</td>
+                </tr>
+                <tr
+                  data-name="LG화학"
+                  data-code="C002"
+                  data-phone="02-2345-6789"
+                >
+                  <td>LG화학</td>
+                  <td>C002</td>
+                  <td>02-2345-6789</td>
+                </tr>
+                <tr
+                  data-name="CJ제일제당"
+                  data-code="C003"
+                  data-phone="02-3456-7890"
+                >
+                  <td>CJ제일제당</td>
+                  <td>C003</td>
+                  <td>02-3456-7890</td>
+                </tr>
+                <tr
+                  data-name="한화솔루션"
+                  data-code="C004"
+                  data-phone="02-4567-8901"
+                >
+                  <td>한화솔루션</td>
+                  <td>C004</td>
+                  <td>02-4567-8901</td>
+                </tr>
+                <tr
+                  data-name="롯데푸드"
+                  data-code="C005"
+                  data-phone="02-5678-9012"
+                >
+                  <td>롯데푸드</td>
+                  <td>C005</td>
+                  <td>02-5678-9012</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS & Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Sidebar toggle
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("sidebarOpenBtn").onclick = () =>
+        sidebar.classList.remove("closed");
+      document.getElementById("sidebarCloseBtn").onclick = () =>
+        sidebar.classList.add("closed");
+      // PC에서는 항상 열려있게
+      function handleSidebar() {
+        if (window.innerWidth >= 992) sidebar.classList.remove("closed");
+        else sidebar.classList.add("closed");
+      }
+      window.addEventListener("resize", handleSidebar);
+      window.addEventListener("DOMContentLoaded", handleSidebar);
+
+      // 거래처 검색 모달
+      const clientModal = new bootstrap.Modal(
+        document.getElementById("clientSearchModal")
+      );
+      document.getElementById("searchClientBtn").onclick = () => {
+        document.getElementById("clientSearchInput").value = "";
+        filterClientRows("");
+        clientModal.show();
+      };
+      document.getElementById("clientSearchInput").oninput = function () {
+        filterClientRows(this.value);
+      };
+      function filterClientRows(keyword) {
+        const rows = document.querySelectorAll("#clientSearchResult tr");
+        rows.forEach((row) => {
+          const name = row.dataset.name || "";
+          row.style.display = name.includes(keyword) ? "" : "none";
+        });
+      }
+      document.querySelectorAll("#clientSearchResult tr").forEach((row) => {
+        row.onclick = function () {
+          document.getElementById("clientName").value = this.dataset.name;
+          document.getElementById("clientCode").value = this.dataset.code;
+          document.getElementById("clientPhone").value = this.dataset.phone;
+          clientModal.hide();
+        };
+      });
+
+      // 폼 검증
+      document.getElementById("productForm").onsubmit = function (e) {
+        e.preventDefault();
+        let error = "";
+        // 필수값 체크
+        const requiredFields = [
+          { id: "productType", label: "제품구분" },
+          { id: "mainCategory", label: "대분류" },
+          { id: "subCategory", label: "소분류" },
+          { id: "productName", label: "제품명" },
+          { id: "spec", label: "규격" },
+          { id: "unit", label: "단위" },
+          { id: "price", label: "단가" },
+          { id: "clientName", label: "거래처" },
+          { id: "clientCode", label: "거래처 코드" },
+          { id: "clientPhone", label: "거래처 전화번호" },
+        ];
+        for (const f of requiredFields) {
+          const el = document.getElementById(f.id);
+          if (!el.value || (el.type === "number" && el.value === "")) {
+            error = `${f.label} 항목을 입력해 주세요.`;
+            break;
+          }
+        }
+        const errorDiv = document.getElementById("formError");
+        if (error) {
+          errorDiv.textContent = error;
+          errorDiv.style.display = "";
+          return false;
+        } else {
+          errorDiv.style.display = "none";
+          alert("저장되었습니다.");
+          // 실제 저장 로직 추가 필요
+          return true;
+        }
+      };
+    </script>
+  </body>
+</html>
+

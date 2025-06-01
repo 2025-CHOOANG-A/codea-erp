@@ -130,6 +130,38 @@ LEFT JOIN ITEM_CATEGORY catS ON .ITEM_CAT_S = catS.CATEGORY_ID
   WHERE CODE_TYPE = 'UNIT_CODE'
 </select>
 
+
+<!-- 거래처 수정, 삭제 -->
+<update id="update_item" parameterType="kr.co.codea.item.itemDTO">
+  UPDATE ITEM
+  SET
+    ITEM_NAME = #{itemName},
+    ITEM_TYPE = #{itemType},
+    ITEM_CAT_L = #{itemCatL},
+    ITEM_CAT_S = #{itemCatS},
+    SPEC = #{spec},
+    UNIT_CODE = #{unitcodeValue},
+    PRICE = #{price},
+    BP_CODE = #{bpCode},
+    TEL = #{Tel},
+    REMARK = #{reMark}
+  WHERE ITEM_CODE = #{itemCode}
+</update>
+
+<!-- 제품 삭제 -->
+<delete id="delete_item" parameterType="String">
+  DELETE FROM ITEM
+  WHERE ITEM_CODE = #{itemCode}
+</delete>
+
+<!-- 제품을 수정하기 위해 불러오는항목  -->
+<select id="select_item_by_code" parameterType="String" resultType="kr.co.codea.item.itemDTO">
+  SELECT *
+  FROM ITEM
+  WHERE ITEM_CODE = #{itemCode}
+</select>
+
+
 <!-- resultMap -->
 <resultMap id="itemListResultMap" type="kr.co.codea.item.itemDTO">
     <result property="itemCode" column="ITEM_CODE"/>
