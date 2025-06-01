@@ -58,6 +58,7 @@
                 AND (WH_CODE LIKE '%' || #{dto.keyword} || '%' OR WH_NAME LIKE '%' || #{dto.keyword} || '%' )
             </if>
         </where>
+       ORDER BY WH_ID DESC
     </select>
 
 <!--창고 상세정보  -->
@@ -81,21 +82,25 @@ WHERE w.WH_ID = #{whId}
 </select>
 
 <!-- 창고업데이트 -->
-<update id="">
-
+<update id="updateStorage">
+UPDATE WAREHOUSE
+SET
+    WH_CODE = #{whCode},
+    WH_NAME = #{whName},
+    REMARK = #{remark},
+    TEL = #{tel},
+    EMP_NO = #{empNo}
+WHERE WH_ID = #{whId}
 </update>
 
 
 
 <!-- 창고등록 -->
 <insert id="insertStorageList" parameterType="kr.co.codea.storage.StorageDTO">
-UPDATE WAREHOUSE
-SET
-    WH_CODE = #{whCode},
-    WH_NAME = #{whName},
-    REMARK #{remark},
-    TEL = #{tel},
-    EMP_NO = #{empNo}
-WHERE w.WH_ID = #{whId}
+INSERT INTO WAREHOUSE
+( WH_CODE, WH_NAME, ADDRESS, ADDRESS_DETAIL, REMARK, TEL, POST_CODE, EMP_NO )
+VALUES
+( #{whCode}, #{whName}, #{address}, #{addressDetail}, #{remark}, #{tel}, #{postCode}, #{empNo} )
+
 </insert>
 </mapper>

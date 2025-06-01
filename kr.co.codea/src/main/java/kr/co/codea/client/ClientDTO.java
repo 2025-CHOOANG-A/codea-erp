@@ -32,4 +32,18 @@ public class ClientDTO {
     
     // 연관된 담당자 목록
     private List<ContactDTO> contacts;
+    private Integer contactCount;
+    
+    public String getFullAddress() {
+        String fullAddress = "";
+        if (address != null && !address.trim().isEmpty()) {
+            fullAddress = address;
+            if (addressDetail != null && !addressDetail.trim().isEmpty()) {
+                fullAddress += " " + addressDetail;
+            }
+        }
+        return fullAddress;
+    }
+
+
 }

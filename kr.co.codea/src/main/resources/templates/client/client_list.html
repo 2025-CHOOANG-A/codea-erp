@@ -1,174 +1,519 @@
 <div th:fragment="contentFragment">
 
-<th:block th:fragment="headFragment">
-    <link rel="stylesheet" th:href="@{/css/client_list.css}" />
-</th:block>
-    
-    <main id="mainContent" class="main-content">
-      <div class="container-fluid px-0">
-        <h2>거래처 목록</h2> 
-        <form class="filter-bar mb-3" id="filterForm" autocomplete="off" onsubmit="return false;">
-          <select class="form-select" id="typeFilter" name="bpType"> 
-            <option value="">거래처유형 전체</option> <option value="고객사" th:selected="${searchDto.bpType == '고객사'}">고객사</option>
-            <option value="구매처" th:selected="${searchDto.bpType == '구매처'}">구매처</option>
-            <option value="매입매출처" th:selected="${searchDto.bpType == '매입매출처'}">매입매출처</option>
-          </select>
-          <input type="text" name="keyword" class="form-control" id="searchInput" placeholder="코드, 거래처명 등 검색" th:value="${searchDto.keyword}" />
-          <button type="button" class="btn btn-primary" id="searchBtn">
-            검색
-          </button>
-        </form>
+    <th:block th:fragment="headFragment">
+        <link rel="stylesheet" th:href="@{/css/client_list.css}" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    </th:block>
 
-        <div class="table-responsive">
-          <table
-            class="table table-bordered align-middle mb-0"
-            id="clientTable" >
-            <thead>
-              <tr>
-                <th style="width:60px;">no</th> <th>코드</th>
-                <th>거래처명</th>
-                <th>유형</th>
-                <th>사업자번호</th>
-                <th>전화</th>
-                <th>주소</th>
-                <th style="width:100px;">비고</th> </tr>
-            </thead>
-					<tbody id="clientTableBody">
-				  <tr th:if="${clients.isEmpty()}" id="noDataRow">
-				      <td colspan="8" class="text-center text-secondary">데이터가 없습니다.</td>
-				  </tr>
-				  <th:block th:unless="${clients.isEmpty()}">
-				    <tr th:each="client, i : ${clients}">
-				      <td th:text="${i.size - i.index}"></td>
-				      <td th:text="${client.bpCode}"></td>
-				      <td>
-				        <a th:href="@{'/client/' + ${client.bpId}}" class="name-link" th:text="${client.bpName}"></a>
-				      </td>
-				      <td th:text="${client.bpType}"></td>
-				      <td th:text="${client.bizNo}"></td>
-				      <td th:text="${client.bp_tel}"></td>
-				      <td th:text="${client.address}"></td>
-				      <td>
-				          <span th:unless="${client.bp_remark}">-</span>
-				          <button type="button" class="btn btn-outline-secondary btn-sm btn-remark"
-				                  th:if="${client.bp_remark}" th:data-remark="${client.bp_remark}" th:text="내용 확인"></button>
-				      </td>
-				    </tr>
-				  </th:block>
-				</tbody>
+    <main class="content">
+        <div class="container">
+            <h2 class="mb-4">거래처 관리</h2>
 
-          </table>
-        </div>
+            <div class="d-flex justify-end gap-2 mb-3">
+                <button type="button" id="addContactButton" class="btn btn-outline-primary" disabled>
+                    <i class="bi bi-person-plus"></i> 담당자 추가
+                </button>
+                <button type="button" id="editClientButton" class="btn btn-outline-primary" disabled>
+                    <i class="bi bi-pencil"></i> 거래처 수정
+                </button>
+                <button type="button" id="deleteClientButton" class="btn btn-outline-danger" disabled>
+                    <i class="bi bi-trash"></i> 거래처 삭제
+                </button>
+            </div>
+            <hr class="mb-4">
 
-        <div class="table-footer mt-3">
-          <a href="./client/write" class="btn btn-success" id="addBtn">추가</a>
-        </div>
-      </div>
-    </main>
+            <form id="filterForm" class="d-flex flex-wrap align-items-center gap-3 mb-4 p-3 border rounded bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="keywordInput" class="form-label mb-0 text-nowrap">검색:</label>
+                    <input
+                        type="text"
+                        name="keyword"
+                        id="keywordInput"
+                        class="form-control"
+                        placeholder="거래처명, 코드 검색"
+                        maxlength="20"
+                        th:value="${searchDto.keyword}"
+                        style="width: 200px;"
+                    />
+                </div>
 
-    <div
-      class="modal fade"
-      id="remarkModal"
-      tabindex="-1"
-      aria-labelledby="remarkModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="remarkModalLabel">비고 내용</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="닫기"
-            ></button>
-          </div>
-          <div class="modal-body" id="remarkModalBody">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="bpType" class="form-label mb-0 text-nowrap">거래처 유형:</label>
+                    <select name="bpType" id="bpType" class="form-select" style="width: 150px;">
+                        <option value="">전체</option>
+                        <option value="고객사" th:selected="${searchDto.bpType == '고객사'}">고객사</option>
+                        <option value="구매처" th:selected="${searchDto.bpType == '구매처'}">구매처</option>
+                        <option value="매입매출처" th:selected="${searchDto.bpType == '매입매출처'}">매입매출처</option>
+                    </select>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <label for="pageSize" class="form-label mb-0 text-nowrap">페이지 크기:</label>
+                    <select name="size" id="pageSize" class="form-select" style="width: 100px;">
+                        <option value="10" th:selected="${pageInfo?.pageSize == 10}">10개</option>
+                        <option value="20" th:selected="${pageInfo?.pageSize == 20}">20개</option>
+                        <option value="50" th:selected="${pageInfo?.pageSize == 50}">50개</option>
+                    </select>
+                </div>
+
+                <button id="searchBtn" type="submit" class="btn btn-primary">검색</button>
+            </form>
+
+            <!-- 페이지 정보 표시 -->
+            <div class="d-flex justify-content-between align-items-center mb-3" th:if="${pageInfo != null}">
+                <div class="text-muted">
+                    <span th:text="|총 ${pageInfo.total}건|"></span>
+<!--   <span th:text="|총 ${pageInfo.total}건 중 ${pageInfo.startRow}-${pageInfo.endRow}번째 표시|"></span>
+ -->                    
+                </div>
+                <div class="text-muted">
+                    <span th:text="|${pageInfo.pageNum}/${pageInfo.pages} 페이지|"></span>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="clientTable" class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="text-center">선택</th>
+                            <th scope="col">NO</th>
+                            <th scope="col">거래처 코드</th>
+                            <th scope="col">거래처명</th>
+                            <th scope="col">유형</th>
+                            <th scope="col">사업자번호</th>
+                            <th scope="col">전화번호</th>
+                            <th scope="col">주소</th>
+                            <th scope="col">담당자수</th>
+                            <th scope="col">상세</th>
+                            <th scope="col">비고</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${clients.isEmpty()}" id="noDataRow">
+                            <td colspan="11" class="text-center text-secondary">데이터가 없습니다.</td>
+                        </tr>
+                        <th:block th:unless="${clients.isEmpty()}">
+                            <tr th:each="client, i : ${clients}">
+                                <td class="text-center">
+                                    <input type="radio" name="selectedClient" class="row-radio form-check-input"
+                                           th:data-bp-id="${client.bpId}"
+                                           th:data-bp-code="${client.bpCode}"
+                                           th:data-bp-name="${client.bpName}"
+                                           th:data-bp-type="${client.bpType}"
+                                           th:data-ceo-name="${client.ceoName}"
+                                           th:data-biz-no="${client.bizNo}"
+                                           th:data-biz-cond="${client.bizCond}"
+                                           th:data-biz-cond-code="${client.bizCondCode}"
+                                           th:data-biz-type="${client.bizType}"
+                                           th:data-bp-tel="${client.bp_tel}"
+                                           th:data-fax="${client.fax}"
+                                           th:data-post-code="${client.postCode}"
+                                           th:data-address="${client.address}"
+                                           th:data-address-detail="${client.addressDetail}"
+                                           th:data-bp-remark="${client.bp_remark}">
+                                </td>
+                                <td th:text="${pageInfo.total - (pageInfo.pageNum - 1) * pageInfo.pageSize - i.index}"></td>
+                                <td th:text="${client.bpCode}"></td>
+                                <td th:text="${client.bpName}"></td>
+                                <td th:text="${client.bpType}"></td>
+                                <td th:text="${client.bizNo}"></td>
+                                <td th:text="${client.bp_tel}"></td>
+                                <td th:text="${client.address}"></td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary" th:text="${client.contactCount != null ? client.contactCount : 0}"></span>
+                                </td>
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-outline-primary btn-sm text-nowrap"
+                                            th:data-bp-id="${client.bpId}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#clientDetailModal"
+                                            data-mode="detail"> 상세
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm remark-btn text-nowrap"
+                                            th:data-remark="${client.bp_remark}"
+                                            th:text="'비고'"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#remarkModal">
+                                    </button>
+                                </td>
+                            </tr>
+                        </th:block>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <!-- 왼쪽: 목록 버튼 -->
+                <div>
+                    <a href="/client" class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i> 목록
+                    </a>
+                </div>
+                
+                <!-- 가운데: 부트스트랩 페이징 -->
+                <nav aria-label="거래처 페이지네이션" th:if="${pageInfo != null}">
+                    <ul class="pagination mb-0">
+                        <li class="page-item" th:classappend="${!pageInfo.hasPreviousPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/client(page=1, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, bpType=${searchDto.bpType})}"
+                               th:unless="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-double-left"></i> 처음
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-double-left"></i> 처음
+                            </span>
+                        </li>
+                        <li class="page-item" th:classappend="${!pageInfo.hasPreviousPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/client(page=${pageInfo.prePage}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, bpType=${searchDto.bpType})}"
+                               th:unless="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-left"></i> 이전
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasPreviousPage}">
+                                <i class="bi bi-chevron-left"></i> 이전
+                            </span>
+                        </li>
+                        <li class="page-item" 
+                            th:each="pageNum : ${pageInfo.navigatepageNums}"
+                            th:classappend="${pageNum == pageInfo.pageNum} ? 'active'">
+                            <a class="page-link" 
+                               th:href="@{/client(page=${pageNum}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, bpType=${searchDto.bpType})}"
+                               th:text="${pageNum}"
+                               th:unless="${pageNum == pageInfo.pageNum}">
+                            </a>
+                            <span class="page-link" th:if="${pageNum == pageInfo.pageNum}" th:text="${pageNum}"></span>
+                        </li>
+                        <li class="page-item" th:classappend="${!pageInfo.hasNextPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/client(page=${pageInfo.nextPage}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, bpType=${searchDto.bpType})}"
+                               th:unless="${!pageInfo.hasNextPage}">
+                                다음 <i class="bi bi-chevron-right"></i>
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasNextPage}">
+                                다음 <i class="bi bi-chevron-right"></i>
+                            </span>
+                        </li>
+                        <li class="page-item" th:classappend="${!pageInfo.hasNextPage} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/client(page=${pageInfo.pages}, size=${pageInfo.pageSize}, keyword=${searchDto.keyword}, bpType=${searchDto.bpType})}"
+                               th:unless="${!pageInfo.hasNextPage}">
+                                마지막 <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                            <span class="page-link" th:if="${!pageInfo.hasNextPage}">
+                                마지막 <i class="bi bi-chevron-double-right"></i>
+                            </span>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- 오른쪽: 등록 버튼 -->
+                <div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clientRegisterModal">
+                        <i class="bi bi-plus-circle"></i> 거래처 등록
+                    </button>
+                </div>
             </div>
         </div>
-      </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    
-      // 사이드바 관련 함수/변수들은 이제 sidebar.js에서 전역으로 관리되므로, 여기서는 제거합니다.
-      // mousedown 이벤트 리스너도 sidebar.js에서 처리하도록 옮겼습니다.
-      // handleSidebarState 함수도 sidebar.js에서 처리하므로 여기서 제거합니다.
-      // window.addEventListener("resize", handleSidebarState); 도 sidebar.js로 옮겼습니다.
-      // document.addEventListener("DOMContentLoaded", handleSidebarState); 도 sidebar.js로 옮겼습니다.
+        <!-- 거래처 등록/수정 모달 -->
+        <div class="modal fade" id="clientRegisterModal" tabindex="-1" aria-labelledby="clientRegisterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-2">
+                        <h5 class="modal-title" id="clientRegisterModalLabel">거래처 등록</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <form id="clientForm">
+                            <input type="hidden" id="modalBpId" name="bpId">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label for="modalBpCode" class="form-label text-muted small">거래처 코드</label>
+                                    <input type="text" class="form-control border-light" id="modalBpCode" name="bpCode" placeholder="자동 생성" readonly>
+                                </div>
+                                <div class="col-6">
+                                    <label for="modalBpType" class="form-label text-muted small">거래처 유형 <span class="text-danger">*</span></label>
+                                    <select class="form-select border-light" id="modalBpType" name="bpType" required>
+                                        <option value="">선택하세요</option>
+                                        <option value="고객사">고객사</option>
+                                        <option value="구매처">구매처</option>
+                                        <option value="매입매출처">매입매출처</option>
+                                    </select>
+                                </div>
+                                <div class="col-8">
+                                    <label for="modalBpName" class="form-label text-muted small">거래처명 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control border-light" id="modalBpName" name="bpName" required>
+                                </div>
+                                <div class="col-4">
+                                    <label for="modalCeoName" class="form-label text-muted small">대표자명</label>
+                                    <input type="text" class="form-control border-light" id="modalCeoName" name="ceoName">
+                                </div>
+                                <div class="col-6">
+                                    <label for="modalBizNo" class="form-label text-muted small">사업자번호</label>
+                                    <input type="text" class="form-control border-light" id="modalBizNo" name="bizNo" placeholder="123-45-67890">
+                                </div>
+                                <div class="col-6">
+                                    <label for="modalBpTel" class="form-label text-muted small">전화번호 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control border-light" id="modalBpTel" name="bp_tel" required>
+                                </div>
+								<div class="col-6">
+                                    <label for="modalBizCond" class="form-label text-muted small">업태</label>
+                                    <div class="position-relative">
+                                        <input type="text" 
+                                               class="form-control border-light" 
+                                               id="modalBizCondInput" 
+                                               placeholder="업태 검색 (예: 제조업)"
+                                               autocomplete="off">
+                                        <input type="hidden" id="modalBizCond" name="bizCond">
+                                        <input type="hidden" id="modalBizCondCode" name="bizCondCode">
+                                        <div class="dropdown-menu position-absolute w-100" id="bizCondDropdown" style="max-height: 200px; overflow-y: auto; z-index: 1050; display: none;">
+                                            <!-- 검색 결과가 여기에 표시됩니다 -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label for="modalBizType" class="form-label text-muted small">종목</label>
+                                    <input type="text" class="form-control border-light" id="modalBizType" name="bizType" placeholder="예: 의류">
+                                </div>
+                                <div class="col-4">
+                                    <label for="modalFax" class="form-label text-muted small">팩스번호</label>
+                                    <input type="text" class="form-control border-light" id="modalFax" name="fax">
+                                </div>
+                                <div class="col-4">
+                                    <label for="modalPostCode" class="form-label text-muted small">우편번호</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control border-light" id="modalPostCode" name="postCode" readonly>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm border-light" onclick="searchAddress()">검색</button>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <label for="modalAddressDetail" class="form-label text-muted small">상세주소</label>
+                                    <input type="text" class="form-control border-light" id="modalAddressDetail" name="addressDetail">
+                                </div>
+                                <div class="col-12">
+                                    <label for="modalAddress" class="form-label text-muted small">주소</label>
+                                    <input type="text" class="form-control border-light" id="modalAddress" name="address" readonly>
+                                </div>
+                                <div class="col-12">
+                                    <label for="modalBpRemark" class="form-label text-muted small">비고</label>
+                                    <textarea class="form-control border-light" id="modalBpRemark" name="bp_remark" rows="3" placeholder="기타 특이사항을 입력하세요"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-0 pt-2">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="modalSubmitButton">저장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- 거래처 상세 모달 -->
+        <div class="modal fade" id="clientDetailModal" tabindex="-1" aria-labelledby="clientDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-2">
+                        <h5 class="modal-title" id="clientDetailModalLabel">거래처 상세 정보</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <!-- 거래처 기본 정보 -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3 pb-2 border-bottom border-light">
+                                <i class="bi bi-building me-2"></i>거래처 기본 정보
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">거래처 코드</label>
+                                        <div class="fw-medium" id="detailBpCode">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">거래처명</label>
+                                        <div class="fw-medium" id="detailBpName">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">유형</label>
+                                        <div>
+                                            <span id="detailBpType" class="badge bg-secondary">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">대표자명</label>
+                                        <div class="fw-medium" id="detailCeoName">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">사업자번호</label>
+                                        <div class="fw-medium" id="detailBizNo">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">업태</label>
+                                        <div class="fw-medium" id="detailBizCond">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">종목</label>
+                                        <div class="fw-medium" id="detailBizType">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">전화번호</label>
+                                        <div class="fw-medium" id="detailBpTel">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">팩스번호</label>
+                                        <div class="fw-medium" id="detailFax">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">주소</label>
+                                        <div class="fw-medium" id="detailFullAddress">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-3 bg-light rounded-2 border-0">
+                                        <label class="small text-muted mb-1">비고</label>
+                                        <div class="text-muted" id="detailBpRemark">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-      // DOMContentLoaded는 한 번만 사용하고, 모든 DOM 조작 및 이벤트 리스너 등록을 그 안에 넣습니다.
-      document.addEventListener("DOMContentLoaded", function() {
-          // 비고 모달 및 거래처명 링크 관련 이벤트 리스너 (기존 코드 유지)
-          document
-            .getElementById("clientTableBody")
-            .addEventListener("click", function (e) {
-              if (e.target.classList.contains("btn-remark")) {
-                const remark = e.target.getAttribute("data-remark");
-                document.getElementById("remarkModalBody").textContent = remark;
-                const modal = new bootstrap.Modal(
-                  document.getElementById("remarkModal")
-                );
-                modal.show();
-              }
-               if (e.target.classList.contains("name-link")) {
-                 console.log("거래처명 링크 클릭:", e.target.textContent);
-                 console.log("이동할 URL:", e.target.href);
-               }
-            });
+                        <!-- 담당자 목록 -->
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light">
+                                <h6 class="text-muted mb-0">
+                                    <i class="bi bi-people me-2"></i>담당자 목록
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addContactInDetailBtn">
+                                    <i class="bi bi-person-plus"></i> 담당자 추가
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="contactTable" class="table table-hover">
+                                    <thead>
+                                        <tr class="table-light">
+                                            <th class="border-light py-3 small text-muted fw-normal">이름</th>
+                                            <th class="border-light py-3 small text-muted fw-normal">직책</th>
+                                            <th class="border-light py-3 small text-muted fw-normal">전화번호</th>
+                                            <th class="border-light py-3 small text-muted fw-normal">휴대폰</th>
+                                            <th class="border-light py-3 small text-muted fw-normal">이메일</th>
+                                            <th class="border-light py-3 small text-muted fw-normal">비고</th>
+                                            <th class="border-light py-3 small text-muted fw-normal text-center" width="120px">작업</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="7" class="text-center py-5 text-muted border-light">
+                                                <div class="py-3">
+                                                    <i class="bi bi-person-x fs-2 text-muted opacity-50"></i>
+                                                    <div class="mt-2 small">등록된 담당자가 없습니다.</div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-2">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-          // ------------------ 검색 관련 JavaScript ------------------
-          const searchBtn = document.getElementById("searchBtn");
-          const searchInput = document.getElementById("searchInput");
-          const typeFilter = document.getElementById("typeFilter");
-          const filterForm = document.getElementById("filterForm");
+        <!-- 담당자 등록/수정 모달 -->
+        <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-2">
+                        <h5 class="modal-title" id="contactModalLabel">담당자 등록</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <form id="contactForm">
+                            <input type="hidden" id="contactBpId" name="bpId">
+                            <input type="hidden" id="contactBcId" name="bcId">
+                            
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label for="contactBcName" class="form-label text-muted small">담당자명 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control border-light" id="contactBcName" name="bcName" required>
+                                </div>
+                                <div class="col-6">
+                                    <label for="contactBcPosition" class="form-label text-muted small">직책</label>
+                                    <input type="text" class="form-control border-light" id="contactBcPosition" name="bcPosition">
+                                </div>
+                                <div class="col-6">
+                                    <label for="contactTel" class="form-label text-muted small">전화번호</label>
+                                    <input type="text" class="form-control border-light" id="contactTel" name="tel">
+                                </div>
+                                <div class="col-6">
+                                    <label for="contactHp" class="form-label text-muted small">휴대폰</label>
+                                    <input type="text" class="form-control border-light" id="contactHp" name="hp">
+                                </div>
+                                <div class="col-12">
+                                    <label for="contactEmail" class="form-label text-muted small">이메일</label>
+                                    <input type="email" class="form-control border-light" id="contactEmail" name="email">
+                                </div>
+                                <div class="col-12">
+                                    <label for="contactRemark" class="form-label text-muted small">비고</label>
+                                    <textarea class="form-control border-light" id="contactRemark" name="remark" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-0 pt-2">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="contactSubmitButton">저장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-          // 요소가 제대로 찾아졌는지 확인 (디버깅용)
-          console.log("searchBtn:", searchBtn);
-          console.log("searchInput:", searchInput);
-          console.log("typeFilter:", typeFilter);
-          console.log("filterForm:", filterForm);
+        <!-- 비고 모달 -->
+        <div class="modal fade" id="remarkModal" tabindex="-1" aria-labelledby="remarkModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-2">
+                        <h5 class="modal-title" id="remarkModalLabel">비고 내용</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <div class="p-3 bg-light rounded-2 border-0">
+                            <p id="modalRemarkContent" class="mb-0 text-muted"></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-2">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-
-          // 검색 버튼 클릭 이벤트 리스너
-          if (searchBtn) { // 요소가 존재하는지 확인 후 이벤트 리스너 등록
-              searchBtn.addEventListener("click", function() {
-                  submitSearchForm();
-              });
-          }
-
-          // input에서 Enter 키 누를 시 검색 (옵션)
-          if (searchInput) {
-              searchInput.addEventListener("keypress", function(e) {
-                  if (e.key === 'Enter') {
-                      e.preventDefault(); // 기본 Enter 동작(폼 제출) 방지
-                      submitSearchForm();
-                  }
-              });
-          }
-
-          // select 박스 변경 시 자동 검색 (옵션)
-          if (typeFilter) {
-              typeFilter.addEventListener("change", function() {
-                  submitSearchForm();
-              });
-          }
-
-          // 폼 제출 함수
-          function submitSearchForm() {
-              if (filterForm) { // 폼 요소가 존재하는지 확인
-                  filterForm.action = "/client"; 
-                  filterForm.method = "GET";     
-                  filterForm.submit();           
-              } else {
-                  console.error("Error: filterForm not found.");
-              }
-          }
-          // -----------------------------------------------------------
-
-      }); // DOMContentLoaded 닫는 괄호
-    </script>
+    <script th:src="@{/js/client_list.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </div>
