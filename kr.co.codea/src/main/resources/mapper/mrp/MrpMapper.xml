@@ -2,20 +2,127 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.mrp.MrpMapper">
 
-<!-- 날짜검색 -->
-<select id="alldata" resultType="kr.co.codea.mrp.MrpDTO">
+  <insert id="insertMrp" parameterType="kr.co.codea.mrp.MrpDTO">
+    INSERT INTO MRP (
+      PLAN_ID,
+      ITEM_ID,
+      ITEM_CODE,
+      ITEM_NAME,
+      ITEM_TYPE,
+      DISPLAY_PRICE,
+      UNIT,
+      LEAD_TIME,
+      CHILD_ID,
+      QUANTITY,
+      PRICE,
+      PLAN_QTY,
+      REQUIRED_QTY,
+      EMP_NO,
+      STATUS,
+      CURRENT_QTY,
+      START_DATE,
+      DUE_DATE,
+      REQUIRED_DATE,
+      PLANNED_ORDERDATE,
+      DDUE_DATE,
+      EXPECTED_AMOUNT,
+      SELECT_TIME,
+      REMARK
+      -- CREATED_AT, UPDATED_AT은 트리거에서 자동생성
+    ) VALUES (
+      #{planId},
+      #{itemId},
+      #{itemCode},
+      #{itemName},
+      #{itemType},
+      #{displayPrice},
+      #{unit},
+      #{leadTime},
+      #{childId},
+      #{quantity},
+      #{price},
+      #{planQty},
+      #{requiredQty},
+      #{empNo},
+      #{status},
+      #{currentQty},
+      #{startDate},
+      #{dueDate},
+      #{requiredDate},
+      #{plannedOrderDate},
+      #{ddueDate},
+      #{expectedAmount},
+      #{selectTime},
+      #{remark}
+      -- createdAt, updatedAt은 트리거에서 처리
+    )
+  </insert>
 
+<!-- 생산계획에서 출력한 계산결과 select -->
+<select id="SelectCalcData" resultType="kr.co.codea.mrp.MrpDTO">
+  SELECT
+    P1.PLAN_ID,
+    I1.ITEM_ID,
+    P1.ITEM_CODE,
+    I1.ITEM_NAME,
+    I1.ITEM_TYPE,
+    CASE
+      WHEN I1.ITEM_TYPE = '완제품' THEN msp.HIGHEST_SALES_PRICE
+      WHEN I1.ITEM_TYPE = '원자재' THEN mp.LOWEST_PURCHASE_PRICE
+      ELSE NULL
+    END AS DISPLAY_PRICE,
+    cc.CODE AS UNIT,
+    I1.LEAD_TIME,
+    bd.CHILD_ID,
+    bd.QUANTITY,
+    bd.PRICE,
+    P1.PLAN_QTY,
+    (P1.PLAN_QTY * bd.QUANTITY) AS REQUIRED_QTY,
+    P1.EMP_NO,
+    P1.STATUS,
+    I.CURRENT_QTY,
+    P1.START_DATE,
+    P1.DUE_DATE,
+    (P1.START_DATE - 1) AS REQUIRED_DATE,
+    (P1.START_DATE - 1 - I1.LEAD_TIME) AS PLANNED_ORDERDATE,
+    (P1.DUE_DATE + I1.LEAD_TIME) AS DDUE_DATE,
+    (bd.PRICE * (P1.PLAN_QTY * bd.QUANTITY)) AS EXPECTED_AMOUNT,
+    SYSDATE AS SELECT_TIME,
+    P1.REMARK
+  FROM
+    PRODUCTION_PLAN P1
+    JOIN ITEM I1 ON I1.ITEM_CODE = P1.ITEM_CODE
+    JOIN COMMON_CODE cc ON cc.CODE_ID = I1.UNIT_CODE
+    LEFT OUTER JOIN (
+      SELECT pi.ITEM_ID, MIN(pi.PRICE) AS LOWEST_PURCHASE_PRICE
+      FROM PARTNER_ITEM pi
+      JOIN BUSINESS_PARTNER bp ON pi.BP_ID = bp.BP_ID
+      WHERE pi.PRICE_TYPE = '매입단가'
+        AND bp.BP_TYPE = '구매처'
+      GROUP BY pi.ITEM_ID
+    ) mp ON I1.ITEM_ID = mp.ITEM_ID
+    LEFT OUTER JOIN (
+      SELECT pi.ITEM_ID, MAX(pi.PRICE) AS HIGHEST_SALES_PRICE
+      FROM PARTNER_ITEM pi
+      JOIN BUSINESS_PARTNER bp ON pi.BP_ID = bp.BP_ID
+      WHERE pi.PRICE_TYPE = '판매가'
+        AND bp.BP_TYPE = '고객사'
+      GROUP BY pi.ITEM_ID
+    ) msp ON I1.ITEM_ID = msp.ITEM_ID
+    LEFT OUTER JOIN (
+      SELECT ITEM_ID, SUM(CURRENT_QTY) AS CURRENT_QTY
+      FROM INVENTORY
+      GROUP BY ITEM_ID
+    ) I ON I.ITEM_ID = I1.ITEM_ID
+    JOIN BOM_HEADER bh ON bh.ITEM_ID = I1.ITEM_ID
+    JOIN BOM_DETAIL bd ON bd.BOM_HEADER_ID = bh.BOM_HEADER_ID
+  WHERE
+    <foreach collection="planIds" item="planId" open="P1.PLAN_ID IN (" separator="," close=")">
+      #{planId}
+    </foreach>
+  ORDER BY P1.PLAN_ID, bd.CHILD_ID
 </select>
 
-<!-- 생산계획 모든 데이터 가져오는 select -->
-<select id="plandata" resultType="kr.co.codea.mrp.MrpDTO">
-
-</select>
-
-<!-- 계산하기 누를시 들어가는 데이터 insert -->
-<insert id="insertMrp">
-
-</insert>
 
 <!-- 생산계획 조회 -->
     <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
@@ -29,6 +136,7 @@ SELECT
 	    PP.PLAN_QTY,
 	    PP.ACTUAL_QTY,       
 	    PP.STATUS,
+	    PP.CREATED_AT,
 	    PP.REMARK,
 	    PP.EMP_NO
 	FROM

@@ -82,6 +82,8 @@ dependencies {
 	implementation 'org.apache.poi:poi:5.2.3'
 	implementation 'org.apache.poi:poi-ooxml:5.2.3'
 	
+	//sftp
+	implementation 'com.jcraft:jsch:0.1.55'
 }
 
 tasks.named('test') {

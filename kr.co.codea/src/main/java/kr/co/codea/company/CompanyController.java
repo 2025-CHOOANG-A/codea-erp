@@ -54,7 +54,7 @@ public class CompanyController {
     	    @RequestParam("originCompImg") String originCompImg,
     	    @RequestParam("originBizImg") String originBizImg) {
     	try {
-    		/*
+    		
             if (dto.getCompImgFile() != null && !dto.getCompImgFile().isEmpty()) {
                 String originalFileName = dto.getCompImgFile().getOriginalFilename();
                 dto.setCompImg(originalFileName);
@@ -63,12 +63,12 @@ public class CompanyController {
                 String originalFileName = dto.getBizImgFile().getOriginalFilename();
                 dto.setBizImg(originalFileName);
             }
-            */
+            
             // 회사 로고 이미지 처리
             if (compImgFile != null && !compImgFile.isEmpty()) {
                 String fileName = compImgFile.getOriginalFilename();
                 dto.setCompImg(fileName);
-                //cdn_model.cdn_ftp(compImgFile); //FTP실행시 풀면됨
+                cdn_model.cdn_ftp(compImgFile); //FTP실행시 풀면됨
             } else {
                 dto.setCompImg(originCompImg); // 기존 파일 유지
             }
@@ -77,7 +77,7 @@ public class CompanyController {
             if (bizImgFile != null && !bizImgFile.isEmpty()) {
                 String fileName = bizImgFile.getOriginalFilename();
                 dto.setBizImg(fileName);
-                //cdn_model.cdn_ftp(bizImgFile);
+                cdn_model.cdn_ftp(bizImgFile);
             } else {
                 dto.setBizImg(originBizImg); // 기존 파일 유지
             }
@@ -98,7 +98,7 @@ public class CompanyController {
     				System.out.println("update 실패");
     			}
     		}
-    		/*
+    		
     		try {
     			boolean Fileresult1 = this.cdn_model.cdn_ftp(compImgFile);
     			boolean Fileresult2 = this.cdn_model.cdn_ftp(bizImgFile);
@@ -112,7 +112,7 @@ public class CompanyController {
     			this.log.info(e.toString());
     		}finally {
     			
-    		}*/
+    		}
     		
     	}
     	catch(Exception e) {
