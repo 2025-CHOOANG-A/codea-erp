@@ -37,9 +37,30 @@ public class InventoryDTO {
 	// 변경 전 평균 단가, 변경 후 평균 단가
 	double beforeCost, afterCost;
 	
-	// 변경 사유, 변경 일자
-	String reason, editDate;
+	// 로그 타입, 변경 사유, 변경 일자
+	String logType, reason, editDate;
 	
 	// 제품 단가
 	int price;
+	
+	// 입출고 ID, 거래 유형
+	int inoutId, inoutType;
+	
+	// 입출고 시각
+	String inoutTime;
+	
+	// 총액
+	double totalCost;
+
+	// 원천 문서 유형, 원천 문서 헤더 ID
+	int sourceDocType, sourceDocHeaderId;
+	
+	// 발주 번호, 발주 일자, 생산 번호, 생산 일자(생산 완료일), 주문 번호, 주문 일자
+	String purchaseCode, purchaseDate, planId, completionDate, ordCode, orderDate;
+	
+	// 발주 ID, 주문 Id
+	int purchaseId, ordId;
+	
+	// 문서 번호, 문서 일자
+	String docNo, docDate;
 }

@@ -12,7 +12,7 @@ public class InventoryDAO implements InventoryService {
 	private InventoryMapper mp;
 	
 	@Override
-	public List<InventoryDTO> inv_list(String itemType, String field, String keyword) {
+	public List<InventoryDTO> inv_list(String itemType, String field, String keyword) {	// 목록 페이지
 		List<InventoryDTO> list = this.mp.inv_list(itemType, field, keyword);
 		
 		return list;
@@ -23,6 +23,13 @@ public class InventoryDAO implements InventoryService {
 		InventoryDTO detail = this.mp.inv_detail(inventoryId);
 		
 		return detail;
+	}
+	
+	@Override
+	public List<InventoryDTO> inout(int itemId, int whId) {	// 입출고 내역
+		List<InventoryDTO> inout = this.mp.inout(itemId, whId);
+		
+		return inout;
 	}
 
 	@Override
@@ -149,6 +156,17 @@ public class InventoryDAO implements InventoryService {
 		
 		int result = this.mp.inv_insert(dto);
 		
+		Integer inventoryId = this.mp.inv_id(dto.getItemId(), dto.getWhId());
+		dto.setInventoryId(inventoryId);
+		
+		dto.setLogType("등록");	// 로그 - 등록 및 수정
+		dto.setBeforeQty(cur_qty);	// 로그 - 변경 전 수량 
+		dto.setAfterQty(dto.getQuantity());	// 로그 - 변경 후 수량
+		dto.setBeforeCost(avg_cost);	// 로그 - 변경 전 평균 단가
+		dto.setAfterCost(dto.getAverageCost());	// 로그 - 변경 후 평균 단가
+		
+		this.mp.inv_log_insert(dto);	// 로그 테이블에 저장
+		
 		return result;
 	}
 	
@@ -160,15 +178,39 @@ public class InventoryDAO implements InventoryService {
 	}
 	
 	@Override
-	public Integer inv_update(InventoryDTO dto) {	// 재고 수정
-		InventoryDTO inv_avg_cost = this.mp.inv_avg_cost(dto.getItemId(), dto.getWhId());
-		dto.setAverageCost(inv_avg_cost.getAverageCost());	// 기존 평균 단가
+	public InventoryDTO inv_before(int itemId, int whId) {	// 기존 재고 및 평균 단가 조회
+		InventoryDTO before = this.mp.inv_before(itemId, whId);
 		
+		InventoryDTO dto = new InventoryDTO();
+		dto.setCurrentQty(before.getCurrentQty());
+		dto.setAverageCost(before.getAverageCost());
+		
+		return dto;
+	}
+	
+	@Override
+	public Integer inv_update(InventoryDTO dto) {	// 재고 수정
+		InventoryDTO before = this.mp.inv_before(dto.getItemId(), dto.getWhId());
+		
+		int beforeQty = before.getCurrentQty();
+		double beforeCost = before.getAverageCost();
+
 		InventoryDTO qty_dto = this.inv_dto(dto.getItemId(), dto.getWhId());
 		dto.setExpectedQty(qty_dto.getExpectedQty());	// 입고 예정 수량
 		dto.setAllocatedQty(qty_dto.getAllocatedQty());	// 출고 예정 수량
 		
+		InventoryDTO cost_dto = this.avg_cost(beforeQty, beforeCost, dto.getItemId(), dto.getWhId(), dto.getItemType());
+		dto.setAverageCost(cost_dto.getAverageCost());	// 평균 단가
+		
 		int result = this.mp.inv_update(dto);
+		
+		dto.setLogType("수정");	// 로그 - 등록 및 수정
+		dto.setBeforeQty(beforeQty);	// 로그 - 변경 전 수량 
+		dto.setAfterQty(dto.getCurrentQty());	// 로그 - 변경 후 수량
+		dto.setBeforeCost(beforeCost);	// 로그 - 변경 전 평균 단가
+		dto.setAfterCost(dto.getAverageCost());	// 로그 - 변경 후 평균 단가
+		
+		this.mp.inv_log_update(dto);
 		
 		return result;
 	}

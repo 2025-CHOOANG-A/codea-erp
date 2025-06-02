@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Repository("ReceivingDTO")
 public class ReceivingDTO {
-	// 입출고 ID, 거래 유형, 제품 번호, 창고 번호, 수량, 단가
+	// 입출고 ID, 거래 유형, 제품 번호, 창고 번호, 수량
 	int inoutId, inoutType, itemId, whId, quantity;
 	
 	// 입출고 시각, 제품 코드, 창고 코드, 비고, 기록 생성 시각, 수정 시각
