@@ -39,6 +39,7 @@ public class ProductPlanDTO {
     //작업지시/취소 확인을 위함
     private String actionType;
 
-
+    //mrp 저장여부 확인
+    private boolean mrpSaved;
 
 }

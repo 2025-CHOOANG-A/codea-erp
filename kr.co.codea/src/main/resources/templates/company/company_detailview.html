@@ -8,11 +8,11 @@
             <tr>
               <th scope="row">회사 로고</th>
               <td colspan="3">
-                <img 
-                  th:src="${dto.compImg != null} ? @{${dto.compImg}} : 'https://via.placeholder.com/100x60?text=Logo'"
-                  alt="회사 로고"
-                  class="company-logo"
-                />
+			<img 
+			  th:src="${dto.compImg != null} ? @{/company/cdnimg/{img}(img=${dto.compImg})} : 'https://via.placeholder.com/100x60?text=Logo'"
+			  alt="회사 로고"
+			  class="company-logo"
+			/>
               </td>
             </tr>
             <tr>
@@ -33,7 +33,7 @@
               <th scope="row">사업자등록증</th>
               <td>
                 <img
-                  th:src="${dto.bizImg != null} ? @{${dto.bizImg}} : 'https://via.placeholder.com/100x60?text=License'"
+                  th:src="${dto.bizImg != null} ? @{/company/cdnimg/{img}(img=${dto.bizImg})} : 'https://via.placeholder.com/100x60?text=Logo'"
                   alt="사업자등록증"
                   class="company-license"
                 />

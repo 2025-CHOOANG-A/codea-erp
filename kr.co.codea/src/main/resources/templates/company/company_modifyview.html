@@ -20,9 +20,13 @@
                       accept="image/*"
                     />
                     <!-- 기존 이미지 표시 (있을 때) -->
-                    <div th:if="${dto.compImg != null}">
-                      <img th:src="@{${dto.compImg}}" alt="회사로고" style="max-height:60px;" />
-                    </div>
+					<div th:if="${dto.compImg != null}">
+					  <img 
+					    th:src="@{/company/cdnimg/{img}(img=${dto.compImg})}" 
+					    alt="회사로고" 
+					    style="max-height:60px;" 
+					  />
+					</div>
                   </td>
                 </tr>
                 <tr>
@@ -69,8 +73,12 @@
                       accept="image/*,application/pdf" />
                     <!-- 기존 파일 표시 -->
                     <div th:if="${dto.bizImg != null}">
-                      <img th:src="@{${dto.bizImg}}" alt="사업자등록증" style="max-height:60px;" />
-                    </div>
+					  <img 
+					    th:src="@{/company/cdnimg/{img}(img=${dto.bizImg})}" 
+					    alt="사업자등록증" 
+					    style="max-height:60px;" 
+					  />
+					</div>
                   </td>
                 </tr>
                 <tr>

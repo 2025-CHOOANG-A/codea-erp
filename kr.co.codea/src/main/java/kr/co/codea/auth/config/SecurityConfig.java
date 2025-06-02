@@ -77,7 +77,7 @@ public class SecurityConfig {
                 // 인증 없이 접근 가능한 공개 경로
                 .requestMatchers(
                         "/", "/login", "/auth/login", "/auth/reissue", "/favicon.ico", "/.well-known/**", "/error",
-                        "/css/**", "/js/**", "/images/**", "/webjars/**"
+                        "/css/**", "/js/**", "/images/**", "/webjars/**","/cdnimg/**" 
                 ).permitAll()
 
                 // 인증 필요 경로 (일반 사용자 접근 가능)
