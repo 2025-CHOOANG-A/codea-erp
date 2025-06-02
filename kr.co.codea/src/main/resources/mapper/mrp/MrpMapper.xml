@@ -2,6 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.mrp.MrpMapper">
 
+<select id="countMrpByPlanId" parameterType="string" resultType="int">
+  SELECT COUNT(*) FROM MRP WHERE PLAN_ID = #{planId}
+</select>
+
+<!-- 
+java.math.BigDecimal 타입 파라미터가 null인데
+MyBatis가 jdbcType을 모르니까
+Oracle에 “NULL인데 타입이 뭐임?” 하고 에러 
+-->
   <insert id="insertMrp" parameterType="kr.co.codea.mrp.MrpDTO">
     INSERT INTO MRP (
       PLAN_ID,
@@ -35,23 +44,23 @@
       #{itemCode},
       #{itemName},
       #{itemType},
-      #{displayPrice},
+      #{displayPrice, jdbcType=NUMERIC},
       #{unit},
       #{leadTime},
       #{childId},
       #{quantity},
-      #{price},
-      #{planQty},
-      #{requiredQty},
+      #{price, jdbcType=NUMERIC},
+      #{planQty, jdbcType=NUMERIC},
+      #{requiredQty, jdbcType=NUMERIC},
       #{empNo},
       #{status},
-      #{currentQty},
+      #{currentQty, jdbcType=NUMERIC},
       #{startDate},
       #{dueDate},
       #{requiredDate},
       #{plannedOrderDate},
       #{ddueDate},
-      #{expectedAmount},
+      #{expectedAmount, jdbcType=NUMERIC},
       #{selectTime},
       #{remark}
       -- createdAt, updatedAt은 트리거에서 처리
@@ -123,8 +132,55 @@
   ORDER BY P1.PLAN_ID, bd.CHILD_ID
 </select>
 
+<!-- 저장시 상테 update oracle에서 자신의 테이블 DML 쿼리 트리거 사용 X -->
+<update id="updateMrpStatusToDone">
+  UPDATE MRP
+  SET STATUS = '자재계획완료'
+  WHERE PLAN_ID = #{planId}
+</update>
 
-<!-- 생산계획 조회 -->
+<select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
+  SELECT
+      PP.PLAN_ID,
+      PP.ITEM_CODE,
+      I.ITEM_NAME,
+      PP.START_DATE,
+      PP.DUE_DATE,
+      PP.COMPLETION_DATE,
+      PP.PLAN_QTY,
+      PP.ACTUAL_QTY,
+      PP.STATUS,
+      PP.CREATED_AT,
+      PP.REMARK,
+      PP.EMP_NO
+  FROM
+      PRODUCTION_PLAN PP
+      JOIN ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
+  <where>
+      <if test="keyword != null and keyword != ''">
+          AND (
+              PP.PLAN_ID LIKE '%' || #{keyword} || '%'
+              OR I.ITEM_NAME LIKE '%' || #{keyword} || '%'
+          )
+      </if>
+      <if test="startDate != null">
+          AND PP.START_DATE &gt;= #{startDate}
+      </if>
+      <if test="endDate != null">
+          AND PP.START_DATE &lt;= #{endDate}
+      </if>
+      <if test="status != null and status != ''">
+          AND PP.STATUS = #{status}
+      </if>
+      <if test="empNo != null and empNo != ''">
+          AND PP.EMP_NO = #{empNo}
+      </if>
+  </where>
+  ORDER BY PP.PLAN_ID DESC
+</select>
+
+
+<!--  
     <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
 SELECT
 	    PP.PLAN_ID,
@@ -165,6 +221,6 @@ SELECT
     </where>
     ORDER BY PP.PLAN_ID DESC
     </select>
-
+-->
 
 </mapper>

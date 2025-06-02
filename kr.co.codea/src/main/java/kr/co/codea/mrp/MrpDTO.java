@@ -34,4 +34,6 @@ public class MrpDTO {
     String remark;            // 비고
     LocalDate createdAt;      // 생성일시
     LocalDate updatedAt;      // 마지막 수정일
+    
+    private boolean mrpSaved;
 }
