@@ -155,10 +155,10 @@ LEFT JOIN ITEM_CATEGORY catS ON .ITEM_CAT_S = catS.CATEGORY_ID
 </delete>
 
 <!-- 제품을 수정하기 위해 불러오는항목  -->
-<select id="select_item_by_code" parameterType="String" resultType="kr.co.codea.item.itemDTO">
-  SELECT *
+<select id="select_item_by_id" parameterType="String" resultType="kr.co.codea.item.itemDTO">
+SELECT *
   FROM ITEM
-  WHERE ITEM_CODE = #{itemCode}
+  WHERE ITEM_ID = #{itemId}
 </select>
 
 

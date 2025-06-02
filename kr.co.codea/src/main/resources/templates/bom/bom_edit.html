@@ -297,7 +297,7 @@
                       maxlength="20"
                       required
                       placeholder="자동생성 또는 입력"
-                      value="BOM2024-01"
+                      th:value="${header.bomCode}"
                       readonly
                     />
                   </td>
@@ -381,6 +381,7 @@
             </table>
           </div>
         </form>
+        
 
         <!-- Material List Table -->
         <div>
@@ -421,6 +422,19 @@
               </thead>
               <tbody>
                 <!-- JS로 자재 목록 렌더링 -->
+                  <tr th:each="mat: ${select_detail_list}" th:if="${mat.bomCode == bomCode}">
+                   <td><input type="checkbox" /></td>
+                   <td th:text="${mat.bomCode}">BOM001</td>
+                   <td th:text="${mat.materialCode}">MAT123</td>
+                   <td th:text="${mat.materialName}">알루미늄</td>
+                   <td th:text="${mat.spec}">1.5T</td>
+                   <td th:text="${mat.unitName}">EA</td>
+                   <td th:text="${mat.price}">1000</td>
+                   <td th:text="${mat.quantity}">3</td>
+                   <td>
+                     <button type="button" class="btn btn-sm btn-secondary">수정</button>
+    </td>
+  </tr>
               </tbody>
             </table>
           </div>

@@ -8,7 +8,8 @@ import lombok.Data;
 
 @Data
 @Repository("bomDTO")
-public class bomDTO {	
+public class bomDTO {
+	
 	/*완제품조회 */
     private String itemId;  // 자동증가값 
     private String itemCode; // 제품코드(제품목록리스트, 주문등록)
@@ -22,7 +23,7 @@ public class bomDTO {
 	private String reMark; // 비고
 	
 	
-	//ㅠ
+
 	private String bomCode;         // BOM_HEADER_ID
     private String productCode;     // 완제품 코드
     private String productName;     // 완제품 명

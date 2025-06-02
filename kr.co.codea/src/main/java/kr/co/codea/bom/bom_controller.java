@@ -35,13 +35,18 @@ public class bom_controller {
 	@GetMapping("/bom_detail")
 	public String bom_detail(@RequestParam("bomCode") String bomCode, Model m) {
          
+		//detail, edit 전송
+		  bomDTO bom= this.b_dao.select_bom_by_bom(bomCode);
+		  m.addAttribute("bomCode",bomCode);
+		
+		
 		  //bom 코드번호 기준으로 조회하게 하기 
-		 m.addAttribute("selectedBomCode", bomCode);
+		// m.addAttribute("selectedBomCode", bomCode);
 		
 		  // ⛳️ 이 부분 추가! 단일 BOM 헤더만 조회
 		    bomDTO header = this.b_dao.selectBomHeaderByCode(bomCode);
-		    m.addAttribute("header", header); 
-	//System.out.println(header);
+		   m.addAttribute("header", header); 
+	      // System.out.println(header);
 		 
         // 자재 , 원자재로 넘기기 		
 		List<bomDTO> select_header_list = this.b_dao.bom_item_type_y(); //완제품 
@@ -65,20 +70,39 @@ public class bom_controller {
        List<bomDTO> select_bomList = this.b_dao.selectBomList();
        m.addAttribute("select_bomList", select_bomList); // 단순 리스트
        //m.addAttribute("header", bomCode);
+       //System.out.println(select_bomList);
        return "bom/bom_list";
    }
    
   
-   @GetMapping("/bom/bom_edit")
-   public String editBomForm( @RequestParam("bomCode") String bomCode, Model m) {
-	
+   @GetMapping("/bom_edit")
+   public String editBomForm(@RequestParam("bomCode") String bomCode, Model m) {
+	  //detail, edit 링크 전송
+	  bomDTO bom= this.b_dao.select_bom_by_bom(bomCode);
+	m.addAttribute("bomCode", bomCode);
 	  
-       List<bomDTO> headerList = b_dao.selectBomHeaderByBomCode(bomCode);
-       List<bomDTO> detailList = b_dao.selectBomDetailByBomCode(bomCode);
+	  // ⛳️ 이 부분 추가! 단일 BOM 헤더만 조회
+	    bomDTO header = this.b_dao.selectBomHeaderByCode(bomCode);
+	   m.addAttribute("header", header); 
+	   System.out.println(header);
+	  	  
+	  List<bomDTO> select_header_list = this.b_dao.bom_item_type_y(); //완제품 
+		m.addAttribute("select_header_list", select_header_list);
+		//System.out.println(select_header_list);
+		
+		List<bomDTO> select_detail_list = this.b_dao.bom_item_type_j(); //원자재		
+		m.addAttribute("select_detail_list", select_detail_list);
+		//System.out.println(select_detail_list);
+	/*
+      List<bomDTO> headerList = b_dao.selectBomHeaderByBomCode(bomCode);
+      List<bomDTO> detailList = b_dao.selectBomDetailByBomCode(bomCode);
 
-       m.addAttribute("select_header_list", headerList);
-       m.addAttribute("select_detail_list", detailList);
-       m.addAttribute("bomCode2", bomCode); // 필요 시 추가
+      m.addAttribute("headerList", headerList);
+      m.addAttribute("detailList", detailList);
+      // m.addAttribute("bomCode", bomCode); // 필요 시 추가
+      ///
+       */
+   //System.out.println(bomCode);
 
        return "bom/bom_edit"; // 수정화면 (HTML or Thymeleaf)
        
@@ -97,12 +121,40 @@ public class bom_controller {
        }
 
        // model에 bomCode를 넣어 전달
-       model.addAttribute("bomCode", dto.getBomCode());
+       model.addAttribute("bomCode", dto.getBomHeaderId());
 
        // forward 방식으로 이동 (예: bom_detail.jsp)
        return "bom/bom_detail"; // → View Resolver가 이 경로의 JSP or Thymeleaf 찾아감
    }
   
+ 
+   @PostMapping("/bom_deleteok")
+   public String deleteBom(@RequestParam("bomCode") String bomCode, Model m) {
+           // 1. 상세부터 삭제
+           int deletedDetail = this.b_dao.delete_bom_detail(bomCode);
+
+           // 2. 그 다음 헤더 삭제
+           int deletedHeader = this.b_dao.delete_bom_header(bomCode);
+
+           // 삭제 후 목록 다시 가져오기
+           List<bomDTO> bomList = this.b_dao.selectBomList();
+           m.addAttribute("bomList", bomList);
+           
+           
+           // 🔥 추가: groupedBomMap 만들기
+           Map<String, List<bomDTO>> groupedBomMap = bomList.stream()
+               .collect(Collectors.groupingBy(b -> b.getBomCode()));
+           m.addAttribute("groupedBomMap", groupedBomMap);
+
+           // 메시지도 같이 넘기기
+           m.addAttribute("msg", "BOM이 성공적으로 삭제되었습니다!");
+
+           return "bom/bom_list";
+   }
+ 
+   
+ 
+   
   //BOM 삭제 
    @GetMapping("/bom_delete")
    public String deleteBom(@RequestParam("bomCode") String bomCode) {

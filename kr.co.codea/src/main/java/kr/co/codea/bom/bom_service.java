@@ -43,4 +43,13 @@ public interface bom_service {
 	 bomDTO selectBomHeaderByCode(String bomCode);
 	
 	
+	 //bom 헤더 단일 상세 정보전달 
+      public bomDTO select_bom_by_bom(String bomCode);
+     
+     /*BOM 전체 삭제 */
+	   int delete_bom_header(String bomCode);
+	   int delete_bom_detail(String bomCode);
+	   
+	 
+	 
 }

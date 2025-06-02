@@ -118,6 +118,7 @@
       });
 
     // 자재 선택 삭제
+	/*
     document
       .querySelector(".btn-delete-material")
       .addEventListener("click", function () {
@@ -155,17 +156,23 @@
     document
       .querySelector(".btn-add-material")
       .addEventListener("click", openMaterialAddModal);
+*/
+
+
 
     // 하단 버튼 이벤트 (샘플)
     document.getElementById("btnList").addEventListener("click", function () {
       alert("목록 페이지로 이동");
+	  location.href = "/bom/bom_list";
     });
+	
 	
 	document.getElementById("btnEdit").addEventListener("click", function () {
 	  alert("수정 페이지로 이동");
 
-	  // 🔥 여기서 bomCode 가져오기
-	  const bomCode = document.getElementById("bomCode").value;
+	  const bomCode = document.getElementById("bomCode")?.value;
+
+	  console.log("수정 이동할 BOM 코드:", bomCode); // ✅ 콘솔로 확인
 
 	  if (bomCode) {
 	    location.href = "/bom/bom_edit?bomCode=" + bomCode;
@@ -174,36 +181,18 @@
 	  }
 	});
 	
+	document.getElementById("btnDelete").addEventListener("click", function () {
+	  if (confirm("정말 삭제하시겠습니까?")) {
+	    const bomCode = document.getElementById("bomCode").value;
+	    document.getElementById("bomCodeInput").value = bomCode;
+	    document.getElementById("deleteForm").submit();
+	  }
+	});
 	
-	document.addEventListener("DOMContentLoaded", function () {
-	  const editBtn = document.getElementById("btnEdit");
-
-	  if (editBtn) {
-	    editBtn.addEventListener("click", function () {
-	      const bomCode = document.getElementById("bomCode").value;
-	      if (bomCode) {
-	        location.href = "/bom/bom_edit?bomCode=" + bomCode;
-	      } else {
-	        alert("BOM 코드가 없습니다.");
-	      }
-	    });
-	  }
-	});
+	
+	
+	
 	/*
-	document.getElementById("btnEdit").addEventListener("click", function () {
-	  const bomCode = document.getElementById("bomCode").value;
-	  if (bomCode) {
-	       location.href = "/bom/bom_detail?bomCode=" + bomCode;
-	  } else {
-	    alert("BOM 코드가 없습니다.");
-	  }
-	});
-*/	
-/*
-    document.getElementById("btnEdit").addEventListener("click", function () {
-      alert("수정 페이지로 이동");
-    });
-*/
     document
       .getElementById("btnDelete")
       .addEventListener("click", function () {
@@ -211,7 +200,7 @@
           alert("삭제되었습니다.");
         }
       });
-
+     */
     // 초기 렌더링
     document.addEventListener("DOMContentLoaded", () => {
       renderBomDetail();

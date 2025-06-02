@@ -78,9 +78,17 @@ public class itemDAO implements item_service{
 }
    
    //수정시 필요한 번호 불러옴 
+   /*
    @Override
-public itemDTO select_item_by_code(String itemCode) {
+    public itemDTO select_item_by_code(String itemCode) {
 	   return mp.select_item_by_code(itemCode);
 }
-   
+   */
+   //수정시 필요한 번호 불러옴 
+   @Override
+   public itemDTO select_item_by_id(String itemId) {
+       return this.mp.select_item_by_id(itemId);
+   }  
+
+
 }

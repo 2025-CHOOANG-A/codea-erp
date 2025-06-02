@@ -38,10 +38,16 @@ public class item_controller {
 	itemDTO dto;
 	
 	 @GetMapping("/item_detail")
-	 public String item_detail(@RequestParam("itemId") Integer itemId, Model m) {		   
-		 List<itemDTO> item_detail_list = this.dao.item_detail();
+	 public String item_detail(@RequestParam("itemId") String itemId, Model m) {		   
+		 
+		 itemDTO item = this.dao.select_item_by_id(itemId);
+		 m.addAttribute("item", item); 
+		// System.out.println(item);
+		  
+		  List<itemDTO> item_detail_list = this.dao.item_detail();
 	     m.addAttribute("item_detail_list", item_detail_list);
-	     System.out.println(item_detail_list);
+	     m.addAttribute("itemId", itemId);
+	     //System.out.println(item_detail_list);
 	 
 	     return "item/item_detail";
 	 }	
@@ -104,10 +110,22 @@ public class item_controller {
 	*/
 	 
 	  @GetMapping("/item_edite")
-	    public String item_modify(@RequestParam("itemCode") String itemCode, Model model) {
-		    itemDTO item = this.dao.select_item_by_code(itemCode); 
-	        model.addAttribute("item", item);
-	        return "item/item_modify"; // 수정 폼 페이지
+	    public String item_modify(@RequestParam("itemId") String itemId, Model m) {
+		   itemDTO item = this.dao.select_item_by_id(itemId);
+	        m.addAttribute("item", item);
+	        
+	        
+	        List<itemDTO> bp_list = this.dao.bp_select();
+	    	List<itemDTO> calL = this.dao.selectCatL();
+			List<itemDTO> calS = this.dao.selectCatS();
+			List<itemDTO> uni_code = this.dao.unitcode_list();
+			m.addAttribute("bp_list", bp_list); //거래처 정보 선택
+			m.addAttribute("calL",calL); //대분류 항목만 가져옴
+			m.addAttribute("calS", calS); //소분류 항목만 가져옴
+			m.addAttribute("uni_code", uni_code); //단위 항목만 가져옴
+	        
+	        System.out.println(item);
+	        return "item/item_edite"; // 수정 폼 페이지
 	    }
 
 	    /**
@@ -124,7 +142,7 @@ public class item_controller {
 	        } else {
 	            model.addAttribute("error", "수정 실패");
 	            model.addAttribute("item", dto);
-	            return "item/item_modify"; // 수정폼으로 복귀
+	            return "item/item_list"; // 수정폼으로 복귀
 	        }
 	    }
 	

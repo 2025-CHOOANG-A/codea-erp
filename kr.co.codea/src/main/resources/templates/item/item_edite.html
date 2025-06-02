@@ -191,42 +191,38 @@
             <tbody>
               <tr>
                 <th>제품코드 <span class="required">*</span></th>
-                <td>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="productCode"
-                    value="PRD20240601"
-                    readonly
-                  />
+                <td >
+                 <input type="text"
+                 class="form-control"
+                 name="itemCode"
+                 id="itemCode"
+                 th:value="${item.itemCode}"
+                 readonly />
                 </td>
                 <th>제품구분 <span class="required">*</span></th>
                 <td>
-                  <select class="form-select" id="productType" required>
-                    <option value="">선택</option>
-                    <option value="제품">제품</option>
-                    <option value="자재">자재</option>
+                  <select class="form-select" id="itemType" name="itemType" required>
+                  <option value="" th:selected="${item.itemType == null}">선택</option>
+                  <option th:value="완제품" th:selected="${item.itemType == '완제품'}">완제품</option>
+                  <option th:value="원자재" th:selected="${item.itemType == '원자재'}">원자재</option>
                   </select>
                 </td>
               </tr>
               <tr>
                 <th>대분류 <span class="required">*</span></th>
-                <td>
-                  <select class="form-select" id="mainCategory" required>
+                <td  th:value="${item.itemCatL}" th:each="cl:${calL}">
+                <select class="form-select" name="itemCatL" id="itemCatL" required>
                     <option value="">선택</option>
-                    <option value="전자">전자</option>
-                    <option value="화학">화학</option>
-                    <option value="식품">식품</option>
+                    <option th:text="${cl.categoryId}"></option>
                   </select>
+                <!-- 필요에 따라 더 추가하세요 -->
+                </select>
                 </td>
                 <th>소분류 <span class="required">*</span></th>
                 <td>
-                  <select class="form-select" id="subCategory" required>
+                   <select class="form-select" id="itemCatS" name="itemCatS"  required>
                     <option value="">선택</option>
-                    <option value="센서">센서</option>
-                    <option value="회로">회로</option>
-                    <option value="원료">원료</option>
-                    <option value="포장">포장</option>
+                    <option th:value="${cs.categoryId}" th:each="cs:${calS}" th:text="${cs.categoryId}">회로</option>
                   </select>
                 </td>
               </tr>
@@ -236,33 +232,35 @@
                   <input
                     type="text"
                     class="form-control"
-                    id="productName"
+                    id="itemName"
+                    name="itemName"
+                    th:value="${item.itemName}"
                     required
                   />
                 </td>
                 <th>규격 <span class="required">*</span></th>
                 <td>
-                  <input type="text" class="form-control" id="spec" required />
+                  <input type="text" class="form-control"  id="spec" name="spec"  th:value="${item.spec}" required />
                 </td>
               </tr>
               <tr>
                 <th>단위 <span class="required">*</span></th>
-                <td>
-                  <select class="form-select" id="unit" required>
-                    <option value="">선택</option>
-                    <option value="EA">EA</option>
-                    <option value="개">개</option>
-                    <option value="g">g</option>
-                    <option value="L">L</option>
+                <td >
+                  <select class="form-select" id="unitCode" name="unitCode" th:value="${item.unitName}" required>
+                   <option value="" >선택</option>
+                    <option value="" 
+                     th:value="${uncd.codeId}"
+                     th:each="uncd:${uni_code}"th:text="${uncd.Code}"></option>              
                   </select>
                 </td>
                 <th>단가 <span class="required">*</span></th>
                 <td>
                   <input
-                    type="number"
-                    class="form-control"
-                    id="price"
-                    min="0"
+                     type="number"
+                     class="form-control"
+                     min="0"
+                     id="price" 
+                     name="price" 
                     required
                   />
                 </td>
@@ -281,7 +279,7 @@
                     <input
                       type="text"
                       class="form-control"
-                      id="clientName"
+                         id="bpName" name="bpName"
                       placeholder="거래처 검색"
                       readonly
                       required
@@ -397,6 +395,13 @@
               </thead>
               <tbody id="clientSearchResult">
                 <!-- 샘플 데이터 -->
+                  <tr th:each="bp :${bp_list}"
+                   th:attr="data-name=${bp.bpName}, data-code=${bp.bpCode}, data-phone=${bp.tel}">
+                  <td th:text ="${bp.bpName}"></td>
+                  <td th:text ="${bp.bpCode}"></td>
+                  <td th:text ="${bp.Tel}"></td>
+                </tr>
+                <!--
                 <tr
                   data-name="삼성전자"
                   data-code="C001"
@@ -442,6 +447,7 @@
                   <td>C005</td>
                   <td>02-5678-9012</td>
                 </tr>
+                  -->
               </tbody>
             </table>
           </div>
@@ -487,9 +493,9 @@
       }
       document.querySelectorAll("#clientSearchResult tr").forEach((row) => {
         row.onclick = function () {
-          document.getElementById("clientName").value = this.dataset.name;
-          document.getElementById("clientCode").value = this.dataset.code;
-          document.getElementById("clientPhone").value = this.dataset.phone;
+          document.getElementById("bpName").value = this.dataset.name;
+          document.getElementById("bpCode").value = this.dataset.code;
+          document.getElementById("Tel").value = this.dataset.phone;
           clientModal.hide();
         };
       });
@@ -530,6 +536,37 @@
           return true;
         }
       };
+      
+      
+      document.addEventListener("DOMContentLoaded", function () {
+    	    const form = document.getElementById("productForm");
+
+    	    form.addEventListener("submit", function (e) {
+    	      e.preventDefault(); // 폼 기본 동작 막기
+
+    	      const formData = new FormData(form);
+
+    	      fetch("/item/item_editok", {
+    	        method: "POST",
+    	        body: formData,
+    	      })
+    	        .then((res) => {
+    	          if (!res.ok) {
+    	            throw new Error("서버 오류 발생");
+    	          }
+    	          return res.text(); // 또는 JSON 응답이라면 res.json()
+    	        })
+    	        .then((result) => {
+    	          alert("수정이 완료되었습니다.");
+    	          window.location.href = "/item/item_list"; // 수정 후 이동할 경로
+    	        })
+    	        .catch((err) => {
+    	          console.error(err);
+    	          document.getElementById("formError").style.display = "block";
+    	          document.getElementById("formError").innerText = "저장 중 오류가 발생했습니다.";
+    	        });
+    	    });
+    	  });
     </script>
   </body>
 </html>

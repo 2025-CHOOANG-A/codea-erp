@@ -38,9 +38,11 @@ public interface item_mapper {
     int delete_item(String itemCode);
 	
     //수정을 하기위해 item 코드불러오기 
-    itemDTO select_item_by_code(String itemCode);
+    itemDTO select_item_by_id(String itemId);
 	
-	
+ 
+   
+    
 	
 	// 조건 검색용
 	//keyword => 검색창 작동
