@@ -1,13 +1,13 @@
-// productplan_list.js - 수정된 버전
+// productplan_list.js - 완전한 버전
 
-// 전역 변수 (기존 유지)
+// 전역 변수
 let employeeSearchDebounceTimer;
 let itemSearchDebounceTimer;
 const EMPLOYEE_SEARCH_DEBOUNCE_DELAY = 300;
 const ITEM_SEARCH_DEBOUNCE_DELAY = 300;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // --- 1. 주요 DOM 요소 참조 (수정된 부분)
+    // --- 1. 주요 DOM 요소 참조 ---
     const productionPlanRegisterModalElement = document.getElementById('productionPlanRegisterModal');
     const productionPlanRegisterModal = new bootstrap.Modal(productionPlanRegisterModalElement);
     const productionPlanForm = document.getElementById('productionPlanForm');
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalTitle = document.getElementById('productionPlanRegisterModalLabel');
     const modalSubmitButton = document.getElementById('modalSubmitButton');
 
-    // 새로운 검색 방식의 요소들
+    // 검색 관련 요소들
     const itemSearchInput = document.getElementById('itemSearchInput');
     const itemSearchDropdown = document.getElementById('itemSearchDropdown');
     const itemCodeInput = document.getElementById('itemCode');
@@ -25,10 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const employeeSearchDropdown = document.getElementById('employeeSearchDropdown');
     const modalEmpNoInput = document.getElementById('modalEmpNo');
 
-    // 모달 폼 필드들 (수정된 방식)
+    // 모달 폼 필드들
     const formFields = productionPlanForm.querySelectorAll('input:not([type="hidden"]), select, textarea');
 
-    // 모달 내 개별 필드 참조 (기존 유지)
+    // 모달 내 개별 필드 참조
     const modalPlanQtyInput = document.getElementById('modalPlanQty');
     const modalStartDateInput = document.getElementById('modalStartDate');
     const modalDueDateInput = document.getElementById('modalDueDate');
@@ -40,13 +40,72 @@ document.addEventListener('DOMContentLoaded', function() {
     const completionDateDiv = modalCompletionDateInput.closest('.mb-3');
     const actualQtyDiv = modalActualQtyInput.closest('.mb-3');
     
-    // 작업지시 버튼들 (기존 유지)
+    // 버튼들
     const createWorkOrderButton = document.getElementById('createWorkOrderButton');
     const cancelWorkOrderButton = document.getElementById('cancelWorkOrderButton');
+    const mrpCalcBtn = document.querySelector('.mrp-calc-btn');
 
     let currentModalMode = 'register';
 
-    // --- 새로운 드롭다운 관련 함수들 ---
+    // --- 2. 유틸리티 함수들 ---
+    
+    // 상태별 알림 함수
+    function showStatusAlert(type, message) {
+        // 기존 알림 제거
+        const existing = document.querySelector('.status-alert');
+        if (existing) existing.remove();
+        
+        const alertClass = type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-danger';
+        const icon = type === 'success' ? 'bi-check-circle' : 
+                    type === 'warning' ? 'bi-exclamation-triangle' : 'bi-x-circle';
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert ${alertClass} alert-dismissible fade show status-alert`;
+        alertDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 500px; max-width: 700px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        alertDiv.innerHTML = `
+            <div class="d-flex align-items-start">
+                <i class="bi ${icon} me-3" style="font-size: 1.1rem; margin-top: 2px;"></i>
+                <div style="white-space: pre-line; flex: 1;">${message}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        if (type === 'success') {
+            setTimeout(() => alertDiv.remove(), 4000);
+        }
+    }
+
+    // 버튼별 상태 검사 함수
+    function validateSelection(requiredStatuses, actionName) {
+        const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+        
+        if (selectedCheckboxes.length === 0) {
+            showStatusAlert('warning', `${actionName}을 할 생산계획을 선택해주세요.`);
+            return { valid: false };
+        }
+        
+        const validPlans = [];
+        const invalidPlans = [];
+        
+        selectedCheckboxes.forEach(checkbox => {
+            const planId = checkbox.getAttribute('data-plan-id');
+            const status = checkbox.getAttribute('data-status');
+            const itemName = checkbox.getAttribute('data-item-name');
+            
+            if (requiredStatuses.includes(status)) {
+                validPlans.push({ planId, itemName, status });
+            } else {
+                invalidPlans.push({ planId, itemName, status });
+            }
+        });
+        
+        return { valid: invalidPlans.length === 0, validPlans, invalidPlans, requiredStatuses };
+    }
+
+    // --- 3. 드롭다운 관련 함수들 ---
     function showDropdown(dropdown) {
         dropdown.classList.add('show');
     }
@@ -60,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
         hideDropdown(employeeSearchDropdown);
     }
 
-    // --- 수정된 검색 섹션 초기화 함수 ---
     function resetSearchSections() {
         hideAllDropdowns();
         if (itemSearchInput) itemSearchInput.value = '';
@@ -69,7 +127,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modalEmpNoInput) modalEmpNoInput.value = '';
     }
 
-    // --- 수정된 폼 필드 읽기 전용 설정 함수 ---
     function setFormFieldsReadOnly(readOnly) {
         formFields.forEach(field => {
             if (field.type === 'hidden') return;
@@ -87,7 +144,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 수정된 검색 버튼 비활성화 함수 ---
     function setSearchButtonsDisabled(disabled) {
         if (itemSearchInput) itemSearchInput.disabled = disabled;
         if (employeeSearchInput) employeeSearchInput.disabled = disabled;
@@ -97,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- 품목 검색 API 호출 (수정됨) ---
+    // --- 4. 검색 API 함수들 ---
     async function searchItems(query) {
         if (!itemSearchDropdown) return;
 
@@ -124,7 +180,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- 품목 검색 결과 표시 (새로 추가) ---
     function displayItemResults(items) {
         if (!items || items.length === 0) {
             itemSearchDropdown.innerHTML = '<div class="search-no-results">검색 결과가 없습니다.</div>';
@@ -145,14 +200,12 @@ document.addEventListener('DOMContentLoaded', function() {
         itemSearchDropdown.innerHTML = html;
     }
 
-    // --- 품목 선택 처리 (수정됨) ---
     function selectItem(itemName, itemCode) {
         if (itemSearchInput) itemSearchInput.value = itemName;
         if (itemCodeInput) itemCodeInput.value = itemCode;
         hideDropdown(itemSearchDropdown);
     }
 
-    // --- 사원 검색 API 호출 (수정됨) ---
     async function searchEmployees(query) {
         if (!employeeSearchDropdown) return;
 
@@ -179,7 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- 사원 검색 결과 표시 (새로 추가) ---
     function displayEmployeeResults(employees) {
         if (!employees || employees.length === 0) {
             employeeSearchDropdown.innerHTML = '<div class="search-no-results">검색 결과가 없습니다.</div>';
@@ -200,14 +252,13 @@ document.addEventListener('DOMContentLoaded', function() {
         employeeSearchDropdown.innerHTML = html;
     }
 
-    // --- 사원 선택 처리 (수정됨) ---
     function selectEmployee(empName, empNo) {
         if (employeeSearchInput) employeeSearchInput.value = empName;
         if (modalEmpNoInput) modalEmpNoInput.value = empNo;
         hideDropdown(employeeSearchDropdown);
     }
 
-    // --- 기존 AJAX 함수들 (변경 없음) ---
+    // --- 5. AJAX 데이터 전송 함수들 ---
     async function sendProductPlanData(url, method, data) {
         console.log("----- 전송 전 최종 data 객체 확인 -----");
         console.log(JSON.stringify(data, null, 2));
@@ -241,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- 기존 이벤트 핸들러들 (변경 없음) ---
+    // --- 6. 모달 이벤트 핸들러들 ---
     const registerModeSubmitHandler = async function() {
         const formData = new FormData(productionPlanForm);
         const data = Object.fromEntries(formData.entries());
@@ -274,7 +325,155 @@ document.addEventListener('DOMContentLoaded', function() {
         modalSubmitButton.addEventListener('click', saveModeSubmitHandler);
     };
 
-    // --- 새로운 이벤트 리스너들 ---
+    // --- 7. 메인 버튼 이벤트 리스너들 ---
+
+    // 자재소요량 계산 버튼
+    if (mrpCalcBtn) {
+        mrpCalcBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const result = validateSelection(['계획'], '자재소요량 계산');
+            
+            if (!result.valid) {
+                if (result.invalidPlans && result.invalidPlans.length > 0) {
+                    const invalidList = result.invalidPlans.map(p => 
+                        `• ${p.itemName} (${p.planId}) - 현재: ${p.status}`
+                    ).join('\n');
+                    
+                    showStatusAlert('error', 
+                        `다음 생산계획들은 '계획' 상태가 아니어서 자재소요량 계산을 할 수 없습니다:\n\n${invalidList}\n\n💡 '계획' 상태인 항목만 선택해주세요.`
+                    );
+                }
+                return;
+            }
+            
+            // 모든 검증 통과
+            const planIds = result.validPlans.map(p => p.planId);
+            const planIdsParam = planIds.join(',');
+            
+            showStatusAlert('success', 
+                `✅ ${result.validPlans.length}개 계획의 자재소요량을 계산합니다.\n잠시 후 MRP 페이지로 이동합니다.`
+            );
+            
+            setTimeout(() => {
+                window.location.href = `/mrp?selectedPlans=${planIdsParam}`;
+            }, 2000);
+        });
+    }
+
+    // 작업지시 생성 버튼
+    if (createWorkOrderButton) {
+        createWorkOrderButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const result = validateSelection(['자재계획완료'], '작업지시 생성');
+            
+            if (!result.valid) {
+                if (result.invalidPlans && result.invalidPlans.length > 0) {
+                    const invalidList = result.invalidPlans.map(p => 
+                        `• ${p.itemName} (${p.planId}) - 현재: ${p.status}`
+                    ).join('\n');
+                    
+                    showStatusAlert('error', 
+                        `다음 생산계획들은 '자재계획완료' 상태가 아니어서 작업지시를 생성할 수 없습니다:\n\n${invalidList}\n\n💡 먼저 자재소요량 계산을 완료해주세요.`
+                    );
+                }
+                return;
+            }
+            
+            // 확인 후 진행
+            if (!confirm(`${result.validPlans.length}개의 생산 계획에 대해 작업 지시를 생성하시겠습니까?`)) {
+                return;
+            }
+
+            const planIds = result.validPlans.map(p => p.planId);
+            const apiUrl = '/productplan/api/issue-work-orders';
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ planIds: planIds })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { 
+                        throw new Error(err.message || '작업지시 생성 중 오류가 발생했습니다.'); 
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                showStatusAlert('success', 
+                    `🔧 ${planIds.length}개 계획의 작업지시가 생성되었습니다!\n\n${data.message || '작업지시가 성공적으로 생성되었습니다.'}`
+                );
+                setTimeout(() => location.reload(), 2000);
+            })
+            .catch(error => {
+                console.error('Error issuing work orders:', error);
+                showStatusAlert('error', '작업지시 생성 중 오류가 발생했습니다: ' + error.message);
+            });
+        });
+    }
+
+    // 작업지시 취소 버튼
+    if (cancelWorkOrderButton) {
+        cancelWorkOrderButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const result = validateSelection(['작업지시'], '작업지시 취소');
+            
+            if (!result.valid) {
+                if (result.invalidPlans && result.invalidPlans.length > 0) {
+                    const invalidList = result.invalidPlans.map(p => 
+                        `• ${p.itemName} (${p.planId}) - 현재: ${p.status}`
+                    ).join('\n');
+                    
+                    showStatusAlert('error', 
+                        `다음 생산계획들은 '작업지시' 상태가 아니어서 취소할 수 없습니다:\n\n${invalidList}\n\n💡 '작업지시' 상태인 항목만 선택해주세요.`
+                    );
+                }
+                return;
+            }
+            
+            // 확인 후 진행
+            if (!confirm(`${result.validPlans.length}개의 생산 계획에 대해 작업 지시를 취소하시겠습니까?\n취소된 계획은 "자재계획완료" 상태로 되돌아갑니다.`)) {
+                return;
+            }
+
+            const planIds = result.validPlans.map(p => p.planId);
+            const apiUrl = '/productplan/api/cancel-work-orders';
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ planIds: planIds })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { 
+                        throw new Error(err.message || '작업지시 취소 중 오류가 발생했습니다.'); 
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                showStatusAlert('success', 
+                    `✅ ${planIds.length}개 계획의 작업지시가 취소되었습니다!\n\n${data.message || '작업지시가 성공적으로 취소되었습니다.'}`
+                );
+                setTimeout(() => location.reload(), 2000);
+            })
+            .catch(error => {
+                console.error('Error canceling work orders:', error);
+                showStatusAlert('error', '작업지시 취소 중 오류가 발생했습니다: ' + error.message);
+            });
+        });
+    }
+
+    // --- 8. 검색 이벤트 리스너들 ---
     
     // 품목 검색 입력 이벤트
     if (itemSearchInput) {
@@ -295,14 +494,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }, ITEM_SEARCH_DEBOUNCE_DELAY);
         });
 
-        // 포커스 해제 시 드롭다운 숨기기 (지연 처리로 클릭 이벤트 허용)
         itemSearchInput.addEventListener('blur', function() {
             setTimeout(() => {
                 hideDropdown(itemSearchDropdown);
             }, 200);
         });
 
-        // 포커스 시 기존 검색 결과가 있으면 드롭다운 표시
         itemSearchInput.addEventListener('focus', function() {
             if (this.value.trim().length >= 2 && itemSearchDropdown.innerHTML.trim() !== '') {
                 showDropdown(itemSearchDropdown);
@@ -329,14 +526,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }, EMPLOYEE_SEARCH_DEBOUNCE_DELAY);
         });
 
-        // 포커스 해제 시 드롭다운 숨기기 (지연 처리로 클릭 이벤트 허용)
         employeeSearchInput.addEventListener('blur', function() {
             setTimeout(() => {
                 hideDropdown(employeeSearchDropdown);
             }, 200);
         });
 
-        // 포커스 시 기존 검색 결과가 있으면 드롭다운 표시
         employeeSearchInput.addEventListener('focus', function() {
             if (this.value.trim().length >= 2 && employeeSearchDropdown.innerHTML.trim() !== '') {
                 showDropdown(employeeSearchDropdown);
@@ -344,7 +539,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 품목 드롭다운 클릭 이벤트
+    // 드롭다운 클릭 이벤트들
     if (itemSearchDropdown) {
         itemSearchDropdown.addEventListener('click', function(e) {
             const searchItem = e.target.closest('.search-item');
@@ -356,7 +551,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 사원 드롭다운 클릭 이벤트
     if (employeeSearchDropdown) {
         employeeSearchDropdown.addEventListener('click', function(e) {
             const searchItem = e.target.closest('.search-item');
@@ -382,7 +576,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- 2. 기존 모달 이벤트 리스너들 (수정됨) ---
+    // --- 9. 모달 이벤트 리스너들 ---
     productionPlanRegisterModalElement.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const mode = button.getAttribute('data-mode');
@@ -447,7 +641,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(planData => {
                         console.log('서버 응답 planData:', planData);
 
-                        // 수정된 부분: 새로운 입력 필드들에 값 설정
                         if (itemSearchInput) itemSearchInput.value = planData.itemName || '';
                         if (itemCodeInput) itemCodeInput.value = planData.itemCode || '';
                         if (modalPlanQtyInput) modalPlanQtyInput.value = planData.planQty || '';
@@ -503,7 +696,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (actualQtyDiv) actualQtyDiv.style.display = 'block';
     });
 
-    // --- 기존 비고 모달 스크립트 (변경 없음) ---
+    // --- 10. 비고 모달 스크립트 ---
     var remarkModal = document.getElementById('remarkModal');
     if (remarkModal) {
         remarkModal.addEventListener('show.bs.modal', function (event) {
@@ -519,145 +712,201 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 기존 작업지시 관련 코드 (변경 없음) ---
-    if (createWorkOrderButton) {
-        createWorkOrderButton.addEventListener('click', function() {
-            console.log('[작업지시] 버튼 클릭됨');
+    // --- 11. 상태 가이드 기능 ---
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F1') {
+            e.preventDefault();
+            showStatusGuide();
+        }
+    });
 
-            const selectedCheckboxes = document.querySelectorAll('#productionPlanTable .row-checkbox:checked');
-            console.log('[작업지시] 선택된 체크박스 개수:', selectedCheckboxes.length);
+    function showStatusGuide() {
+        const existing = document.querySelector('.status-guide');
+        if (existing) {
+            existing.remove();
+            return;
+        }
 
-            const planIdsToUpdate = [];
-            let canProceed = true;
-            let nonEligiblePlanSelected = false;
-
-            selectedCheckboxes.forEach(checkbox => {
-                const planId = checkbox.getAttribute('data-plan-id');
-                const row = checkbox.closest('tr');
-                const statusCell = row.cells[10];
-
-                if (statusCell.textContent.trim() === '자재계획완료' || statusCell.textContent.trim() === '계획') {
-                    planIdsToUpdate.push(planId);
-                } else {
-                    nonEligiblePlanSelected = true;
-                }
-            });
-
-            if (planIdsToUpdate.length === 0) {
-                if(nonEligiblePlanSelected || selectedCheckboxes.length > 0) {
-                    alert('선택된 항목 중 "자재계획완료" 또는 "계획" 상태인 생산 계획이 없습니다.\n상태를 확인해주세요.');
-                } else {
-                    alert('작업 지시를 생성할 생산 계획을 선택해주세요.');
-                }
-                return;
+        const guideDiv = document.createElement('div');
+        guideDiv.className = 'alert alert-info alert-dismissible fade show status-guide';
+        guideDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; min-width: 500px; max-width: 700px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);';
+        guideDiv.innerHTML = `
+            <div class="text-center mb-3">
+                <h5 class="mb-0">📋 생산계획 상태별 작업 가이드</h5>
+            </div>
+            <div class="row text-center">
+                <div class="col-md-6 mb-3">
+                    <div class="border rounded p-3 h-100">
+                        <span class="badge bg-primary mb-2" style="font-size: 1rem;">📝 계획</span>
+                        <p class="mb-1"><strong>가능한 작업:</strong></p>
+                        <p class="text-muted mb-0">• 자재소요량 계산<br>• 생산계획 수정/삭제</p>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="border rounded p-3 h-100">
+                        <span class="badge bg-success mb-2" style="font-size: 1rem;">✅ 자재계획완료</span>
+                        <p class="mb-1"><strong>가능한 작업:</strong></p>
+                        <p class="text-muted mb-0">• 작업지시 생성<br>• 생산계획 수정</p>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="border rounded p-3 h-100">
+                        <span class="badge bg-warning text-dark mb-2" style="font-size: 1rem;">🔧 작업지시</span>
+                        <p class="mb-1"><strong>가능한 작업:</strong></p>
+                        <p class="text-muted mb-0">• 작업지시 취소<br>• 생산 진행 관리</p>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="border rounded p-3 h-100">
+                        <span class="badge bg-info text-dark mb-2" style="font-size: 1rem;">🎉 완료</span>
+                        <p class="mb-1"><strong>가능한 작업:</strong></p>
+                        <p class="text-muted mb-0">• 완료된 작업<br>• 이력 조회만 가능</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <small class="text-muted">💡 각 상태에서는 해당하는 작업만 수행할 수 있습니다.</small>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(guideDiv);
+        
+        // 5초 후 자동 닫기
+        setTimeout(() => {
+            if (guideDiv.parentNode) {
+                guideDiv.remove();
             }
-            
-            if (nonEligiblePlanSelected) {
-                if (!confirm('"자재계획완료" 또는 "계획" 상태가 아닌 항목이 선택에 포함되어 있습니다. 해당 항목을 제외하고 진행하시겠습니까?')) {
-                    return;
-                }
-            }
-
-            if (!confirm(planIdsToUpdate.length + '개의 생산 계획에 대해 작업 지시를 생성하시겠습니까?')) {
-                return;
-            }
-
-            const apiUrl = 'productplan/api/issue-work-orders';
-
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ planIds: planIdsToUpdate })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => { 
-                        throw new Error(err.message || '상태 변경 중 오류가 발생했습니다.'); 
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert(data.message || '선택된 생산 계획의 상태가 성공적으로 변경되었습니다.');
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error issuing work orders:', error);
-                alert('오류: ' + error.message);
-            });
-        });
-    }
-
-    if (cancelWorkOrderButton) {
-        cancelWorkOrderButton.addEventListener('click', function() {
-            console.log('[작업지시 취소] 버튼 클릭됨');
-
-            const selectedCheckboxes = document.querySelectorAll('#productionPlanTable .row-checkbox:checked');
-            console.log('[작업지시 취소] 선택된 체크박스 개수:', selectedCheckboxes.length);
-
-            const planIdsToCancel = [];
-            let canProceed = true;
-            let nonEligiblePlanSelected = false;
-
-            selectedCheckboxes.forEach(checkbox => {
-                const planId = checkbox.getAttribute('data-plan-id');
-                const row = checkbox.closest('tr');
-                const statusCell = row.cells[10];
-
-                if (statusCell.textContent.trim() === '작업지시') {
-                    planIdsToCancel.push(planId);
-                } else {
-                    nonEligiblePlanSelected = true;
-                }
-            });
-
-            if (planIdsToCancel.length === 0) {
-                if (nonEligiblePlanSelected || selectedCheckboxes.length > 0) {
-                    alert('선택된 항목 중 "작업지시" 상태인 생산 계획이 없습니다.\n작업지시 상태인 계획만 취소할 수 있습니다.');
-                } else {
-                    alert('작업 지시를 취소할 생산 계획을 선택해주세요.');
-                }
-                return;
-            }
-
-            if (nonEligiblePlanSelected) {
-                if (!confirm('"작업지시" 상태가 아닌 항목이 선택에 포함되어 있습니다. 해당 항목을 제외하고 진행하시겠습니까?')) {
-                    return;
-                }
-            }
-
-            if (!confirm(planIdsToCancel.length + '개의 생산 계획에 대해 작업 지시를 취소하시겠습니까?\n취소된 계획은 "자재계획완료" 상태로 되돌아갑니다.')) {
-                return;
-            }
-
-            const apiUrl = '/productplan/api/cancel-work-orders';
-
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ planIds: planIdsToCancel })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => { 
-                        throw new Error(err.message || '작업지시 취소 중 오류가 발생했습니다.'); 
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert(data.message || '선택된 생산 계획의 작업지시가 성공적으로 취소되었습니다.');
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error canceling work orders:', error);
-                alert('오류: ' + error.message);
-            });
-        });
+        }, 8000);
     }
 
 }); // DOMContentLoaded 이벤트 리스너 끝
+
+// --- 12. 추가 유틸리티 함수들 (전역) ---
+
+// 페이지 로드 후 상태별 행 색상 업데이트
+window.addEventListener('load', function() {
+    updateRowColors();
+});
+
+function updateRowColors() {
+    const rows = document.querySelectorAll('#productionPlanTable tbody tr');
+    
+    rows.forEach(row => {
+        const statusCell = row.querySelector('td:nth-child(11)'); // 상태 컬럼
+        if (statusCell) {
+            const statusText = statusCell.textContent.trim();
+            
+            // 기존 클래스 제거
+            row.classList.remove('table-light', 'table-success', 'table-warning', 'table-info', 'table-danger');
+            
+            // 상태별 색상 적용
+            switch(statusText) {
+                case '계획':
+                    row.classList.add('table-light');
+                    break;
+                case '자재계획완료':
+                    row.classList.add('table-success');
+                    break;
+                case '작업지시':
+                    row.classList.add('table-warning');
+                    break;
+                case '완료':
+                    row.classList.add('table-info');
+                    break;
+                case '취소':
+                    row.classList.add('table-danger');
+                    break;
+            }
+        }
+    });
+}
+
+// CSS 스타일을 동적으로 추가
+const style = document.createElement('style');
+style.textContent = `
+    .status-alert, .status-guide {
+        border-radius: 8px;
+        border-width: 2px;
+    }
+    
+    .table-light { background-color: #f8f9fa !important; }
+    .table-success { background-color: #d1f2d1 !important; }
+    .table-warning { background-color: #fff3cd !important; }
+    .table-info { background-color: #d1ecf1 !important; }
+    .table-danger { background-color: #f8d7da !important; }
+    
+    .search-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .search-dropdown.show {
+        display: block;
+    }
+    
+    .search-item {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .search-item:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .search-item:last-child {
+        border-bottom: none;
+    }
+    
+    .search-loading, .search-no-results {
+        padding: 10px;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+    }
+    
+    .item-info, .employee-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .item-name, .emp-name {
+        font-weight: 500;
+    }
+    
+    .item-code, .emp-no {
+        color: #666;
+        font-size: 0.9em;
+    }
+    
+    .search-input-container {
+        position: relative;
+    }
+    
+    /* F1 키 안내 */
+    body::after {
+        content: "💡 F1키를 눌러 상태별 가이드를 확인하세요";
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        z-index: 1000;
+        pointer-events: none;
+    }
+`;
+document.head.appendChild(style);
