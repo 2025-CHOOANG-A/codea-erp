@@ -1,8 +1,7 @@
 <div th:fragment="contentFragment">
 
     <th:block th:fragment="headFragment">
-        <link rel="stylesheet" th:href="@{/css/storage_list.css}" />
-        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" th:href="@{/css/productplan_list.css}" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     </th:block>
 
@@ -10,12 +9,13 @@
         <div class="container">
             <h2 class="mb-4">생산실적관리</h2>
 
-            <div class="flex justify-content-start gap-2 mb-3">
-                <button type="button" id="createWorkOrderButton" class="btn btn-primary work-order-btn">작업시작</button>
-                <button type="button" class="btn btn-primary work-order-btn">작업종료</button>
+            <div class="flex justify-end gap-2 mb-3">
+                <button type="button" id="workStartButton" class="btn btn-success work-order-btn">작업시작</button>
+                <button type="button" id="workEndButton" class="btn btn-warning work-order-btn">작업종료</button>
+                <button type="button" id="actualRegisterButton" class="btn btn-primary work-order-btn" disabled>실적등록</button>
             </div>
-<!--             <hr class="mb-4">
- -->
+            <hr class="mb-4">
+
             <form id="filterForm" class="filter-bar flex flex-wrap items-center gap-3 mb-4 p-3 border rounded-md shadow-sm bg-white">
                 <div class="flex items-center gap-2">
                     <label for="planKeywordInput" class="text-sm text-gray-700 whitespace-nowrap">검색:</label>
@@ -23,7 +23,8 @@
                         type="text"
                         name="keyword"
                         id="planKeywordInput"
-                        class="form-control form-control-sm flex-grow" placeholder="계획 번호, 품목 이름 검색"
+                        class="form-control flex-grow"
+                        placeholder="계획 번호, 품목 이름 검색"
                         maxlength="20"
                         th:value="${searchDto.keyword}"
                     />
@@ -35,7 +36,8 @@
                         type="date"
                         name="startDate"
                         id="startDate"
-                        class="form-control form-control-sm" th:value="${searchDto.startDate}"
+                        class="form-control"
+                        th:value="${searchDto.startDate}"
                     />
                 </div>
                 <div class="flex items-center gap-2">
@@ -44,17 +46,19 @@
                         type="date"
                         name="endDate"
                         id="endDate"
-                        class="form-control form-control-sm" th:value="${searchDto.endDate}"
+                        class="form-control"
+                        th:value="${searchDto.endDate}"
                     />
                 </div>
 
                 <div class="flex items-center gap-2">
                     <label for="status" class="text-sm text-gray-700 whitespace-nowrap">상태:</label>
-                    <select name="status" id="status" class="form-select form-select-sm" th:value="${searchDto.status}"> <option value="">전체</option>
-                        <option value="PLANNED" th:selected="${searchDto.status == 'PLANNED'}">계획</option>
-                        <option value="IN_PROGRESS" th:selected="${searchDto.status == 'IN_PROGRESS'}">진행중</option>
-                        <option value="COMPLETED" th:selected="${searchDto.status == 'COMPLETED'}">완료</option>
-                        <option value="CANCELLED" th:selected="${searchDto.status == 'CANCELLED'}">취소</option>
+                    <select name="status" id="status" class="form-select" th:value="${searchDto.status}">
+                        <option value="">전체</option>
+                        <option value="작업지시" th:selected="${searchDto.status == '작업지시'}">작업지시</option>
+                        <option value="진행중" th:selected="${searchDto.status == '진행중'}">진행중</option>
+                        <option value="완료" th:selected="${searchDto.status == '완료'}">완료</option>
+                        <option value="취소" th:selected="${searchDto.status == '취소'}">취소</option>
                     </select>
                 </div>
 
@@ -64,23 +68,50 @@
                         type="text"
                         name="empNo"
                         id="empNo"
-                        class="form-control form-control-sm" placeholder="사번"
+                        class="form-control"
+                        placeholder="사번"
                         maxlength="10"
                         th:value="${searchDto.empNo}"
                     />
                 </div>
 
-                <button id="searchBtn" type="submit" class="btn btn-primary btn-sm ml-auto">검색</button> </form>
+                <!-- 페이지 크기 선택 추가 -->
+                <div class="flex items-center gap-2">
+                    <label for="pageSize" class="text-sm text-gray-700 whitespace-nowrap">페이지 크기:</label>
+                    <select name="size" id="pageSize" class="form-select" style="width: auto;">
+                        <option value="10" th:selected="${pageInfo?.pageSize == 10}">10개</option>
+                        <option value="20" th:selected="${pageInfo?.pageSize == 20}">20개</option>
+                        <option value="50" th:selected="${pageInfo?.pageSize == 50}">50개</option>
+                    </select>
+                </div>
+
+                <button id="searchBtn" type="submit" class="btn btn-primary ml-auto">검색</button>
+            </form>
+
+            <!-- 페이지 정보 표시 -->
+            <div class="d-flex justify-content-between align-items-center mb-3" th:if="${pageInfo != null}">
+                <div class="text-muted">
+                    <span th:text="|총 ${pageInfo.total}건 중 ${pageInfo.startRow}-${pageInfo.endRow}번째 표시|"></span>
+                </div>
+                <div class="text-muted">
+                    <span th:text="|${pageInfo.pageNum}/${pageInfo.pages} 페이지|"></span>
+                </div>
+            </div>
 
             <div class="table-responsive">
                 <table
                     id="productionPlanTable"
-                    class="table table-hover align-middle mb-0 table-sm" >
+                    class="table table-hover align-middle mb-0"
+                >
                     <thead class="table-light">
                         <tr>
-                            <th scope="col" class="text-center">선택</th>
-                            <th scope="col">NO</th>
-                            <th scope="col">생산계획 번호</th>
+                            <th scope="col" class="text-center sticky-left-1">
+                                <input type="radio" name="selectAll" disabled style="visibility: hidden;">
+                            </th>
+                            <th scope="col" class="sticky-left-2">NO</th>
+                            <th scope="col" class="sticky-left-3">생산계획 번호</th>
+                            
+                            <!-- 스크롤 영역 컬럼들 -->
                             <th scope="col">품목 코드</th>
                             <th scope="col">품목 이름</th>
                             <th scope="col">생산계획시작일</th>
@@ -90,8 +121,10 @@
                             <th scope="col">실제 수량</th>
                             <th scope="col">상태</th>
                             <th scope="col">담당자 사번</th>
-                            <th scope="col">상세</th>
-                            <th scope="col">비고</th>
+                            
+                            <!-- 오른쪽 스티키 컬럼들 -->
+                            <th scope="col" class="sticky-right-1">상세</th>
+                            <th scope="col" class="sticky-right-2">비고</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -100,16 +133,22 @@
                         </tr>
                         <th:block th:unless="${productActual.isEmpty()}">
                             <tr th:each="plan, i : ${productActual}">
-                                <td class="text-center">
+                                <!-- 왼쪽 스티키 컬럼들 -->
+                                <td class="text-center sticky-left-1">
                                     <input type="radio" name="selectedPlan" class="row-radio form-check-input"
                                            th:data-plan-id="${plan.planId}"
-                                           th:data-item-code="${plan.itemCode}" th:data-item-name="${plan.itemName}"
-                                           th:data-plan-qty="${plan.planQty}" th:data-actual-qty="${plan.actualQty}"
+                                           th:data-item-code="${plan.itemCode}" 
+                                           th:data-item-name="${plan.itemName}"
+                                           th:data-plan-qty="${plan.planQty}" 
+                                           th:data-actual-qty="${plan.actualQty}"
                                            th:data-status="${plan.status}"
-                                           th:data-start-date="${plan.startDate}" th:data-due-date="${plan.dueDate}">
+                                           th:data-start-date="${plan.startDate}" 
+                                           th:data-due-date="${plan.dueDate}">
                                 </td>
-                                <td th:text="${pageInfo.total - (pageInfo.pageNum - 1) * pageInfo.pageSize - i.index}"></td>
-                                <td th:text="${plan.planId}"></td>
+                                <td class="sticky-left-2" th:text="${pageInfo.total - (pageInfo.pageNum - 1) * pageInfo.pageSize - i.index}"></td>
+                                <td class="sticky-left-3" th:text="${plan.planId}"></td>
+                        
+                                <!-- 스크롤 영역 컬럼들 -->
                                 <td th:text="${plan.itemCode}"></td>
                                 <td th:text="${plan.itemName}"></td>
                                 <td th:text="${plan.startDate}"></td>
@@ -119,18 +158,21 @@
                                 <td th:text="${plan.actualQty}"></td>
                                 <td th:text="${plan.status}"></td>
                                 <td th:text="${plan.empNo}"></td>
-                                <td>
-                                    <button type="button" class="btn btn-info btn-sm detail-edit-btn"
+                                
+                                <!-- 오른쪽 스티키 컬럼들 -->
+                                <td class="sticky-right-1">
+                                    <button type="button"
+                                            class="btn btn-outline-primary text-nowrap"
                                             th:data-plan-id="${plan.planId}"
                                             data-bs-toggle="modal"
                                             data-bs-target="#productionPlanRegisterModal"
                                             data-mode="detail"> 상세
                                     </button>
                                 </td>
-                                <td>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm remark-btn"
+                                <td class="sticky-right-2">
+                                    <button type="button" class="btn btn-outline-secondary remark-btn text-nowrap"
                                             th:data-remark="${plan.remark}"
-                                            th:text="'비고 보기'"
+                                            th:text="'비고'"
                                             data-bs-toggle="modal"
                                             data-bs-target="#remarkModal">
                                     </button>
@@ -141,13 +183,13 @@
                 </table>
             </div>
 
-<div class="table-footer-row d-flex justify-content-between align-items-center mt-4">
-<!--                 왼쪽: 목록 버튼
+            <div class="table-footer-row d-flex justify-content-between align-items-center mt-4">
+                <!-- 왼쪽: 목록 버튼 -->
                 <div>
-                    <a href="/productplan" class="btn btn-outline-secondary">
+                    <a href="/productactual" class="btn btn-outline-secondary">
                         <i class="bi bi-list"></i> 목록
                     </a>
-                </div> -->
+                </div>
                 
                 <!-- 가운데: 부트스트랩 페이징 - 항상 표시 -->
                 <nav aria-label="생산실적 페이지네이션" th:if="${pageInfo != null}">
@@ -214,115 +256,306 @@
                     </ul>
                 </nav>
 
-<!--                 오른쪽: 등록 버튼
-                <div>
-                    <a href="#" class="btn btn-primary add-btn" data-bs-toggle="modal" data-bs-target="#productionPlanRegisterModal"
-                       data-mode="register">생산 계획 등록</a>
-                </div> -->
+                <!-- 오른쪽: 빈 공간 -->
+                <div></div>
             </div>
 
-            <div id="selectedPlanDetailAndActuals" class="p-3 border rounded-md shadow-lg bg-white mt-4"> <div class="d-flex justify-content-between align-items-center mb-2"> <h5 class="mb-0 text-primary-dark">선택된 생산 계획 상세</h5> </div>
-
-                <div id="planDetailBody" class="mb-2"> <div class="row g-1 align-items-center small"> <div class="col-md-3 col-6">
-                            <span class="text-secondary-dark font-semibold">계획 번호:</span> <span id="displayPlanId">-</span>
+            <!-- 선택된 계획 정보 및 실적 등록 카드 -->
+            <div id="selectedPlanCard" class="card mt-4" style="display: none;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-data"></i> 선택된 생산계획 실적관리
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- 계획 정보 표시 -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body py-3">
+                                    <h6 class="card-title text-primary mb-2">
+                                        <i class="bi bi-info-circle"></i> 계획 정보
+                                    </h6>
+                                    <div class="row g-2 small">
+                                        <div class="col-6">
+                                            <strong>계획번호:</strong> <span id="displayPlanId">-</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>품목:</strong> <span id="displayItemName">-</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>계획수량:</strong> <span id="displayPlanQty">-</span> EA
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>현재실적:</strong> <span id="displayCurrentActualQty">-</span> EA
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>시작일:</strong> <span id="displayStartDate">-</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>완료일:</strong> <span id="displayDueDate">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-3 col-6">
-                            <span class="text-secondary-dark font-semibold">품목:</span> <span id="displayItemName">-</span> (<span id="displayItemCode">-</span>)
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <span class="text-secondary-dark font-semibold">계획 수량:</span> <span id="displayPlanQty">-</span> EA
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <span class="text-secondary-dark font-semibold">현재 실적:</span> <span id="displayCurrentActualQty">-</span> EA
-                        </div>
-
-                        <div class="col-md-3 col-6">
-                            <span class="text-secondary-dark font-semibold">계획 시작일:</span> <span id="displayStartDate">-</span>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <span class="text-secondary-dark font-semibold">계획 완료일:</span> <span id="displayDueDate">-</span>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <span class="text-secondary-dark font-semibold">상태:</span> <span id="displayStatus">-</span>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <span class="text-secondary-dark font-semibold">진행률:</span> <strong id="displayProgressRate">0%</strong>
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body py-3">
+                                    <h6 class="card-title text-success mb-2">
+                                        <i class="bi bi-graph-up"></i> 진행 현황
+                                    </h6>
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center small">
+                                            <span>진행률</span>
+                                            <strong id="displayProgressRate">0%</strong>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div id="progressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-2 small">
+                                        <div class="col-6">
+                                            <strong>상태:</strong> <span id="displayStatus" class="badge bg-secondary">-</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>잔여:</strong> <span id="displayRemainingQty">-</span> EA
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <hr class="my-2"> </div>
 
+                    <!-- 실적 등록 폼 -->
+                    <div class="border rounded p-3 bg-white">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-plus-circle"></i> 실적 등록
+                        </h6>
+                        <form id="actualRegisterForm">
+                            <input type="hidden" id="actualPlanId" name="planId">
+                            <input type="hidden" id="currentActualQtyHidden" name="currentActualQty">
+                            <input type="hidden" id="currentPlanQtyHidden" name="currentPlanQty">
+                            
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-2">
+                                    <label for="actualDate" class="form-label">실적 일자</label>
+                                    <input type="date" class="form-control" id="actualDate" name="actualDate" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="actualQtyInput" class="form-label">생산수량(양품)</label>
+                                    <input type="number" class="form-control" id="actualQtyInput" name="actualQty" min="0" required placeholder="양품 수량">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="defectQtyInput" class="form-label">불량수량</label>
+                                    <input type="number" class="form-control" id="defectQtyInput" name="defectQty" min="0" value="0" placeholder="불량 수량">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="actualRemark" class="form-label">비고</label>
+                                    <input type="text" class="form-control" id="actualRemark" name="remark" placeholder="특이사항 (선택)">
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success" id="saveActualButton" disabled>
+                                            <i class="bi bi-check-lg"></i> 등록
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="clearActualFormButton">
+                                            <i class="bi bi-arrow-clockwise"></i> 초기화
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
 
-                <h5 class="mb-3 text-secondary-dark">일별 생산 실적 등록</h5>
-                <form id="actualRegisterForm" class="row g-2 mb-4"> <input type="hidden" id="actualPlanId" name="planId">
-                    <input type="hidden" id="currentActualQtyHidden" name="currentActualQty">
-                    <input type="hidden" id="currentPlanQtyHidden" name="currentPlanQty">
+                  <!-- 일별 실적 목록 -->
+                    <div class="mt-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-calendar3"></i> 등록된 일별 실적
+                        </h6>
+                        <div class="table-responsive" style="max-height: 300px; border: 1px solid #dee2e6; border-radius: .375rem;">
+                            <table id="dailyActualsTable" class="table table-sm table-hover mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th scope="col" class="text-center" style="width: 8%;">NO</th>
+                                        <th scope="col" class="text-center" style="width: 18%;">실적일자</th>
+                                        <th scope="col" class="text-center" style="width: 15%;">생산수량</th>
+                                        <th scope="col" class="text-center" style="width: 15%;">불량수량</th>
+                                        <th scope="col" style="width: 22%;">비고</th>
+                                        <th scope="col" class="text-center" style="width: 22%;">등록시간</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i class="bi bi-inbox"></i><br>
+                                            계획을 선택하면 실적 목록이 표시됩니다.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <div class="col-md-3 col-sm-6">
-                        <label for="actualDate" class="form-label text-sm">실적 일자</label>
-                        <input type="date" class="form-control form-control-sm" id="actualDate" name="actualDate" required>
+        <!-- 기존 모달들 재사용 -->
+        <div class="modal fade" id="productionPlanRegisterModal" tabindex="-1" aria-labelledby="productionPlanRegisterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="productionPlanRegisterModalLabel">생산 계획 상세</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
                     </div>
-                    <div class="col-md-3 col-sm-6">
-                        <label for="actualQtyInput" class="form-label text-sm">생산 수량 (양품)</label>
-                        <input type="number" class="form-control form-control-sm" id="actualQtyInput" name="actualQty" min="0" required placeholder="오늘 생산된 양품 수량">
-                    </div>
-                    <div class="col-md-3 col-sm-6">
-                        <label for="defectQtyInput" class="form-label text-sm">불량 수량</label>
-                        <input type="number" class="form-control form-control-sm" id="defectQtyInput" name="defectQty" min="0" value="0" placeholder="오늘 발생한 불량 수량">
-                    </div>
-                    <div class="col-md-3 col-sm-6 d-flex align-items-end">
-                        <button type="submit" class="btn btn-success btn-sm flex-grow" id="saveActualButton" disabled>실적 등록</button>
-                        <button type="button" class="btn btn-secondary btn-sm ms-2" id="clearActualFormButton">초기화</button>
-                    </div>
-                    <div class="col-md-12">
-                        <label for="actualRemark" class="form-label text-sm">비고 (선택 사항)</label>
-                        <textarea class="form-control form-control-sm" id="actualRemark" name="remark" rows="1" placeholder="특이사항"></textarea>
-                    </div>
-                </form>
+                    <div class="modal-body">
+                        <form id="productionPlanForm">
+                            <div class="mb-3">
+                                <label for="itemSearchInput" class="form-label">완제품</label>
+                                <div class="search-input-container position-relative">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="itemSearchInput" 
+                                           placeholder="품목명 또는 품목 코드를 입력하세요"
+                                           autocomplete="off" readonly>
+                                    <input type="hidden" id="itemCode" name="itemCode">
+                                    <div class="search-dropdown" id="itemSearchDropdown"></div>
+                                </div>
+                            </div>
 
-                <h5 class="mb-3 text-secondary-dark">등록된 실적 목록</h5>
-                <div class="table-responsive" style="max-height: 250px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: .25rem;">
-                    <table id="dailyActualsTable" class="table table-sm table-striped mb-0">
-                        <thead class="table-light sticky-top">
-                            <tr>
-                                <th scope="col">NO</th>
-                                <th scope="col">실적 일자</th>
-                                <th scope="col">생산 수량</th>
-                                <th scope="col">불량 수량</th>
-                                <th scope="col">비고</th>
-                                <th scope="col">등록 시간</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6" class="text-center text-secondary">선택된 계획의 실적이 없습니다.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            <div class="mb-3">
+                                <label for="modalPlanQty" class="form-label">계획 수량</label>
+                                <input type="number" class="form-control" id="modalPlanQty" name="planQty" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modalStartDate" class="form-label">생산계획시작일</label>
+                                <input type="date" class="form-control" id="modalStartDate" name="startDate" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modalDueDate" class="form-label">생산완료계획일</label>
+                                <input type="date" class="form-control" id="modalDueDate" name="dueDate" readonly>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="modalCompletionDate" class="form-label">실제생산완료일</label>
+                                <input type="date" class="form-control" id="modalCompletionDate" name="completionDate" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modalActualQty" class="form-label">실제생산수량</label>
+                                <input type="number" class="form-control" id="modalActualQty" name="actualQty" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modalStatus" class="form-label">상태</label>
+                                <select name="status" id="modalStatus" class="form-select" disabled>
+                                    <option value="계획">계획</option>
+                                    <option value="자재계획완료">자재계획완료</option>
+                                    <option value="작업지시">작업지시</option>
+                                    <option value="진행중">진행중</option>
+                                    <option value="완료">완료</option>
+                                    <option value="취소">취소</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="employeeSearchInput" class="form-label">담당자</label>
+                                <div class="search-input-container position-relative">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="employeeSearchInput" 
+                                           placeholder="사원명 또는 사번을 입력하세요"
+                                           autocomplete="off" readonly>
+                                    <input type="hidden" id="modalEmpNo" name="empNo">
+                                    <div class="search-dropdown" id="employeeSearchDropdown"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="remark" class="form-label">비고</label>
+                                <input type="text" class="form-control" id="remark" name="remark" readonly>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="remarkModal" tabindex="-1" aria-labelledby="remarkModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="remarkModalLabel">비고 내용</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modalRemarkContent"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script th:src="@{/js/productplan_list.js}"></script>
+    <!-- 페이징 검색 조건 유지를 위한 JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // 폼 제출시 페이지를 1로 리셋
+            const filterForm = document.getElementById('filterForm');
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(filterForm);
+                const params = new URLSearchParams();
+                
+                // 검색 조건들 추가
+                for (let [key, value] of formData.entries()) {
+                    if (value.trim() !== '') {
+                        params.append(key, value);
+                    }
+                }
+                
+                // 검색시엔 항상 첫 페이지로
+                params.set('page', '1');
+                
+                // 페이지 이동
+                window.location.href = '/productactual?' + params.toString();
+            });
+            
+            // 페이지 크기 변경시 자동 검색
+            const pageSizeSelect = document.getElementById('pageSize');
+            pageSizeSelect.addEventListener('change', function() {
+                filterForm.dispatchEvent(new Event('submit'));
+            });
+
+            // =========================
+            // 생산실적 관련 JavaScript
+            // =========================
+            
             const productionPlanTable = document.getElementById('productionPlanTable');
+            const selectedPlanCard = document.getElementById('selectedPlanCard');
+            
             // 생산 계획 상세 표시 요소들
             const displayPlanId = document.getElementById('displayPlanId');
             const displayItemName = document.getElementById('displayItemName');
             const displayItemCode = document.getElementById('displayItemCode');
             const displayPlanQty = document.getElementById('displayPlanQty');
-            const displayCurrentActualQty = document.getElementById('displayCurrentActualQty'); // 누적 실적 표시용
+            const displayCurrentActualQty = document.getElementById('displayCurrentActualQty');
             const displayStartDate = document.getElementById('displayStartDate');
             const displayDueDate = document.getElementById('displayDueDate');
             const displayStatus = document.getElementById('displayStatus');
-            const displayProgressRate = document.getElementById('displayProgressRate'); // 진행률 표시용
+            const displayProgressRate = document.getElementById('displayProgressRate');
+            const displayRemainingQty = document.getElementById('displayRemainingQty');
+            const progressBar = document.getElementById('progressBar');
 
             // 실적 입력 폼 요소들
             const actualPlanId = document.getElementById('actualPlanId');
-            const currentActualQtyHidden = document.getElementById('currentActualQtyHidden'); // 누적 실적 (숨김)
-            const currentPlanQtyHidden = document.getElementById('currentPlanQtyHidden'); // 계획 수량 (숨김)
+            const currentActualQtyHidden = document.getElementById('currentActualQtyHidden');
+            const currentPlanQtyHidden = document.getElementById('currentPlanQtyHidden');
             const saveActualButton = document.getElementById('saveActualButton');
             const actualRegisterForm = document.getElementById('actualRegisterForm');
             const actualDateInput = document.getElementById('actualDate');
@@ -332,12 +565,28 @@
             const clearActualFormButton = document.getElementById('clearActualFormButton');
             const dailyActualsTableBody = document.querySelector('#dailyActualsTable tbody');
 
+            // 작업 버튼들
+            const workStartButton = document.getElementById('workStartButton');
+            const workEndButton = document.getElementById('workEndButton');
+            const actualRegisterButton = document.getElementById('actualRegisterButton');
+
             // 초기 로딩 시 오늘 날짜로 설정
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             actualDateInput.value = `${year}-${month}-${day}`;
+
+            // 상태별 배지 스타일 적용 함수
+            function getStatusBadgeClass(status) {
+                switch(status) {
+                    case '작업지시': return 'bg-info';
+                    case '진행중': return 'bg-warning text-dark';
+                    case '완료': return 'bg-success';
+                    case '취소': return 'bg-danger';
+                    default: return 'bg-secondary';
+                }
+            }
 
             // 테이블에서 라디오 버튼 클릭 시 이벤트 핸들러
             productionPlanTable.addEventListener('change', function(event) {
@@ -347,54 +596,68 @@
                     const itemCode = selectedRadio.dataset.itemCode;
                     const itemName = selectedRadio.dataset.itemName;
                     const planQty = parseInt(selectedRadio.dataset.planQty, 10);
-                    const actualQty = parseInt(selectedRadio.dataset.actualQty, 10); // 현재 누적 실적
+                    const actualQty = parseInt(selectedRadio.dataset.actualQty, 10);
                     const status = selectedRadio.dataset.status;
                     const startDate = selectedRadio.dataset.startDate;
                     const dueDate = selectedRadio.dataset.dueDate;
 
+                    // 선택된 계획 카드 표시
+                    selectedPlanCard.style.display = 'block';
+
                     // 선택된 계획 상세 정보 표시
                     displayPlanId.textContent = planId;
                     displayItemName.textContent = itemName;
-                    displayItemCode.textContent = itemCode;
                     displayPlanQty.textContent = planQty;
-                    displayCurrentActualQty.textContent = actualQty; // 누적 실적 표시
+                    displayCurrentActualQty.textContent = actualQty;
                     displayStartDate.textContent = startDate;
                     displayDueDate.textContent = dueDate;
+                    
+                    // 상태 배지 적용
                     displayStatus.textContent = status;
+                    displayStatus.className = `badge ${getStatusBadgeClass(status)}`;
 
                     // 진행률 계산 및 표시
                     const progressRate = (planQty > 0) ? ((actualQty / planQty) * 100).toFixed(1) : 0;
                     displayProgressRate.textContent = `${progressRate}%`;
-
+                    progressBar.style.width = `${Math.min(progressRate, 100)}%`;
+                    
+                    // 잔여 수량 계산
+                    const remainingQty = Math.max(0, planQty - actualQty);
+                    displayRemainingQty.textContent = remainingQty;
 
                     // 실적 등록 폼에 숨겨진 필드 세팅
                     actualPlanId.value = planId;
-                    currentActualQtyHidden.value = actualQty; // 현재까지의 누적 실적
-                    currentPlanQtyHidden.value = planQty; // 총 계획 수량
+                    currentActualQtyHidden.value = actualQty;
+                    currentPlanQtyHidden.value = planQty;
 
-                    // 실적 등록 버튼 활성화 (계획 상태가 '작업지시' 또는 'IN_PROGRESS'일 경우 등)
-                    if (status === '작업지시' || status === 'IN_PROGRESS') {
-                       saveActualButton.disabled = false;
+                    // 실적 등록 버튼 활성화 (상태에 따라)
+                    if (status === '작업지시' || status === '진행중') {
+                        saveActualButton.disabled = false;
+                        actualRegisterButton.disabled = false;
                     } else {
-                       saveActualButton.disabled = true;
+                        saveActualButton.disabled = true;
+                        actualRegisterButton.disabled = true;
                     }
 
                     // 선택된 계획의 일별 실적 목록 로드
                     loadDailyActuals(planId);
+
+                    // 카드가 보이도록 스크롤
+                    selectedPlanCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
 
             // 실적 등록 폼 제출 이벤트
             actualRegisterForm.addEventListener('submit', function(event) {
-                event.preventDefault(); // 기본 폼 제출 방지
+                event.preventDefault();
 
                 const planId = actualPlanId.value;
                 const actualDate = actualDateInput.value;
                 const actualQty = parseInt(actualQtyInput.value, 10);
                 const defectQty = parseInt(defectQtyInput.value, 10);
                 const remark = actualRemark.value;
-                const currentAccumulatedActualQty = parseInt(currentActualQtyHidden.value, 10); // 현재까지의 누적 실적
-                const totalPlanQty = parseInt(currentPlanQtyHidden.value, 10); // 총 계획 수량
+                const currentAccumulatedActualQty = parseInt(currentActualQtyHidden.value, 10);
+                const totalPlanQty = parseInt(currentPlanQtyHidden.value, 10);
 
                 if (!planId) {
                     alert('생산 계획을 먼저 선택해주세요.');
@@ -404,11 +667,11 @@
                     alert('실적 일자를 입력해주세요.');
                     return;
                 }
-                if (isNaN(actualQty) || actualQty < 0) { // 0도 허용할 수 있도록
+                if (isNaN(actualQty) || actualQty < 0) {
                     alert('유효한 생산 수량을 입력해주세요.');
                     return;
                 }
-                 if (isNaN(defectQty) || defectQty < 0) { // 0도 허용할 수 있도록
+                if (isNaN(defectQty) || defectQty < 0) {
                     alert('유효한 불량 수량을 입력해주세요.');
                     return;
                 }
@@ -416,7 +679,7 @@
                 // 총 양품 누적 수량 = 기존 누적 양품 + 오늘 양품
                 const newAccumulatedActualQty = currentAccumulatedActualQty + actualQty;
 
-                // 계획 수량을 초과하지 않도록 검증 (클라이언트 측 1차 검증)
+                // 계획 수량을 초과하지 않도록 검증
                 if (newAccumulatedActualQty > totalPlanQty) {
                     alert(`오늘 생산 실적(양품)을 더하면 계획 수량(${totalPlanQty} EA)을 초과합니다.\n현재까지 실적(양품): ${currentAccumulatedActualQty} EA, 오늘 등록 양품: ${actualQty} EA`);
                     return;
@@ -425,13 +688,13 @@
                 const formData = {
                     planId: planId,
                     actualDate: actualDate,
-                    actualQty: actualQty, // 양품
-                    defectQty: defectQty, // 불량
+                    actualQty: actualQty,
+                    defectQty: defectQty,
                     remark: remark
                 };
 
                 // AJAX 요청으로 실적 등록
-                fetch('/productactual/insert', { // 실제 API 엔드포인트에 맞게 변경
+                fetch('/productactual/insert', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -447,37 +710,39 @@
                 .then(data => {
                     alert('생산 실적이 성공적으로 등록되었습니다.');
 
-                    // 1-1. 현재 선택된 라디오 버튼의 data-actual-qty 업데이트
+                    // 현재 선택된 라디오 버튼의 data-actual-qty 업데이트
                     const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
                     if (selectedRadio) {
                         selectedRadio.dataset.actualQty = newAccumulatedActualQty.toString();
                     }
 
-                    // 1-2. "선택된 생산 계획 상세" 부분 업데이트
-                    displayCurrentActualQty.textContent = newAccumulatedActualQty; // 새 누적 실적 표시
-                    currentActualQtyHidden.value = newAccumulatedActualQty; // 숨겨진 필드 값도 업데이트
+                    // "선택된 생산 계획 상세" 부분 업데이트
+                    displayCurrentActualQty.textContent = newAccumulatedActualQty;
+                    currentActualQtyHidden.value = newAccumulatedActualQty;
 
                     const progressRate = (totalPlanQty > 0) ? ((newAccumulatedActualQty / totalPlanQty) * 100).toFixed(1) : 0;
                     displayProgressRate.textContent = `${progressRate}%`;
+                    progressBar.style.width = `${Math.min(progressRate, 100)}%`;
+                    
+                    const remainingQty = Math.max(0, totalPlanQty - newAccumulatedActualQty);
+                    displayRemainingQty.textContent = remainingQty;
 
-                    // 1-3. 메인 테이블의 "실제 수량" 셀 업데이트 (선택 사항, 좀 더 복잡할 수 있음)
+                    // 메인 테이블의 "실제 수량" 셀 업데이트
                     if (selectedRadio) {
                         const selectedRow = selectedRadio.closest('tr');
-                        const actualQtyCellInTable = selectedRow.cells[9]; // "실제 수량"이 10번째 컬럼(인덱스 9)이라고 가정
+                        const actualQtyCellInTable = selectedRow.cells[9];
                         if (actualQtyCellInTable) {
                             actualQtyCellInTable.textContent = newAccumulatedActualQty;
                         }
                     }
 
-                    // 1-4. 일별 실적 목록 새로고침
+                    // 일별 실적 목록 새로고침
                     loadDailyActuals(planId);
 
-                    // 1-5. 실적 입력 폼의 특정 필드만 초기화
-                    actualQtyInput.value = ''; // 오늘 생산 수량 초기화
-                    defectQtyInput.value = '0'; // 불량 수량 기본값으로
-                    actualRemark.value = '';    // 비고 초기화
-                    // actualDateInput.value = `${year}-${month}-${day}`; // 필요하다면 날짜도 오늘로 리셋
-
+                    // 실적 입력 폼의 특정 필드만 초기화
+                    actualQtyInput.value = '';
+                    defectQtyInput.value = '0';
+                    actualRemark.value = '';
                 })
                 .catch(error => {
                     console.error('실적 등록 중 오류 발생:', error);
@@ -498,33 +763,41 @@
                 actualQtyInput.value = '';
                 defectQtyInput.value = '0';
                 actualRemark.value = '';
-                actualDateInput.value = `${year}-${month}-${day}`; // 오늘 날짜로 재설정
-                saveActualButton.disabled = true; // 버튼 비활성화
+                actualDateInput.value = `${year}-${month}-${day}`;
+                saveActualButton.disabled = true;
+                actualRegisterButton.disabled = true;
 
                 // 선택된 계획 정보 초기화
                 displayPlanId.textContent = '-';
                 displayItemName.textContent = '-';
-                displayItemCode.textContent = '-';
                 displayPlanQty.textContent = '-';
                 displayCurrentActualQty.textContent = '-';
                 displayStartDate.textContent = '-';
                 displayDueDate.textContent = '-';
                 displayStatus.textContent = '-';
+                displayStatus.className = 'badge bg-secondary';
                 displayProgressRate.textContent = '0%';
+                displayRemainingQty.textContent = '-';
+                progressBar.style.width = '0%';
 
-                // 라디오 버튼 선택 해제 (필요시)
+                // 라디오 버튼 선택 해제
                 const checkedRadio = document.querySelector('input[name="selectedPlan"]:checked');
                 if (checkedRadio) {
                     checkedRadio.checked = false;
                 }
+
+                // 선택된 계획 카드 숨김
+                selectedPlanCard.style.display = 'none';
+
                 // 일별 실적 목록 초기화
-                dailyActualsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary">선택된 계획의 실적이 없습니다.</td></tr>';
+                dailyActualsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-inbox"></i><br>계획을 선택하면 실적 목록이 표시됩니다.</td></tr>';
             }
 
             // 특정 생산 계획의 일별 실적을 로드하는 함수
             function loadDailyActuals(planId) {
-                dailyActualsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary">실적을 로드 중입니다...</td></tr>'; // 로딩 메시지
-                fetch(`/productactual/daily?planId=${planId}`) // 일별 실적 조회 API 엔드포인트
+                dailyActualsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-hourglass-split"></i><br>실적을 로드 중입니다...</td></tr>';
+                
+                fetch(`/productactual/daily?planId=${planId}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('일별 실적을 불러오는 데 실패했습니다.');
@@ -532,27 +805,25 @@
                         return response.json();
                     })
                     .then(dailyActuals => {
-                        dailyActualsTableBody.innerHTML = ''; // 기존 내용 지우기
+                        dailyActualsTableBody.innerHTML = '';
                         if (dailyActuals.length === 0) {
-                            dailyActualsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary">선택된 계획의 실적이 없습니다.</td></tr>';
+                            dailyActualsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-clipboard-x"></i><br>등록된 실적이 없습니다.</td></tr>';
                         } else {
                             dailyActuals.forEach((actual, index) => {
-                                // regDate가 Date 객체라면 포매팅 필요
                                 const regDateFormatted = actual.regDate ? new Date(actual.regDate).toLocaleString('ko-KR', {
                                     year: 'numeric', month: '2-digit', day: '2-digit',
                                     hour: '2-digit', minute: '2-digit', second: '2-digit',
-                                    hour12: false // 24시간 형식
+                                    hour12: false
                                 }).replace(/\./g, '/').replace(/ /g, ' ').trim() : '-';
-
 
                                 const row = `
                                     <tr>
-                                        <td>${dailyActuals.length - index}</td>
-                                        <td>${actual.actualDate}</td>
-                                        <td>${actual.actualQty}</td>
-                                        <td>${actual.defectQty}</td>
+                                        <td class="text-center">${dailyActuals.length - index}</td>
+                                        <td class="text-center">${actual.actualDate}</td>
+                                        <td class="text-center text-success fw-bold">${actual.actualQty}</td>
+                                        <td class="text-center text-danger">${actual.defectQty}</td>
                                         <td>${actual.remark || '-'}</td>
-                                        <td>${regDateFormatted}</td>
+                                        <td class="text-center small text-muted">${actual.createdAt}</td>
                                     </tr>
                                 `;
                                 dailyActualsTableBody.insertAdjacentHTML('beforeend', row);
@@ -561,9 +832,112 @@
                     })
                     .catch(error => {
                         console.error('일별 실적 로드 중 오류 발생:', error);
-                        dailyActualsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">실적 로드 오류: ' + error.message + '</td></tr>';
+                        dailyActualsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle"></i><br>실적 로드 오류: ' + error.message + '</td></tr>';
                     });
             }
+
+            // 작업 시작 버튼 이벤트
+            workStartButton.addEventListener('click', function() {
+                const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
+                if (!selectedRadio) {
+                    alert('작업을 시작할 생산 계획을 선택해주세요.');
+                    return;
+                }
+
+                const planId = selectedRadio.dataset.planId;
+                const status = selectedRadio.dataset.status;
+
+                if (status !== '작업지시') {
+                    alert('작업지시 상태인 계획만 작업을 시작할 수 있습니다.');
+                    return;
+                }
+
+                if (!confirm('선택된 생산 계획의 작업을 시작하시겠습니까?')) {
+                    return;
+                }
+
+                fetch(`/productactual/start-work/${planId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.message || '작업 시작 중 오류가 발생했습니다.'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('작업이 시작되었습니다.');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('작업 시작 중 오류:', error);
+                    alert('작업 시작에 실패했습니다: ' + error.message);
+                });
+            });
+
+            // 작업 종료 버튼 이벤트
+            workEndButton.addEventListener('click', function() {
+                const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
+                if (!selectedRadio) {
+                    alert('작업을 종료할 생산 계획을 선택해주세요.');
+                    return;
+                }
+
+                const planId = selectedRadio.dataset.planId;
+                const status = selectedRadio.dataset.status;
+
+                if (status !== '진행중') {
+                    alert('진행중 상태인 계획만 작업을 종료할 수 있습니다.');
+                    return;
+                }
+
+                if (!confirm('선택된 생산 계획의 작업을 종료하시겠습니까?')) {
+                    return;
+                }
+
+                fetch(`/productactual/end-work/${planId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.message || '작업 종료 중 오류가 발생했습니다.'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('작업이 종료되었습니다.');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('작업 종료 중 오류:', error);
+                    alert('작업 종료에 실패했습니다: ' + error.message);
+                });
+            });
+
+            // 실적등록 버튼 (상단) 클릭 이벤트
+            actualRegisterButton.addEventListener('click', function() {
+                const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
+                if (!selectedRadio) {
+                    alert('실적을 등록할 생산 계획을 선택해주세요.');
+                    return;
+                }
+
+                // 실적 등록 카드로 스크롤
+                selectedPlanCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // 생산 수량 입력 필드에 포커스
+                setTimeout(() => {
+                    actualQtyInput.focus();
+                }, 500);
+            });
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script th:src="@{/js/productplan_list.js}"></script>
 </div>

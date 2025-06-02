@@ -1,93 +1,308 @@
+body {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
 
-     body {
-        min-height: 100vh;
-        background: #f8f9fa;
-      }
-      
-      
-    
-      @media (max-width: 991.98px) {
-        .sidebar {
-          width: 200px;
-        }
-      }
-      @media (max-width: 767.98px) {
-        .sidebar {
-          width: 100vw;
-        }
-      }
-      .content {
-        margin-left: 250px;
-        padding: 2rem 1rem;
-        transition: margin-left 0.3s;
-      }
-      .sidebar.collapsed ~ .content {
-        margin-left: 0;
-      }
-      @media (max-width: 991.98px) {
-        .content {
-          margin-left: 200px;
-        }
-        .sidebar.collapsed ~ .content {
-          margin-left: 0;
-        }
-      }
-      @media (max-width: 767.98px) {
-        .content {
-          margin-left: 0;
-        }
-      }
-      .filter-bar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1rem;
-        align-items: center;
-        margin-bottom: 1.2rem;
-        background: #fff;
-        padding: 1rem 1.2rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-      }
-      .filter-bar .form-select,
-      .filter-bar .form-control {
-        min-width: 140px;
-        max-width: 220px;
-      }
-      .filter-bar .form-control {
-        width: 220px;
-      }
-      .filter-bar .btn {
-        min-width: 80px;
-      }
-      .table-responsive {
-        min-height: 350px;
-        background: #fff;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-        margin-bottom: 1.5rem;
-      }
-      .table a.name-link {
-        text-decoration: underline;
-        color: inherit;
-        cursor: pointer;
-      }
-      .table-footer-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 0.5rem;
-        gap: 1rem;
-      }
-      .pagination {
-        margin-bottom: 0;
-      }
-      .add-btn,
-      .delete-btn {
-        min-width: 90px;
-      }
-      .delete-btn {
-        margin-left: 0.5rem;
-      }
-      .modal-content {
-        border-radius: 0.6rem;
-      }
+@media (max-width: 991.98px) {
+  .sidebar {
+    width: 200px;
+  }
+}
+@media (max-width: 767.98px) {
+  .sidebar {
+    width: 100vw;
+  }
+}
+.content {
+	margin-top: 64px;
+  margin-left: 250px;
+  padding: 2rem 1rem;
+  transition: margin-left 0.3s;
+}
+.sidebar.collapsed ~ .content {
+  margin-left: 0;
+}
+@media (max-width: 991.98px) {
+  .content {
+    margin-left: 200px;
+  }
+  .sidebar.collapsed ~ .content {
+    margin-left: 0;
+  }
+}
+@media (max-width: 767.98px) {
+  .content {
+    margin-left: 0;
+  }
+}
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  background: #fff;
+  padding: 1rem 1.2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+.filter-bar .form-select,
+.filter-bar .form-control {
+  min-width: 140px;
+  max-width: 220px;
+}
+.filter-bar .form-control {
+  width: 220px;
+}
+.filter-bar .btn {
+  min-width: 80px;
+}
+.table-responsive {
+  min-height: 350px;
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  margin-bottom: 1.5rem;
+}
+.table a.name-link {
+  text-decoration: underline;
+  color: inherit;
+  cursor: pointer;
+}
+.table-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  gap: 1rem;
+}
+.pagination {
+  margin-bottom: 0;
+}
+.add-btn,
+.delete-btn {
+  min-width: 90px;
+}
+.delete-btn {
+  margin-left: 0.5rem;
+}
+.modal-content {
+  border-radius: 0.6rem;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1050;
+  display: none;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.search-dropdown.show {
+  display: block;
+}
+
+.search-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-item:hover {
+  background-color: #f8f9fa;
+}
+
+.search-item:last-child {
+  border-bottom: none;
+}
+
+.search-loading {
+  padding: 12px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.search-no-results {
+  padding: 12px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.item-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-name {
+  font-weight: 500;
+}
+
+.item-code {
+  font-size: 0.875em;
+  color: #6c757d;
+}
+
+.employee-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.emp-name {
+  font-weight: 500;
+}
+
+.emp-no {
+  font-size: 0.875em;
+  color: #6c757d;
+}
+
+.search-input-container {
+  position: relative;
+}
+
+/* 스티키 테이블 기본 설정 */
+#productionPlanTable {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* 왼쪽 스티키 컬럼들 */
+.sticky-left-1 {
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 10;
+  width: 40px;
+  min-width: 40px;
+  text-align: center;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 0.3rem;
+}
+
+.sticky-left-2 {
+  position: sticky;
+  left: 40px;
+  background: white;
+  z-index: 10;
+  width: 50px;
+  min-width: 50px;
+  text-align: center;
+  padding: 0.75rem 0.3rem;
+}
+
+.sticky-left-3 {
+  position: sticky;
+  left: 90px;
+  background: white;
+  z-index: 10;
+  width: 140px;
+  min-width: 140px;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+}
+
+/* 오른쪽 스티키 컬럼들 */
+.sticky-right-1 {
+  position: sticky;
+  right: 80px;
+  background: white;
+  z-index: 10;
+  width: 60px;
+  min-width: 60px;
+  text-align: center;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.15);
+}
+
+.sticky-right-2 {
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 10;
+  width: 80px;
+  min-width: 80px;
+  text-align: center;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 헤더 스티키 */
+#productionPlanTable thead th {
+  background: #f8f9fa !important;
+  position: sticky;
+  top: 0;
+  z-index: 11;
+}
+
+/* 스티키 헤더와 스티키 컬럼이 만나는 지점 */
+#productionPlanTable thead .sticky-left-1,
+#productionPlanTable thead .sticky-left-2,
+#productionPlanTable thead .sticky-left-3,
+#productionPlanTable thead .sticky-right-1,
+#productionPlanTable thead .sticky-right-2 {
+  z-index: 12;
+}
+
+/* 호버 효과 */
+#productionPlanTable tbody tr:hover td {
+  background-color: #f5f5f5;
+}
+
+#productionPlanTable tbody tr:hover .sticky-left-1,
+#productionPlanTable tbody tr:hover .sticky-left-2,
+#productionPlanTable tbody tr:hover .sticky-left-3,
+#productionPlanTable tbody tr:hover .sticky-right-1,
+#productionPlanTable tbody tr:hover .sticky-right-2 {
+  background-color: #f5f5f5;
+}
+
+/* 스크롤되는 컬럼들 최소 너비 설정 */
+#productionPlanTable th:not([class*="sticky"]),
+#productionPlanTable td:not([class*="sticky"]) {
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+/* 특정 컬럼들 더 넓게 설정 */
+#productionPlanTable th:nth-child(4), /* 품목코드 */
+#productionPlanTable td:nth-child(4) {
+  min-width: 90px;
+}
+
+#productionPlanTable th:nth-child(5), /* 품목이름 */
+#productionPlanTable td:nth-child(5) {
+  min-width: 150px;
+}
+
+#productionPlanTable th:nth-child(6), /* 생산계획시작일 */
+#productionPlanTable td:nth-child(6),
+#productionPlanTable th:nth-child(7), /* 생산완료계획일 */
+#productionPlanTable td:nth-child(7) {
+  min-width: 120px;
+}
+
+/* 전체적인 테이블 정렬 개선 */
+#productionPlanTable td,
+#productionPlanTable th {
+  vertical-align: middle;
+  padding: 0.75rem 0.5rem;
+}
+
+/* 텍스트 정렬 */
+#productionPlanTable .sticky-left-2,
+#productionPlanTable .sticky-right-1,
+#productionPlanTable .sticky-right-2 {
+  text-align: center;
+}
+
+/* 모든 헤더 텍스트 줄바꿈 방지 */
+#productionPlanTable thead th {
+  white-space: nowrap;
+}

@@ -23,7 +23,7 @@
             DAILY_QTY AS actualQty, 
             DEFECT_QTY,              
             REMARK,
-            CREATED_AT AS regDate
+            CREATED_AT AS createdAt
         FROM PRODUCTION_DAILY
         WHERE PLAN_ID = #{planId}
         ORDER BY WORK_DATE DESC, CREATED_AT DESC
@@ -68,7 +68,7 @@ SELECT
 	JOIN
 	    ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
     <where>
-        AND PP.STATUS = '작업지시'
+        PP.STATUS = '작업지시'
         <if test="keyword != null and keyword != ''">
             AND (
                 PP.PLAN_ID LIKE '%' || #{keyword} || '%'

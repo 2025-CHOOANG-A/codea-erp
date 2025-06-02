@@ -3,45 +3,247 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.client.ClientMapper">
 
+  <!-- 거래처 기본 ResultMap -->
   <resultMap id="Client" type="kr.co.codea.client.ClientDTO">
-  <id property="bpId" column="BP_ID" />
-  <result property="bpCode" column="BP_CODE" />
-  <result property="bpType" column="BP_TYPE" />
-  <result property="bpName" column="BP_NAME" />
-  <result property="ceoName" column="CEO_NAME" />
-  <result property="bizNo" column="BIZ_NO" />
-  <result property="bizCond" column="BIZ_COND" />
-  <result property="bizType" column="BIZ_TYPE" />
-  <result property="bp_tel" column="bp_tel" />
-  <result property="fax" column="FAX" />
-  <result property="address" column="ADDRESS" />
-  <result property="addressDetail" column="ADDRESS_DETAIL" />
-  <result property="postCode" column="POST_CODE" />
-  <result property="bp_remark" column="bp_remark" />
-  <collection property="contacts" ofType="kr.co.codea.client.ContactDTO">
-      <id property="bcId" column="BC_ID" />
-      <result property="bpId" column="BP_ID" />
-      <result property="bcName" column="BC_NAME" />
-      <result property="bcPosition" column="BC_POSITION" />
-      <result property="bc_tel" column="bc_tel" />
-      <result property="hp" column="HP" />
-      <result property="email" column="EMAIL" />
-      <result property="bc_remark" column="bc_remark" />
-      
-      <!-- 생략: 다른 필드 -->
-    </collection>
+    <id property="bpId" column="BP_ID" />
+    <result property="bpCode" column="BP_CODE" />
+    <result property="bpType" column="BP_TYPE" />
+    <result property="bpName" column="BP_NAME" />
+    <result property="ceoName" column="CEO_NAME" />
+    <result property="bizNo" column="BIZ_NO" />
+    <result property="bizCond" column="BIZ_COND" />
+    <result property="bizType" column="BIZ_TYPE" />
+    <result property="bp_tel" column="bp_tel" />
+    <result property="fax" column="FAX" />
+    <result property="address" column="ADDRESS" />
+    <result property="addressDetail" column="ADDRESS_DETAIL" />
+    <result property="postCode" column="POST_CODE" />
+    <result property="bp_remark" column="bp_remark" />
+    <result property="contactCount" column="contact_count" />
   </resultMap>
 
-   <!-- 공통코드 검색 api -->
-<resultMap id="CommonCode" type="kr.co.codea.client.CommonCodeDTO">
+  <!-- 공통코드 ResultMap -->
+  <resultMap id="CommonCode" type="kr.co.codea.client.CommonCodeDTO">
     <id property="codeId" column="CODE_ID"/>
     <result property="codeType" column="CODE_TYPE"/>
     <result property="code" column="CODE"/>
     <result property="codeDesc" column="CODE_DESC"/>
-</resultMap>
+  </resultMap>
 
-   <!-- 공통코드 조회 api -->
-  <select id="findCommonCodeById" resultType="kr.co.codea.client.CommonCodeDTO" resultMap="CommonCode">
+  <!-- 거래처 목록 조회 (담당자 수 포함) -->
+  <select id="searchClientbyKeywordWithContactCount" parameterType="ClientDTO" resultType="kr.co.codea.client.ClientDTO">
+    SELECT
+        p.BP_ID as bpId,
+        p.BP_CODE as bpCode,
+        p.BP_TYPE as bpType,
+        p.BP_NAME as bpName,
+        p.BIZ_NO as bizNo,
+        p.TEL as bp_tel,
+        p.ADDRESS as address,
+        p.CEO_NAME as ceoName,
+        p.BIZ_COND as bizCond,
+        p.BIZ_TYPE as bizType,
+        p.FAX as fax,
+        p.ADDRESS_DETAIL as addressDetail,
+        p.POST_CODE as postCode,
+        p.REMARK as bp_remark,
+        NVL(c.contact_count, 0) as contactCount
+    FROM
+        BUSINESS_PARTNER p
+    LEFT JOIN (
+        SELECT BP_ID, COUNT(*) as contact_count
+        FROM BUSINESS_CONTACT
+        GROUP BY BP_ID
+    ) c ON p.BP_ID = c.BP_ID
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND (
+          p.BP_NAME LIKE '%' || #{keyword} || '%'
+          OR p.BP_CODE LIKE '%' || #{keyword} || '%'
+        )
+      </if>
+      <if test="bpType != null and bpType != ''">
+        AND p.BP_TYPE = #{bpType}
+      </if>
+    </where>
+    ORDER BY p.BP_ID DESC
+  </select>
+
+  <!-- 거래처 상세 정보 조회 -->
+  <select id="getPartnerDetails" parameterType="Integer" resultType="kr.co.codea.client.ClientDTO">
+    SELECT
+        BP_ID as bpId,
+        BP_CODE as bpCode,
+        BP_TYPE as bpType,
+        BP_NAME as bpName,
+        CEO_NAME as ceoName,
+        BIZ_NO as bizNo,
+        BIZ_COND as bizCond,
+        BIZ_TYPE as bizType,
+        TEL as bp_tel,
+        FAX as fax,
+        ADDRESS as address,
+        ADDRESS_DETAIL as addressDetail,
+        POST_CODE as postCode,
+        REMARK as bp_remark
+    FROM
+        BUSINESS_PARTNER
+    WHERE
+        BP_ID = #{bpId}
+  </select>
+
+  <!-- 거래처별 담당자 목록 조회 -->
+  <select id="getContactsByBpId" parameterType="Integer" resultType="kr.co.codea.client.ContactDTO">
+    SELECT
+        BC_ID as bcId,
+        BP_ID as bpId,
+        BC_NAME as bcName,
+        BC_POSITION as bcPosition,
+        TEL as tel,
+        HP as hp,
+        EMAIL as email,
+        REMARK as remark
+    FROM
+        BUSINESS_CONTACT
+    WHERE
+        BP_ID = #{bpId}
+    ORDER BY BC_ID ASC
+  </select>
+
+  <!-- 거래처 등록 -->
+  <insert id="insertClient" parameterType="kr.co.codea.client.ClientDTO">
+    INSERT INTO BUSINESS_PARTNER (
+        BP_CODE,
+        BP_TYPE,
+        BP_NAME,
+        CEO_NAME,
+        BIZ_NO,
+        BIZ_COND,
+        BIZ_TYPE,
+        POST_CODE,
+        TEL,
+        FAX,
+        ADDRESS,
+        ADDRESS_DETAIL,
+        REMARK
+    ) VALUES (
+        #{bpCode},      
+        #{bpType},     
+        #{bpName},      
+        #{ceoName},
+        #{bizNo},
+        #{bizCond},     
+        #{bizType},
+        #{postCode},
+        #{bp_tel},
+        #{fax},
+        #{address},
+        #{addressDetail},
+        #{bp_remark, jdbcType=VARCHAR}
+    )
+  </insert>
+
+  <!-- 거래처 수정 -->
+  <update id="updateClient" parameterType="kr.co.codea.client.ClientDTO">
+    UPDATE BUSINESS_PARTNER
+    SET
+        BP_TYPE = #{bpType},
+        BP_NAME = #{bpName},
+        CEO_NAME = #{ceoName},
+        BIZ_NO = #{bizNo},
+        BIZ_COND = #{bizCond},
+        BIZ_TYPE = #{bizType},
+        TEL = #{bp_tel},
+        FAX = #{fax},
+        ADDRESS = #{address},
+        ADDRESS_DETAIL = #{addressDetail},
+        POST_CODE = #{postCode},
+        REMARK = #{bp_remark}
+    WHERE
+        BP_ID = #{bpId}
+  </update>
+
+  <!-- 거래처 삭제 -->
+  <delete id="deleteClient" parameterType="Integer">
+    DELETE FROM BUSINESS_PARTNER
+    WHERE BP_ID = #{bpId}
+  </delete>
+
+  <!-- 담당자 등록 -->
+  <insert id="insertContact" parameterType="kr.co.codea.client.ContactDTO">
+    INSERT INTO BUSINESS_CONTACT (
+        BP_ID,
+        BC_NAME,
+        BC_POSITION,
+        TEL,
+        HP,
+        EMAIL,
+        REMARK
+    ) VALUES (
+        #{bpId},
+        #{bcName},
+        #{bcPosition},
+        #{tel},
+        #{hp},
+        #{email},
+        #{remark}
+    )
+  </insert>
+
+  <!-- 담당자 수정 -->
+  <update id="updateContact" parameterType="kr.co.codea.client.ContactDTO">
+    UPDATE BUSINESS_CONTACT
+    SET
+        BC_NAME = #{bcName},
+        BC_POSITION = #{bcPosition},
+        TEL = #{tel},
+        HP = #{hp},
+        EMAIL = #{email},
+        REMARK = #{remark}
+    WHERE
+        BC_ID = #{bcId}
+        AND BP_ID = #{bpId}
+  </update>
+
+  <!-- 담당자 삭제 -->
+  <delete id="deleteContact">
+    DELETE FROM BUSINESS_CONTACT
+    WHERE
+        BC_ID = #{bcId}
+        AND BP_ID = #{bpId}
+  </delete>
+
+  <!-- 거래처 삭제 시 관련 담당자들 삭제 -->
+  <delete id="deleteContactsByBpId" parameterType="Integer">
+    DELETE FROM BUSINESS_CONTACT
+    WHERE BP_ID = #{bpId}
+  </delete>
+
+  <!-- 업태 코드명 조회 -->
+  <select id="getBizCondCodeName" parameterType="Integer" resultType="String">
+    SELECT CODE
+    FROM COMMON_CODE
+    WHERE CODE_ID = #{bizCond}
+    AND CODE_TYPE = 'BIZ_COND'
+  </select>
+
+  <!-- 공통코드 검색 -->
+  <select id="findCommonCode" resultMap="CommonCode">
+    SELECT
+        CODE_ID,
+        CODE_TYPE,
+        CODE,
+        CODE_DESC
+    FROM
+        COMMON_CODE
+    WHERE
+        CODE_TYPE = #{codeType}
+        AND CODE LIKE '%' || #{query} || '%'
+    ORDER BY CODE
+  </select>
+
+  <!-- 공통코드 ID로 조회 -->
+  <select id="findCommonCodeById" resultMap="CommonCode">
     SELECT
         CODE_ID,
         CODE_TYPE,
@@ -53,143 +255,4 @@
         CODE_ID = #{codeId}
   </select>
 
-
-<!--거래처 리스트 출력 + 검색 기능  -->
-<select id="searchClientbyKeyword" parameterType="ClientDTO" resultMap="Client">
-    SELECT
-        BP_ID, BP_CODE, BP_TYPE, BP_NAME, BIZ_NO, TEL AS bp_tel, ADDRESS, CEO_NAME -- 필요한 컬럼 모두 포함
-    FROM
-        BUSINESS_PARTNER
-    <where>
-        <if test="dto.keyword != null and dto.keyword != ''">
-            AND (
-   				 BP_NAME LIKE '%' || #{dto.keyword} || '%'
-                OR BP_CODE LIKE '%' || #{dto.keyword} || '%'
-            )
-        </if>
-        </where>
-    ORDER BY BP_ID DESC
-    </select>
-
-  
-   <!-- 거래처 상세 + 담당자 -->
-  <select id="selectPartnerWithContacts" resultMap="Client" parameterType="Integer">
-        SELECT
-        p.BP_ID, p.BP_CODE, p.BP_TYPE, p.BP_NAME, p.CEO_NAME, p.BIZ_NO, p.BIZ_COND,
-        p.BIZ_TYPE, p.TEL AS bp_tel, p.FAX, p.ADDRESS, p.ADDRESS_DETAIL, p.POST_CODE, p.REMARK AS bp_remark,
-        c.BC_ID, c.BP_ID AS bc_bpId, c.BC_NAME, c.BC_POSITION, c.TEL AS bc_tel, c.HP, c.EMAIL, c.REMARK AS bc_remark
-    FROM BUSINESS_PARTNER p
-    LEFT JOIN BUSINESS_CONTACT c ON p.BP_ID = c.BP_ID
-    WHERE p.BP_ID = #{bpId}
-  </select>
-  
-      <select id="findCommonCode" resultType="kr.co.codea.client.CommonCodeDTO" resultMap="CommonCode">
-        SELECT
-            CODE_ID,
-            CODE_TYPE,
-            CODE,
-            CODE_DESC
-        FROM
-            COMMON_CODE
-        WHERE
-            CODE_TYPE = #{codeType}
-            AND CODE LIKE '%' || #{query} || '%'
-        ORDER BY CODE
-    </select>
-    
-       <!-- 거래처 추가  -->
-    <insert id="insertClient">
-        INSERT INTO BUSINESS_PARTNER (
-            BP_CODE,
-            BP_TYPE,
-            BP_NAME,
-            CEO_NAME,
-            BIZ_NO,
-            BIZ_COND,
-            BIZ_TYPE,
-            POST_CODE,
-            TEL,
-            FAX,
-            ADDRESS,
-            ADDRESS_DETAIL,
-            REMARK
-        ) VALUES (
-            #{bpCode},      
-            #{bpType},     
-            #{bpName},      
-            #{ceoName},
-            #{bizNo},
-            #{bizCond},     
-            #{bizType},
-            #{postCode},
-            #{bp_tel},
-            #{fax},
-            #{address},
-            #{addressDetail},
-            #{bc_remark, jdbcType=VARCHAR}
-        )
-    </insert>
-    
-    
-   <!--  거래처 업데이트 -->
-      <update id="updateClient" parameterType="kr.co.codea.client.ClientDTO">
-      UPDATE BUSINESS_PARTNER
-      SET
-          BP_TYPE = #{bpType},
-          BP_NAME = #{bpName},
-          CEO_NAME = #{ceoName},
-          BIZ_NO = #{bizNo},
-          BIZ_COND = #{bizCond},
-          BIZ_TYPE = #{bizType},
-          TEL = #{bp_tel},
-          FAX = #{fax},
-          ADDRESS = #{address},
-          ADDRESS_DETAIL = #{addressDetail},
-          POST_CODE = #{postCode},
-          REMARK = #{bp_remark}
-      WHERE
-          BP_ID = #{bpId}
-  </update>
-  
-<!--   담당자 업데이트--> 
-	  <update id="updateContact" parameterType="kr.co.codea.client.ContactDTO">
-      UPDATE BUSINESS_CONTACT
-      SET
-          BC_NAME = #{bcName},
-          BC_POSITION = #{bcPosition},
-          TEL = #{bc_tel},
-          HP = #{hp},
-          EMAIL = #{email},
-          REMARK = #{bc_remark}
-      WHERE
-          BC_ID = #{bcId}
-          AND BP_ID = #{bpId} </update>
-          
-   <!-- 담당자 추가    -->  
-  <insert id="insertContact" parameterType="kr.co.codea.client.ContactDTO">
-      INSERT INTO BUSINESS_CONTACT (
-          BP_ID,
-          BC_NAME,
-          BC_POSITION,
-          TEL,
-          HP,
-          EMAIL,
-          REMARK
-      ) VALUES (
-          #{bpId},
-          #{bcName},
-          #{bcPosition},
-          #{bc_tel},
-          #{hp},
-          #{email},
-          #{bc_remark}
-      )
-  </insert>
-  
-  <!-- 담당자 삭제 -->
-  <delete id="deleteContact">
-      DELETE FROM BUSINESS_CONTACT
-      WHERE
-          BC_ID = #{bcId}
-          AND BP_ID = #{bpId} </delete>
 </mapper>
