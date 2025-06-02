@@ -3,6 +3,7 @@
 <mapper namespace="kr.co.codea.bom.bom_mapper">
 
  <!-- BOM_HEADER 등록 -->
+ <!-- 
   <insert id="insert_bom_header" parameterType="kr.co.codea.bom.bomDTO">
     INSERT INTO BOM_HEADER (
       BOM_HEADER_ID,
@@ -17,8 +18,10 @@
       SYSDATE
     )
   </insert>
-  
+   -->
+   
   <!-- BOM_DETAIL 등록 --> 
+  <!--
   <insert id="insert_bom_detail" parameterType="kr.co.codea.bom.bomDTO">
     INSERT INTO BOM_DETAIL (
       DETAIL_ID,
@@ -36,7 +39,24 @@
       #{lossRate}
     )
   </insert>
- 
+   -->
+   
+ <!--BOM 전체삭제 -->  
+
+ <!-- 2. BOM_HEADER 삭제 -->
+<delete id="delete_bom_header" parameterType="String">
+  DELETE FROM BOM_HEADER
+  WHERE BOM_HEADER_ID = #{bomCode}
+</delete>
+
+
+<!-- 1. BOM_DETAIL 삭제 -->
+<delete id="delete_bom_detail" parameterType="String">
+  DELETE FROM BOM_DETAIL
+  WHERE BOM_HEADER_ID = #{bomCode}
+</delete>
+
+   
 <!-- 조회항목  -->
 
 <!-- 완재품 항목조회  -->
@@ -204,22 +224,42 @@ ORDER BY H.BOM_HEADER_ID, D.DETAIL_ID
  -->
 
 <!--단일헤더 조회(bom 코드만)  -->
-
-<select id="selectBomHeaderByCode" parameterType="String" resultType="bomDTO">
+<select id="selectBomHeaderByCode" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
   SELECT 
     H.BOM_HEADER_ID    AS bomCode,
     I.ITEM_CODE        AS productCode,
     I.ITEM_NAME        AS productName,
     I.SPEC             AS spec,
-    CC.CODE      AS unitName,
+    CC.CODE            AS unitName,
     H.REMARK           AS reMark
   FROM BOM_HEADER H
   JOIN ITEM I ON H.ITEM_ID = I.ITEM_ID
   LEFT JOIN COMMON_CODE CC 
     ON I.UNIT_CODE = CC.CODE_ID AND CC.CODE_TYPE = 'UNIT_CODE'
   WHERE H.BOM_HEADER_ID = #{bomCode}
+</select> 
+
+<select id="selectBomDetailByBomCode" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
+  SELECT
+    B.BOM_HEADER_ID AS bomCode,
+    C.ITEM_CODE     AS materialCode,
+    C.ITEM_NAME     AS materialName,
+    C.SPEC          AS spec,
+    CC.CODE_DESC    AS unitCode,
+    C.PRICE         AS price,
+    B.QUANTITY      AS quantity
+  FROM BOM_DETAIL B
+  JOIN ITEM C ON B.CHILD_ID = C.ITEM_ID
+  LEFT JOIN COMMON_CODE CC ON C.UNIT_CODE = CC.CODE_ID AND CC.CODE_TYPE = 'UNIT_CODE'
+  WHERE B.BOM_HEADER_ID = #{bomCode}
 </select>
 
+<!-- BOM을 수정하기 위해 불러오는 항목 -->
+<select id="select_bom_by_bom" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
+SELECT *
+FROM BOM_HEADER
+WHERE BOM_HEADER_ID =#{bomCode}
+</select>
 
 
 <!-- resultMap -->
@@ -235,5 +275,16 @@ ORDER BY H.BOM_HEADER_ID, D.DETAIL_ID
     <result property="spec" column="SPEC"/>
     <result property="reMark" column="REMARK"/>
     <result property="unitName2" column="unitName2"/>
+    
+    <result property="bomCode" column="bomCode"/>
+    <result property="productCode" column="productCode"/>
+    <result property="productName" column="productName"/>
+    
+    <result property="materialCode" column="materialCode"/>
+    <result property="materialName" column="materialName"/>
+    
+    
+    
+    
 </resultMap>
 </mapper>

@@ -30,6 +30,9 @@ public interface item_service {
 	   int delete_item(String itemCode);
 	   
 	   /*수정, 삭제를 위해 불러옴*/
-	   public itemDTO select_item_by_code(String itemCode);
+	   public itemDTO select_item_by_id(String itemId);
+	   
+	   
+	
 	   
 }

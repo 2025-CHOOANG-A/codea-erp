@@ -73,7 +73,26 @@ public class bomDAO implements bom_service{
     public int delete_bom_details(String bomCode) {
     	return b_mp.delete_bom_details(bomCode);
     }   
+  
+   //BOM 수정하기위해 BOM 코드전달 
+   @Override
+    public bomDTO select_bom_by_bom(String bomCode) {
+	   return b_mp.select_bom_by_bom(bomCode);
+}
+   
+   
+   /*BOM전체삭제(header,detail)*/
  
+   @Override
+    public int delete_bom_header(String bomCode) {
+	    return  b_mp.delete_bom_header(bomCode);
+     }
+   
+   
+   @Override
+    public int delete_bom_detail(String bomCode) {
+	   return b_mp.delete_bom_detail(bomCode);
+    }
    
    
    @Override
