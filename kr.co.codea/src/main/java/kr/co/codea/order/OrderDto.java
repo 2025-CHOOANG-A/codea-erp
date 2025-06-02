@@ -8,8 +8,8 @@ import java.util.List;
 public class OrderDto {
 
     /**
-     * 주문 목록 조회 시 사용되는 DTO
-     * (OrderMapper.xml의 selectOrderList 결과와 매핑)
+     * 1) 주문 목록 조회 시 사용되는 DTO
+     *    (OrderMapper.selectOrderList 결과와 매핑)
      */
     @Data
     public static class OrderDetailView {
@@ -30,23 +30,27 @@ public class OrderDto {
     }
 
     /**
-     * 페이징 결과를 담는 DTO
+     * 2) 페이징 결과를 담는 DTO
      */
     @Data
     public static class PagingResult<T> {
         private List<T> content;
         private int currentPage;
         private int totalPages;
+        private long totalCount;
+        private int currentPageSize;
 
-        public PagingResult(List<T> content, int currentPage, int totalPages) {
+        public PagingResult(List<T> content, int currentPage, int totalPages, long totalCount) {
             this.content = content;
             this.currentPage = currentPage;
             this.totalPages = totalPages;
+            this.totalCount = totalCount;
+            this.currentPageSize = content == null ? 0 : content.size();
         }
     }
 
     /**
-     * 검색 파라미터를 담는 DTO
+     * 3) 검색 파라미터를 담는 DTO
      */
     @Data
     public static class SearchParam {
@@ -64,7 +68,7 @@ public class OrderDto {
     }
 
     /**
-     * 주문 등록/수정용 DTO
+     * 4) 주문 등록/수정용 DTO
      */
     @Data
     public static class OrderCreateRequest {
@@ -75,7 +79,7 @@ public class OrderDto {
     }
 
     /**
-     * 주문 상세 등록/수정용 DTO
+     * 5) 주문 상세 등록/수정용 DTO
      */
     @Data
     public static class OrderDetailRequest {
@@ -87,8 +91,7 @@ public class OrderDto {
     }
 
     /**
-     * 가출고 처리 요청 시 사용될 DTO
-     * (OrderMapper.xml의 insertProvisionalShipmentToInOut 파라미터와 매핑)
+     * 6) 가출고 처리 요청 시 사용될 DTO
      */
     @Data
     public static class ProvisionalShipmentRequest {
@@ -99,5 +102,41 @@ public class OrderDto {
         private Long whId;              // 창고 ID (INOUT.WH_ID)
         private Long empId;             // 직원 ID (INOUT.EMP_ID)
         private String remark;          // 비고 (INOUT.REMARK)
+    }
+
+    /**
+     * 7) 주문 헤더 + 거래처명, 사원명 포함 조회용 DTO
+     */
+    @Data
+    public static class OrderHeaderDetail {
+        private Long ordId;           // ORD_HEADER.ORD_ID
+        private String ordCode;       // ORD_HEADER.ORD_CODE
+        private LocalDate orderDate;  // ORD_HEADER.ORDER_DATE
+        private Long bpId;            // ORD_HEADER.BP_ID
+        private String status;        // ORD_HEADER.STATUS
+        private Long empId;           // ORD_HEADER.EMP_ID
+        private String remark;        // ORD_HEADER.REMARK
+        private String bpName;        // BUSINESS_PARTNER.BP_NAME
+        private String empName;       // EMPLOYEE.EMP_NAME (필요 시)
+        private List<OrderItemDetail> items; // 해당 주문의 상세(아이템) 리스트
+    }
+
+    /**
+     * 8) 주문 아이템(상세) 조회용 DTO
+     */
+    @Data
+    public static class OrderItemDetail {
+        private Long ordDetailId;          // ORD_DETAIL.ORD_DETAIL_ID
+        private Long ordId;                // ORD_DETAIL.ORD_ID
+        private Long itemId;               // ORD_DETAIL.ITEM_ID
+        private String productName;        // ITEM.ITEM_NAME
+        private String spec;               // ITEM.SPEC (가정)
+        private String unit;               // ITEM.UNIT (가정)
+        private Integer orderQty;          // ORD_DETAIL.ORDER_QTY
+        private Double unitPrice;          // ORD_DETAIL.UNIT_PRICE
+        private Double totalPrice;         // (orderQty * unitPrice)
+        private LocalDate requiredDate;    // ORD_DETAIL.REQUIRED_DELIVERY_DATE
+        private String remark;             // ORD_DETAIL.REMARK
+        private String detailStatus;       // ORD_DETAIL.STATUS
     }
 }

@@ -1,55 +1,201 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>주문 상세</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bootstrap 5 CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+    }
+    .order-header {
+      background-color: #ffffff;
+      padding: 1.5rem;
+      border-radius: 0.375rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+    }
+    .order-items {
+      background-color: #ffffff;
+      padding: 1rem;
+      border-radius: 0.375rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .form-control[readonly] {
+      background-color: #e9ecef;
+      opacity: 1;
+    }
+  </style>
 </head>
-<body class="p-4">
-  <div class="container">
-    <h3 class="mb-4">주문 상세</h3>
-
+<body>
+  <div class="container mt-5 mb-5" style="max-width: 900px;">
     <!-- 주문 헤더 정보 -->
-    <table class="table table-bordered mb-4">
-      <tbody>
-        <tr><th>주문 코드</th><td th:text="${order.orderCode}"></td><th>주문일</th><td th:text="${#dates.format(order.orderDate, 'yyyy-MM-dd')}"></td></tr>
-        <tr><th>거래처 코드</th><td th:text="${order.partnerCode}"></td><th>거래처명</th><td th:text="${order.partnerName}"></td></tr>
-        <tr><th>상태</th><td th:text="${order.status}"></td><th>담당자 번호</th><td th:text="${order.employeeNo}"></td></tr>
-        <tr><th>담당자명</th><td th:text="${order.employeeName}"></td><th>등록일</th><td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd')}"></td></tr>
-        <tr><th>수정일</th><td th:text="${#dates.format(order.updatedAt, 'yyyy-MM-dd')}"></td><th>비고</th><td th:text="${order.remark}"></td></tr>
-        <tr><th>총 금액</th><td colspan="3" th:text="|₩ ${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')}|"></td></tr>
-      </tbody>
-    </table>
+    <div class="order-header">
+      <h4 class="mb-4">주문 상세</h4>
+      <form>
+        <div class="row mb-3">
+          <label for="orderNo" class="col-sm-2 col-form-label text-end">주문번호</label>
+          <div class="col-sm-4">
+            <input
+              type="text"
+              id="orderNo"
+              class="form-control"
+              th:value="${order.ordCode}"
+              readonly
+            />
+          </div>
 
-    <!-- 주문 상세 품목 리스트 -->
-    <h5>품목 목록</h5>
-    <table class="table table-bordered text-center">
-      <thead class="table-light">
-        <tr>
-          <th>품목 코드</th>
-          <th>품목명</th>
-          <th>규격</th>
-          <th>수량</th>
-          <th>단가</th>
-          <th>공급가액</th>
-          <th>희망 납기일</th>
-          <th>비고</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr th:each="detail : ${order.details}">
-          <td th:text="${detail.itemCode}"></td>
-          <td th:text="${detail.itemName}"></td>
-          <td th:text="${detail.spec}"></td>
-          <td th:text="${detail.orderQty}"></td>
-          <td th:text="|₩ ${#numbers.formatInteger(detail.unitPrice, 3, 'COMMA')}|"></td>
-          <td th:text="|₩ ${#numbers.formatInteger(detail.orderQty * detail.unitPrice, 3, 'COMMA')}|"></td>
-          <td th:text="${#dates.format(detail.requiredDeliveryDate, 'yyyy-MM-dd')}"></td>
-          <td th:text="${detail.remark}"></td>
-        </tr>
-      </tbody>
-    </table>
+          <label for="orderDate" class="col-sm-2 col-form-label text-end">주문일자</label>
+          <div class="col-sm-4">
+            <input
+              type="date"
+              id="orderDate"
+              class="form-control"
+              th:value="${#dates.format(order.orderDate, 'yyyy-MM-dd')}"
+              readonly
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label for="bpName" class="col-sm-2 col-form-label text-end">거래처</label>
+          <div class="col-sm-4">
+            <input
+              type="text"
+              id="bpName"
+              class="form-control"
+              th:value="${order.bpName}"
+              readonly
+            />
+          </div>
+
+          <label for="empName" class="col-sm-2 col-form-label text-end">담당자</label>
+          <div class="col-sm-4">
+            <input
+              type="text"
+              id="empName"
+              class="form-control"
+              th:value="${order.empName}"
+              readonly
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label for="status" class="col-sm-2 col-form-label text-end">상태</label>
+          <div class="col-sm-4">
+            <input
+              type="text"
+              id="status"
+              class="form-control"
+              th:value="${order.status}"
+              readonly
+            />
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="remark" class="col-sm-2 col-form-label text-end">비고</label>
+          <div class="col-sm-10">
+            <textarea
+              id="remark"
+              class="form-control"
+              rows="2"
+              th:text="${order.remark}"
+              readonly
+            ></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- 주문 아이템 리스트 -->
+    <div class="order-items">
+      <h5 class="mb-3">주문 아이템</h5>
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 50px;">순번</th>
+              <th>제품코드</th>
+              <th>제품명</th>
+              <th>규격</th>
+              <th>단위</th>
+              <th>수량</th>
+              <th>단가</th>
+              <th>금액</th>
+              <th>납기예정일</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="item, stat : ${order.items}">
+              <td th:text="${stat.count}">1</td>
+              <td th:text="${item.itemId}">1001</td>
+              <td th:text="${item.productName}">제품 A</td>
+              <td th:text="${item.spec}">10cm x 20cm</td>
+              <td th:text="${item.unit}">EA</td>
+              <td th:text="${item.orderQty}">5</td>
+              <td th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA')}">₩35,000</td>
+              <td th:text="${#numbers.formatDecimal(item.totalPrice, 0, 'COMMA')}">₩175,000</td>
+              <td>
+                <input
+                  type="date"
+                  class="form-control"
+                  th:value="${#dates.format(item.requiredDate, 'yyyy-MM-dd')}"
+                  readonly
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  th:value="${item.remark}"
+                  readonly
+                />
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(order.items)}">
+              <td colspan="10">등록된 아이템이 없습니다.</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="table-light">
+              <th colspan="7" class="text-end">총 합계</th>
+              <th th:text="${#numbers.formatDecimal(
+                                order.items.stream()
+                                          .mapToDouble(i -> i.getTotalPrice())
+                                          .sum(),
+                                0, 'COMMA')}">
+                ₩0
+              </th>
+              <th colspan="2"></th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="text-end mt-4">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="location.href='/order'">
+          목록
+        </button>
+      </div>
+    </div>
   </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ></script>
 </body>
 </html>
