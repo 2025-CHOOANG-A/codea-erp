@@ -57,7 +57,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr th:each = "n : ${list}" th:onclick="|location.href='/inventory/detail?inventoryId=${n.inventoryId}'|" style="cursor:pointer;">
+							<tr th:each = "n : ${list}" th:onclick="|location.href='/inventory/detail?inventoryId=${n.inventoryId}&itemId=${n.itemId}&whId=${n.whId}'|" style="cursor:pointer;">
 								<td>[[${n.inventoryCode}]]</td>	<!-- 재고 번호 -->
 								<td>[[${n.itemCode}]]</td>	<!-- 제품 코드 -->
 								<td>[[${n.itemName}]]</td>	<!-- 제품명 -->

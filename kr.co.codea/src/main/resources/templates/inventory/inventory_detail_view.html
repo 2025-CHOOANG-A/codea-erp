@@ -97,7 +97,39 @@
 						</tr>
 					</tbody>
 				</table>
-				<div class="d-flex justify-content-end gap-2">
+				<h6 class="fw-bold mt-4 mb-3">입출고 내역</h6>
+				<div class="table-responsive">
+					<table class="table table-bordered align-middle text-center mb-4" style="white-space: nowrap;">
+						<thead class="table-light">
+							<tr>
+								<th>입출고 번호</th>
+								<th>입출고 유형</th>
+								<th>입출고 일자</th>
+								<th>문서 번호</th>
+								<th>문서 일자</th>
+								<th>수량</th>
+								<th>단가</th>
+								<th>총액</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each = "n : ${inout}">
+								<td>[[${n.inoutId}]]</td>	<!-- 입출고 번호 -->
+								<td>[[${n.inoutType}]]</td>	<!-- 입출고 유형 -->
+								<td>[[${n.inoutTime.substring(0, 10)}]]</td>	<!-- 입출고 일자 -->
+								<td>[[${n.docNo != null ? n.docNo : ' - '}]]</td>	<!-- 문서 번호 -->
+								<td>[[${n.docDate != null ? n.docDate : ' - '}]]</td>	<!-- 문서 일자 -->
+								<td>[[${n.quantity}]]</td>	<!-- 수량 -->
+								<td>[[${#numbers.formatInteger(n.itemUnitCost, 0, 'COMMA')} + ' 원']]</td>	<!-- 단가 -->
+								<td>[[${#numbers.formatInteger(n.totalCost, 0, 'COMMA')} + ' 원']]</td>	<!-- 총액 -->
+							</tr>
+							<tr th:if="${#lists.isEmpty(inout)}">
+								<td colspan="8" class="text-muted">입출고 내역이 없습니다.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="d-flex justify-content-end gap-2 mt-4">
 					<a th:href="@{/inventory/list}" class="btn btn-outline-secondary">목록</a>
 					<a th:href="@{/inventory/modify(inventoryId=${detail.inventoryId})}" class="btn btn-primary">수정</a>
 				</div>

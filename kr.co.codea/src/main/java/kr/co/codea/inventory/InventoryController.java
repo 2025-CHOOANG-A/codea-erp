@@ -40,9 +40,14 @@ public class InventoryController {
 	}
 	
 	@GetMapping("/detail")
-	public String detailPage(@RequestParam(name="inventoryId") int inventoryId, Model m) {	// 재고 상세 페이지
+	public String detailPage(@RequestParam(name="inventoryId") int inventoryId, 
+			@RequestParam(name="itemId") int itemId,
+			@RequestParam(name="whId") int whId, Model m) {	// 재고 상세 페이지
 		InventoryDTO detail = this.dao.inv_detail(inventoryId);
+		List<InventoryDTO> inout = this.dao.inout(itemId, whId);
+		
 		m.addAttribute("detail", detail);
+		m.addAttribute("inout", inout);
 		
     	return "inventory/inventory_detail"; // templates/receiving/receiving_detail.html
 	}

@@ -7,6 +7,8 @@ public interface InventoryService {
 	
 	public InventoryDTO inv_detail(int inventoryId);	// 상세 페이지
 	
+	public List<InventoryDTO> inout(int itemId, int whId);	// 입출고 내역
+	
 	public List<InventoryDTO> inv_sea_item(String itemName);	// 등록 및 수정 페이지 제품 검색
 	
 	public List<InventoryDTO> inv_sea_wh(String whName);	// 등록 및 수정 페이지 창고 검색
@@ -26,4 +28,6 @@ public interface InventoryService {
 	public InventoryDTO inv_mod(int inventoryId);	// 수정 페이지
 	
 	public Integer inv_update(InventoryDTO dto);	// 재고 수정
+	
+	public InventoryDTO inv_before(int itemId, int whId);	// 기존 재고 및 평균 단가 조회
 }

@@ -4,7 +4,7 @@
 
 <!-- 목록 페이지 -->
 <select id="inv_list" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT A.INVENTORY_ID, A.INVENTORY_CODE, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, A.AVERAGE_COST, A.CURRENT_QTY, E.CODE, C.WH_NAME, C.WH_CODE, D.EMP_NAME
+SELECT A.INVENTORY_ID, A.INVENTORY_CODE, A.ITEM_ID, A.WH_ID, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, A.AVERAGE_COST, A.CURRENT_QTY, E.CODE, C.WH_NAME, C.WH_CODE, D.EMP_NAME
 FROM INVENTORY A
 JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
 JOIN WAREHOUSE C ON A.WH_ID = C.WH_ID
@@ -53,6 +53,31 @@ JOIN WAREHOUSE C ON A.WH_ID = C.WH_ID
 JOIN EMPLOYEE D ON A.EMP_NO = D.EMP_NO
 JOIN COMMON_CODE E ON B.UNIT_CODE = E.CODE_ID
 WHERE A.INVENTORY_ID = #{inventoryId}
+</select>
+
+<!-- 입출고 내역 -->
+<select id="inout" resultType="kr.co.codea.inventory.InventoryDTO">
+SELECT A.INOUT_ID, A.INOUT_TIME, A.INOUT_TYPE, A.QUANTITY, A.ITEM_UNIT_COST, A.QUANTITY * A.ITEM_UNIT_COST AS TOTAL_COST,
+CASE
+WHEN A.INOUT_TYPE = 22 THEN B.PLAN_ID
+WHEN A.INOUT_TYPE = 23 THEN C.PURCHASE_CODE
+WHEN A.INOUT_TYPE = 25 THEN D.ORD_CODE
+WHEN A.INOUT_TYPE = 26 THEN B.PLAN_ID
+ELSE NULL
+END AS DOC_NO,
+CASE
+WHEN A.INOUT_TYPE = 22 THEN TO_CHAR(B.COMPLETION_DATE, 'YYYY-MM-DD')
+WHEN A.INOUT_TYPE = 23 THEN TO_CHAR(C.PURCHASE_DATE, 'YYYY-MM-DD')
+WHEN A.INOUT_TYPE = 25 THEN TO_CHAR(D.ORDER_DATE, 'YYYY-MM-DD')
+WHEN A.INOUT_TYPE = 26 THEN TO_CHAR(B.COMPLETION_DATE, 'YYYY-MM-DD')
+ELSE NULL
+END AS DOC_DATE
+FROM INOUT A
+LEFT JOIN PRODUCTION_PLAN B ON A.INOUT_TYPE IN (22, 26) AND B.PLAN_ID = TO_CHAR(A.SOURCE_DOC_HEADER_ID)
+LEFT JOIN PURCHASE_HEADER C ON A.INOUT_TYPE = 23 AND C.PURCHASE_ID = A.SOURCE_DOC_HEADER_ID
+LEFT JOIN ORD_HEADER D ON A.INOUT_TYPE = 25 AND D.ORD_ID = A.SOURCE_DOC_HEADER_ID
+WHERE A.ITEM_ID = #{itemId} AND A.WH_ID = #{whId}
+ORDER BY A.INOUT_TIME DESC
 </select>
 
 <!-- 등록 및 수정 페이지 제품 검색 -->
@@ -165,6 +190,19 @@ INSERT INTO INVENTORY (INVENTORY_ID, ITEM_ID, WH_ID, CURRENT_QTY, EXPECTED_QTY, 
 VALUES (SEQ_INV_ID.NEXTVAL, #{itemId}, #{whId}, #{currentQty}, #{expectedQty}, #{allocatedQty}, #{averageCost}, #{empNo}, #{remark}, SYSDATE)
 </insert>
 
+<!-- 재고 번호 조회 -->
+<select id="inv_id" resultType="int">
+SELECT INVENTORY_ID
+FROM INVENTORY
+WHERE ITEM_ID = #{itemId} AND WH_ID = #{whId}
+</select>
+
+<!-- 등록 로그 저장 -->
+<insert id="inv_log_insert" parameterType="kr.co.codea.inventory.InventoryDTO">
+INSERT INTO INVENTORY_LOG (LOG_ID, INVENTORY_ID, ITEM_ID, WH_ID, LOG_TYPE, BEFORE_QTY, AFTER_QTY, BEFORE_COST, AFTER_COST, EMP_NO, EDIT_DATE) 
+VALUES (SEQ_INV_LOG.NEXTVAL, #{inventoryId}, #{itemId}, #{whId}, #{logType}, #{beforeQty}, #{afterQty}, #{beforeCost}, #{afterCost}, #{empNo}, SYSDATE)
+</insert>
+
 <!-- 수정 페이지 -->
 <select id="inv_mod" resultType="kr.co.codea.inventory.InventoryDTO">
 SELECT A.INVENTORY_ID, A.INVENTORY_CODE, A.ITEM_ID, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, B.PRICE, E.CODE, A.CURRENT_QTY, C.WH_ID, C.WH_CODE, C.WH_NAME
@@ -184,5 +222,18 @@ EMP_NO = #{empNo},
 REMARK = #{remark}
 WHERE INVENTORY_ID = #{inventoryId}
 </update>
+
+<!-- 기존 재고 및 평균 단가 조회 -->
+<select id= "inv_before" resultType="kr.co.codea.inventory.InventoryDTO">
+SELECT CURRENT_QTY AS currentQty, AVERAGE_COST AS averageCost
+FROM INVENTORY
+WHERE ITEM_ID = #{itemId} AND WH_ID = #{whId}
+</select>
+
+<!-- 수정 로그 저장 -->
+<insert id="inv_log_update" parameterType="kr.co.codea.inventory.InventoryDTO">
+INSERT INTO INVENTORY_LOG (LOG_ID, INVENTORY_ID, ITEM_ID, WH_ID, LOG_TYPE, BEFORE_QTY, AFTER_QTY, BEFORE_COST, AFTER_COST, REASON, EMP_NO, EDIT_DATE) 
+VALUES (SEQ_INV_LOG.NEXTVAL, #{inventoryId}, #{itemId}, #{whId}, #{logType}, #{beforeQty}, #{afterQty}, #{beforeCost}, #{afterCost}, #{reason}, #{empNo}, SYSDATE)
+</insert>
 
 </mapper>

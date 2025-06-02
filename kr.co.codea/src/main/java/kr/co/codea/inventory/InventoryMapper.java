@@ -11,6 +11,8 @@ public interface InventoryMapper {
 	
 	public InventoryDTO inv_detail(@Param("inventoryId") int inventoryId);	// 상세 페이지
 	
+	public List<InventoryDTO> inout(@Param("itemId") int itemId, @Param("whId") int whId);	// 입출고 내역
+	
 	public List<InventoryDTO> inv_sea_item(@Param("itemName") String itemName);	// 등록 및 수정 페이지 제품 검색
 	
 	public List<InventoryDTO> inv_sea_wh(@Param("whName") String whName);	// 등록 및 수정 페이지 창고 검색
@@ -39,7 +41,15 @@ public interface InventoryMapper {
 	
 	public int inv_insert(InventoryDTO dto);	// 재고 등록
 	
+	public Integer inv_id(@Param("itemId") int itemId, @Param("whId") int whId);	// 재고 번호 조회
+	
+	public int inv_log_insert(InventoryDTO dto);	// 재고 로그 등록
+	
 	public InventoryDTO inv_mod(@Param("inventoryId") int inventoryId);	// 수정 페이지
 	
 	public int inv_update(InventoryDTO dto);	// 재고 수정
+	
+	public InventoryDTO inv_before(@Param("itemId") int itemId, @Param("whId") int whId);	// 기존 재고 및 평균 단가 조회
+	
+	public int inv_log_update(InventoryDTO dto);	// 재고 로그 수정
 }
