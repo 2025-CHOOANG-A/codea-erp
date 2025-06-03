@@ -1,6 +1,8 @@
 package kr.co.codea.order;
 
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -83,7 +85,7 @@ public class OrderDto {
     public static class OrderDetailRequest {
         private Long itemId; // 품목 ID
         private int orderQty; // 주문 수량
-        private double unitPrice; // 단가
+        private BigDecimal itemUnitCost;
         private LocalDate requiredDeliveryDate; // 희망 납기일
         private String remark; // 상세 비고
     }
@@ -98,6 +100,7 @@ public class OrderDto {
         private Long orderDetailId;     // 주문 상세 ID (ORD_DETAIL.ORD_DETAIL_ID) - SOURCE_DOC_DETAIL_ID 용
         private Long itemId;            // 품목 ID (ITEM.ITEM_ID) - INOUT.ITEM_ID 용
         private int quantity;           // 가출고 수량 - INOUT.QUANTITY 용
+        private BigDecimal itemUnitCost;
         private Long whId;              // 창고 ID - INOUT.WH_ID 용 (필수, 결정 방식 필요)
         private Long empId;             // 직원 ID - INOUT.EMP_ID 용 (선택 사항, 현재 로그인 사용자 등)
         private String remark;          // 비고 - INOUT.REMARK 용 (선택 사항)

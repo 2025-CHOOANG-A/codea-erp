@@ -3,6 +3,7 @@ package kr.co.codea.order;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Mapper
@@ -49,6 +50,9 @@ public interface OrderMapper {
      * @param request 가출고 요청 정보를 담은 DTO
      * @return 삽입 성공 시 1, 실패 시 0 (또는 설정에 따라 다를 수 있음)
      */
+    
+    BigDecimal selectItemPrice(@Param("itemId") Long itemId);
+    
     int insertProvisionalShipmentToInOut(OrderDto.ProvisionalShipmentRequest request);
 
     /**

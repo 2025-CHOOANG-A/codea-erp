@@ -69,30 +69,31 @@
 		</if>
 	</select>
 
-	<insert id="insertProvisionalShipmentToInOut"
-		parameterType="kr.co.codea.order.OrderDto$ProvisionalShipmentRequest">
-		INSERT INTO INOUT (
-		INOUT_TYPE, -- 가출고 유형 (공통코드: 24)
-		ITEM_ID,
-		QUANTITY,
-		SOURCE_DOC_TYPE, -- 주문 유형 (공통코드: 42)
-		SOURCE_DOC_HEADER_ID,
-		SOURCE_DOC_DETAIL_ID,
-		WH_ID,
-		EMP_ID,
-		REMARK
-		) VALUES (
-		24, -- 가출고 공통 코드 ID
-		#{itemId},
-		#{quantity},
-		42, -- 주문(SO) 공통 코드 ID
-		#{ordId},
-		#{orderDetailId},
-		#{whId},
-		#{empId, jdbcType=NUMERIC},
-		#{remark, jdbcType=VARCHAR}
-		)
-	</insert>
+	<insert id="insertProvisionalShipmentToInOut" parameterType="kr.co.codea.order.OrderDto$ProvisionalShipmentRequest">
+        INSERT INTO INOUT (
+            INOUT_TYPE,          -- 가출고 유형 (공통코드: 24)
+            ITEM_ID,
+            QUANTITY,
+            ITEM_UNIT_COST,      -- 새로 추가된 단가 컬럼
+            SOURCE_DOC_TYPE,     -- 주문 유형 (공통코드: 42)
+            SOURCE_DOC_HEADER_ID,
+            SOURCE_DOC_DETAIL_ID,
+            WH_ID,
+            EMP_ID,
+            REMARK
+        ) VALUES (
+            24,
+            #{itemId},
+            #{quantity},
+            #{itemUnitCost, jdbcType=NUMERIC},
+            42,
+            #{ordId},
+            #{orderDetailId},
+            #{whId},
+            #{empId, jdbcType=NUMERIC},
+            #{remark, jdbcType=VARCHAR}
+        )
+    </insert>
 
 	<update id="updateOrderHeaderStatus" parameterType="long">
 		UPDATE ORD_HEADER
@@ -114,4 +115,10 @@
 		WHERE ORD_ID = #{ordId}
 		AND STATUS != '완료'
 	</select>
+	
+	<select id="selectItemPrice" resultType="java.math.BigDecimal" parameterType="long">
+        SELECT PRICE
+          FROM ITEM
+         WHERE ITEM_ID = #{itemId}
+    </select>
 </mapper>

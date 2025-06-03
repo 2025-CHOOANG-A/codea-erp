@@ -5,13 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional(readOnly = true)  // 기본적으로 조회 전용, 데이터 변경 메서드에 별도 @Transactional 적용
 public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper orderMapper;
@@ -45,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
             List<OrderDto.OrderDetailView> result = orderMapper.selectOrderList(
                     keyword, status, startDateStr, endDateStr, offset, size
             );
-            log.debug("Found {} orders for page {}", result.size(), page);
+            log.debug("Found {} order-detail items for page {}", result.size(), page);
             return result;
         } catch (Exception e) {
             log.error("Error occurred while fetching paged orders", e);
@@ -77,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional  // 데이터 변경을 위해 트랜잭션 적용
+    @Transactional  // INSERT/UPDATE 작업을 위해 트랜잭션 적용
     public void processProvisionalShipment(OrderDto.ProvisionalShipmentRequest request) throws Exception {
         log.info("가출고 처리 시작: OrderDetailID={}, ItemID={}, Quantity={}",
                 request.getOrderDetailId(), request.getItemId(), request.getQuantity());
@@ -87,42 +88,50 @@ public class OrderServiceImpl implements OrderService {
             log.error("창고 ID(whId)가 없습니다. 가출고 처리를 위해 whId는 필수입니다.");
             throw new IllegalArgumentException("가출고 처리를 위한 창고 ID(whId)가 누락되었습니다.");
         }
-        // (필요하다면 EMP_ID 검증/셋팅도 여기에 추가)
 
-        // 2) INOUT 테이블에 가출고 정보 삽입
+        // 2) ITEM 테이블에서 PRICE 조회
+        BigDecimal price = orderMapper.selectItemPrice(request.getItemId());
+        log.debug("selectItemPrice 호출 결과 price = {}", price);
+        if (price == null) {
+            log.error("해당 Item ID의 가격을 찾을 수 없습니다. ItemID={}", request.getItemId());
+            throw new IllegalArgumentException("해당 품목의 가격 정보를 찾을 수 없습니다.");
+        }
+
+        // 3) 조회된 price를 DTO에 세팅
+        request.setItemUnitCost(price);
+        log.debug("setItemUnitCost 호출 이후 request.getItemUnitCost() = {}", request.getItemUnitCost());
+
+        // 4) INOUT 테이블에 가출고 정보 삽입
         int insertResult = orderMapper.insertProvisionalShipmentToInOut(request);
         if (insertResult == 0) {
             log.error("INOUT 테이블에 가출고 내역 기록 실패: {}", request);
             throw new Exception("가출고 내역 저장에 실패했습니다. 다시 시도해주세요.");
         }
-        log.info("INOUT 테이블에 가출고 내역 기록 성공: OrderDetailID={}", request.getOrderDetailId());
+        log.info("INOUT 테이블에 가출고 내역 기록 성공: OrderDetailID={}, ItemUnitCost={}",
+                request.getOrderDetailId(), request.getItemUnitCost());
 
-        // 3) 해당 ORD_DETAIL 상태를 '완료'로 변경
-        Long ordDetailId = request.getOrderDetailId();
-        int detailUpdateResult = orderMapper.updateOrderDetailStatus(ordDetailId);
-        if (detailUpdateResult == 0) {
-            log.error("ORD_DETAIL 상태 업데이트 실패: ORD_DETAIL_ID={}", ordDetailId);
-            throw new Exception("주문 상세 상태 변경에 실패했습니다. 다시 시도해주세요.");
+        // 5) ORD_DETAIL 상태를 '완료'로 변경
+        int detailUpdateCount = orderMapper.updateOrderDetailStatus(request.getOrderDetailId());
+        if (detailUpdateCount == 0) {
+            log.error("ORD_DETAIL 상태 '완료' 업데이트 실패: ORD_DETAIL_ID={}", request.getOrderDetailId());
+            throw new Exception("주문 상세 상태 변경에 실패했습니다.");
         }
-        log.info("ORD_DETAIL 상태 '완료' 업데이트 성공: ORD_DETAIL_ID={}", ordDetailId);
+        log.info("ORD_DETAIL 상태 '완료' 업데이트 성공: ORD_DETAIL_ID={}", request.getOrderDetailId());
 
-        // 4) 남아 있는 미완료 ORD_DETAIL 건 수 조회
-        Long ordId = request.getOrdId();
-        int remaining = orderMapper.countPendingDetail(ordId);
-        log.debug("ORD_HEADER({}) 기준 남은 미완료 ORD_DETAIL 수: {}", ordId, remaining);
-
-        // 5) 남은 디테일이 0개일 때만 ORD_HEADER 상태를 '완료'로 변경
-        if (remaining == 0) {
-            int headerUpdateResult = orderMapper.updateOrderHeaderStatus(ordId);
-            if (headerUpdateResult == 0) {
-                log.error("ORD_HEADER 상태 '완료' 업데이트 실패: ORD_ID={}", ordId);
-                throw new Exception("주문 헤더 상태 변경에 실패했습니다. 다시 시도해주세요.");
+        // 6) 남은 미완료 ORD_DETAIL 수 확인
+        int pendingCount = orderMapper.countPendingDetail(request.getOrdId());
+        if (pendingCount == 0) {
+            // 7-1) 하나도 남아있지 않으면 ORD_HEADER 상태를 '완료'로 변경
+            int headerUpdateCount = orderMapper.updateOrderHeaderStatus(request.getOrdId());
+            if (headerUpdateCount == 0) {
+                log.error("ORD_HEADER 상태 '완료' 업데이트 실패: ORD_ID={}", request.getOrdId());
+                throw new Exception("주문 헤더 상태 변경에 실패했습니다.");
             }
-            log.info("ORD_HEADER 상태 '완료' 업데이트 성공: ORD_ID={}", ordId);
+            log.info("ORD_HEADER 상태 '완료' 업데이트 성공: ORD_ID={}", request.getOrdId());
         } else {
-            log.info("아직 출고되지 않은 ORD_DETAIL({})이 존재하여 ORD_HEADER 상태를 변경하지 않습니다.", remaining);
+            log.info("아직 출고되지 않은 ORD_DETAIL({})이 존재하여 ORD_HEADER 상태를 변경하지 않습니다.", pendingCount);
         }
 
-        log.info("가출고 처리 완료: ORD_ID={}, OrderDetailID={}", ordId, ordDetailId);
+        log.info("가출고 처리 완료: ORD_ID={}, OrderDetailID={}", request.getOrdId(), request.getOrderDetailId());
     }
 }
