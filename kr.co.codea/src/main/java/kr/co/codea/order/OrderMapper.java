@@ -73,4 +73,19 @@ public interface OrderMapper {
     int countPendingDetail(@Param("ordId") Long ordId);
     
     Integer selectRealInventoryQty(@Param("itemId") int itemId);
+    
+    /**
+     * 주문 상세페이지 - 헤더 정보 조회
+     * @param ordId ORD_HEADER.ORD_ID
+     * @return OrderDto.OrderDetailPage (헤더 정보만 채워진 상태)
+     */
+    OrderDto.OrderDetailPage selectOrderHeaderById(@Param("ordId") Long ordId);
+
+    /**
+     * 주문 상세페이지 - 아이템 리스트 조회
+     * @param ordId ORD_HEADER.ORD_ID
+     * @return OrderDto.OrderItem 리스트
+     */
+    List<OrderDto.OrderItem> selectOrderItemsByOrdId(@Param("ordId") Long ordId);
+
 }

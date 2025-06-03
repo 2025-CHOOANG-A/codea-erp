@@ -127,4 +127,21 @@ public class OrderController {
         }
         return query.toString();
     }
+    
+    @GetMapping("/{ordId}")
+    public String getOrderDetail(@PathVariable("ordId") Long ordId, Model model) {
+        try {
+            OrderDto.OrderDetailPage order = orderService.getOrderDetail(ordId);
+            if (order == null) {
+                model.addAttribute("errorMessage", "해당 주문을 찾을 수 없습니다.");
+                return "order/order_detail";
+            }
+            model.addAttribute("order", order);
+            return "order/order_detail"; // templates/order/order_detail.html
+        } catch (Exception e) {
+            log.error("Error loading order detail: {}", e.getMessage(), e);
+            model.addAttribute("errorMessage", "주문 상세를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+            return "order/order_detail";
+        }
+    }
 }

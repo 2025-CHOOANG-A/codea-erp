@@ -141,4 +141,17 @@ public class OrderServiceImpl implements OrderService {
         Integer qty = orderMapper.selectRealInventoryQty(itemId.intValue());
         return qty != null ? qty : 0;
     }
+    
+    @Override
+    public OrderDto.OrderDetailPage getOrderDetail(Long ordId) {
+        // 1) ORD_HEADER에서 헤더 정보만 조회
+        OrderDto.OrderDetailPage header = orderMapper.selectOrderHeaderById(ordId);
+
+        if (header != null) {
+            // 2) ORD_DETAIL에서 아이템 리스트 조회
+            List<OrderDto.OrderItem> items = orderMapper.selectOrderItemsByOrdId(ordId);
+            header.setItems(items);
+        }
+        return header;
+    }
 }

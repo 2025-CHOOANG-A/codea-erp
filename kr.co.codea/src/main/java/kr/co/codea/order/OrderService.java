@@ -57,4 +57,6 @@ public interface OrderService {
     void processProvisionalShipment(OrderDto.ProvisionalShipmentRequest request) throws Exception;
     
     int getRealInventoryQty(Long itemId);
+    
+    OrderDto.OrderDetailPage getOrderDetail(Long ordId);
 }

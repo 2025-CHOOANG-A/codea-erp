@@ -4,134 +4,193 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.order.OrderMapper">
 
-    <select id="selectOrderList" resultType="kr.co.codea.order.OrderDto$OrderDetailView">
+	<select id="selectOrderList"
+		resultType="kr.co.codea.order.OrderDto$OrderDetailView">
+		SELECT
+		oh.ORD_ID AS ordId,
+		od.ORD_DETAIL_ID AS ordDetailId,
+		i.ITEM_ID AS itemId,
+		oh.ORD_CODE AS ordCode,
+		oh.ORDER_DATE AS orderDate,
+		oh.REMARK AS remark,
+		od.REMARK AS orderDetailRemark,
+		oh.STATUS AS status,
+		od.STATUS AS detailStatus,
+		bp.BP_NAME AS bpName,
+		i.ITEM_NAME AS productName,
+		od.ORDER_QTY AS orderQty,
+		inv.CURRENT_QTY AS stockQty,
+		inv.WH_ID AS whId,
+		od.REQUIRED_DELIVERY_DATE AS requiredDate
+		FROM ORD_HEADER oh
+		JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
+		JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
+		JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
+		LEFT JOIN INVENTORY inv ON od.ITEM_ID = inv.ITEM_ID
+		WHERE 1 = 1
+		<if test="keyword != null and keyword != ''">
+			AND (bp.BP_NAME LIKE '%' || #{keyword} || '%' OR i.ITEM_NAME LIKE '%' ||
+			#{keyword} || '%')
+		</if>
+		<if test="status != null and status != ''">
+			AND oh.STATUS = #{status}
+		</if>
+		<if test="startDate != null and startDate != ''">
+			AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="endDate != null and endDate != ''">
+			AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		</if>
+		ORDER BY oh.ORDER_DATE DESC, oh.ORD_ID, od.ORD_DETAIL_ID
+		OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+	</select>
+
+	<select id="orderCount" resultType="int">
+		SELECT COUNT(DISTINCT oh.ORD_ID)
+		FROM ORD_HEADER oh
+		JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
+		<if test="keyword != null and keyword != ''">
+			JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
+			JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
+		</if>
+		WHERE 1 = 1
+		<if test="keyword != null and keyword != ''">
+			AND (bp.BP_NAME LIKE '%' || #{keyword} || '%' OR i.ITEM_NAME LIKE '%' ||
+			#{keyword} || '%')
+		</if>
+		<if test="status != null and status != ''">
+			AND oh.STATUS = #{status}
+		</if>
+		<if test="startDate != null and startDate != ''">
+			AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="endDate != null and endDate != ''">
+			AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		</if>
+	</select>
+
+	<insert id="insertProvisionalShipmentToInOut"
+		parameterType="kr.co.codea.order.OrderDto$ProvisionalShipmentRequest">
+		INSERT INTO INOUT (
+		INOUT_TYPE,
+		ITEM_ID,
+		QUANTITY,
+		ITEM_UNIT_COST,
+		SOURCE_DOC_TYPE,
+		SOURCE_DOC_HEADER_ID,
+		SOURCE_DOC_DETAIL_ID,
+		WH_ID,
+		EMP_ID,
+		REMARK
+		) VALUES (
+		24,
+		#{itemId},
+		#{quantity},
+		#{itemUnitCost, jdbcType=NUMERIC},
+		42,
+		#{ordId},
+		#{orderDetailId},
+		#{whId},
+		#{empId, jdbcType=NUMERIC},
+		#{remark, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<update id="updateOrderHeaderStatus" parameterType="long">
+		UPDATE ORD_HEADER
+		SET STATUS = '완료',
+		UPDATED_AT = SYSDATE
+		WHERE ORD_ID = #{ordId}
+	</update>
+
+	<update id="updateOrderDetailStatus" parameterType="long">
+		UPDATE ORD_DETAIL
+		SET STATUS = '완료'
+		WHERE ORD_DETAIL_ID = #{ordDetailId}
+	</update>
+
+	<select id="countPendingDetail" resultType="int"
+		parameterType="long">
+		SELECT COUNT(*)
+		FROM ORD_DETAIL
+		WHERE ORD_ID = #{ordId}
+		AND STATUS != '완료'
+	</select>
+
+	<select id="selectItemPrice" resultType="java.math.BigDecimal"
+		parameterType="long">
+		SELECT PRICE
+		FROM ITEM
+		WHERE ITEM_ID = #{itemId}
+	</select>
+
+	<select id="selectRealInventoryQty" parameterType="int"
+		resultType="int">
+		SELECT
+		NVL(i.CURRENT_QTY, 0)
+		+ NVL((SELECT SUM(io.QUANTITY)
+		FROM INOUT io
+		WHERE io.ITEM_ID = #{itemId}
+		AND io.INOUT_TYPE = 21), 0)  <!-- 가입고 -->
+		- NVL((SELECT SUM(io.QUANTITY)
+		FROM INOUT io
+		WHERE io.ITEM_ID = #{itemId}
+		AND io.INOUT_TYPE = 24), 0)  <!-- 가출고 -->
+		AS REAL_QTY
+		FROM INVENTORY i
+		WHERE i.ITEM_ID = #{itemId}
+	</select>
+
+	<!-- (1) 주문 헤더 정보만 조회 -->
+	<select id="selectOrderHeaderById" parameterType="long"
+		resultType="kr.co.codea.order.OrderDto$OrderDetailPage">
+		SELECT
+		oh.ORD_ID AS ordId,
+		oh.ORD_CODE AS ordCode,
+		oh.ORDER_DATE AS orderDate,
+		bp.BP_NAME AS bpName,
+		emp.EMP_NAME AS empName,
+		oh.STATUS AS status,
+		oh.REMARK AS remark
+		FROM ORD_HEADER oh
+		JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
+		JOIN EMPLOYEE emp ON oh.EMP_ID = emp.EMP_ID
+		WHERE oh.ORD_ID = #{ordId}
+	</select>
+
+	<!-- (2) 주문 아이템 리스트 조회 -->
+	<select id="selectOrderItemsByOrdId"
+            parameterType="long"
+            resultType="kr.co.codea.order.OrderDto$OrderItem">
         SELECT
-            oh.ORD_ID AS ordId,
-            od.ORD_DETAIL_ID AS ordDetailId,
-            i.ITEM_ID AS itemId,
-            oh.ORD_CODE AS ordCode,
-            oh.ORDER_DATE AS orderDate,
-            oh.REMARK AS remark,
-            od.REMARK AS orderDetailRemark,
-            oh.STATUS AS status,
-            od.STATUS AS detailStatus,
-            bp.BP_NAME AS bpName,
-            i.ITEM_NAME AS productName,
-            od.ORDER_QTY AS orderQty,
-            inv.CURRENT_QTY AS stockQty,
-            inv.WH_ID AS whId,
-            od.REQUIRED_DELIVERY_DATE AS requiredDate
-        FROM ORD_HEADER oh
-        JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
-        JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
+            od.ORD_DETAIL_ID              AS ordDetailId,
+            od.ITEM_ID                    AS itemId,
+            i.ITEM_NAME                   AS productName,
+            i.SPEC                        AS spec,
+
+            -- COMMON_CODE.CODE_ID와 ITEM.UNIT_CODE를 매칭하도록 변경
+            cc.CODE_DESC                  AS unit,
+
+            od.ORDER_QTY                  AS orderQty,
+            od.UNIT_PRICE                 AS unitPrice,
+            od.ORDER_QTY * od.UNIT_PRICE  AS totalPrice,
+            od.REQUIRED_DELIVERY_DATE     AS requiredDate,
+            od.REMARK                     AS remark
+
+        FROM ORD_DETAIL od
         JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
-        LEFT JOIN INVENTORY inv ON od.ITEM_ID = inv.ITEM_ID
-        WHERE 1 = 1
-        <if test="keyword != null and keyword != ''">
-            AND (bp.BP_NAME LIKE '%' || #{keyword} || '%' OR i.ITEM_NAME LIKE '%' || #{keyword} || '%')
-        </if>
-        <if test="status != null and status != ''">
-            AND oh.STATUS = #{status}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-        </if>
-        <if test="endDate != null and endDate != ''">
-            AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-        </if>
-        ORDER BY oh.ORDER_DATE DESC, oh.ORD_ID, od.ORD_DETAIL_ID
-        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+
+        <!-- 
+          공통코드 조회 시,
+          ITEM.UNIT_CODE 컬럼(숫자) = COMMON_CODE.CODE_ID(숫자)
+          그리고 공통코드 타입이 'UNIT_CODE'인 행을 가져옴
+        -->
+        LEFT JOIN COMMON_CODE cc
+            ON i.UNIT_CODE   = cc.CODE_ID
+           AND cc.CODE_TYPE = 'UNIT_CODE'
+
+        WHERE od.ORD_ID = #{ordId}
+        ORDER BY od.ORD_DETAIL_ID
     </select>
-
-    <select id="orderCount" resultType="int">
-        SELECT COUNT(DISTINCT oh.ORD_ID)
-        FROM ORD_HEADER oh
-        JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
-        <if test="keyword != null and keyword != ''">
-            JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
-            JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
-        </if>
-        WHERE 1 = 1
-        <if test="keyword != null and keyword != ''">
-            AND (bp.BP_NAME LIKE '%' || #{keyword} || '%' OR i.ITEM_NAME LIKE '%' || #{keyword} || '%')
-        </if>
-        <if test="status != null and status != ''">
-            AND oh.STATUS = #{status}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-        </if>
-        <if test="endDate != null and endDate != ''">
-            AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-        </if>
-    </select>
-
-    <insert id="insertProvisionalShipmentToInOut" parameterType="kr.co.codea.order.OrderDto$ProvisionalShipmentRequest">
-        INSERT INTO INOUT (
-            INOUT_TYPE,
-            ITEM_ID,
-            QUANTITY,
-            ITEM_UNIT_COST,
-            SOURCE_DOC_TYPE,
-            SOURCE_DOC_HEADER_ID,
-            SOURCE_DOC_DETAIL_ID,
-            WH_ID,
-            EMP_ID,
-            REMARK
-        ) VALUES (
-            24,
-            #{itemId},
-            #{quantity},
-            #{itemUnitCost, jdbcType=NUMERIC},
-            42,
-            #{ordId},
-            #{orderDetailId},
-            #{whId},
-            #{empId, jdbcType=NUMERIC},
-            #{remark, jdbcType=VARCHAR}
-        )
-    </insert>
-
-    <update id="updateOrderHeaderStatus" parameterType="long">
-        UPDATE ORD_HEADER
-        SET STATUS = '완료',
-            UPDATED_AT = SYSDATE
-        WHERE ORD_ID = #{ordId}
-    </update>
-
-    <update id="updateOrderDetailStatus" parameterType="long">
-        UPDATE ORD_DETAIL
-        SET STATUS = '완료'
-        WHERE ORD_DETAIL_ID = #{ordDetailId}
-    </update>
-
-    <select id="countPendingDetail" resultType="int" parameterType="long">
-        SELECT COUNT(*)
-        FROM ORD_DETAIL
-        WHERE ORD_ID = #{ordId}
-        AND STATUS != '완료'
-    </select>
-
-    <select id="selectItemPrice" resultType="java.math.BigDecimal" parameterType="long">
-        SELECT PRICE
-        FROM ITEM
-        WHERE ITEM_ID = #{itemId}
-    </select>
-
-    <select id="selectRealInventoryQty" parameterType="int" resultType="int">
-    SELECT
-        NVL(i.CURRENT_QTY, 0)
-        + NVL((SELECT SUM(io.QUANTITY)
-               FROM INOUT io
-               WHERE io.ITEM_ID = #{itemId}
-                 AND io.INOUT_TYPE = 21), 0)  <!-- 가입고 -->
-        - NVL((SELECT SUM(io.QUANTITY)
-               FROM INOUT io
-               WHERE io.ITEM_ID = #{itemId}
-                 AND io.INOUT_TYPE = 24), 0)  <!-- 가출고 -->
-    AS REAL_QTY
-    FROM INVENTORY i
-    WHERE i.ITEM_ID = #{itemId}
-</select>
 
 </mapper>

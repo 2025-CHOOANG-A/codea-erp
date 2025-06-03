@@ -51,7 +51,6 @@
             min-width: 70px;
             font-weight: 500;
         }
-
         .shipment-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -71,6 +70,19 @@
         .btn-secondary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        /* ===========================================
+           주문코드(<a>)에 밑줄만 있고 색상 변화 없게 할 클래스
+           =========================================== */
+        .order-link {
+            text-decoration: underline;
+            color: inherit;       /* 부모 요소(color) 상속 */
+            cursor: pointer;
+        }
+        .order-link:hover {
+            text-decoration: underline; /* 호버 시에도 밑줄 유지 */
+            color: inherit;             /* 호버 시 색상 변화 없음 */
         }
     </style>
 </head>
@@ -150,7 +162,9 @@
                 </td>
             </tr>
 
+            <!-- 각 주문(헤더+아이템)별 반복 -->
             <th:block th:each="order, stat : ${pagedOrderDetails.content}">
+                <!-- 첫 번째 상세 행인지 여부 계산 -->
                 <th:block th:with="isFirstDetail =
                     ${stat.index == 0 or order.ordId != pagedOrderDetails.content[stat.index - 1]?.ordId}">
                     <tr
@@ -158,18 +172,35 @@
                         th:data-order-detail-id="${order.ordDetailId}"
                         th:data-item-id="${order.itemId}"
                         th:data-wh-id="${order.whId ?: ''}">
+
+                        <!-- 1) 주문코드 셀: 밑줄만 있고 클릭 시 상세로 이동 -->
                         <td
-                            th:text="${isFirstDetail ? order.ordCode : ''}"
                             class="order-header merged-cell"
-                            data-type="orderCode"></td>
+                            data-type="orderCode">
+                            <span th:if="${isFirstDetail}">
+                                <a
+                                    th:href="@{/order/{ordId}(ordId=${order.ordId})}"
+                                    th:text="${order.ordCode}"
+                                    class="order-link">
+                                </a>
+                            </span>
+                        </td>
+
+                        <!-- 2) 거래처 -->
                         <td
                             th:text="${isFirstDetail ? order.bpName : ''}"
                             class="order-header merged-cell"
-                            data-type="bpName"></td>
+                            data-type="bpName">
+                        </td>
+
+                        <!-- 3) 주문일 -->
                         <td
                             th:text="${isFirstDetail ? #temporals.format(order.orderDate, 'yyyy-MM-dd') : ''}"
                             class="order-header merged-cell"
-                            data-type="orderDate"></td>
+                            data-type="orderDate">
+                        </td>
+
+                        <!-- 4) 상태 -->
                         <td
                             class="order-header merged-cell"
                             data-type="status">
@@ -180,18 +211,27 @@
                                                  (${order.status == '진행중'} ? 'bg-primary' :
                                                  (${order.status == '접수'} ? 'bg-info' :
                                                  (${order.status == '취소'} ? 'bg-danger' : 'bg-secondary')))"
-                                th:text="${order.status}"></span>
+                                th:text="${order.status}">
+                            </span>
                         </td>
 
+                        <!-- 5) 제품명 -->
                         <td th:text="${order.productName}"></td>
+                        <!-- 6) 주문수량 -->
                         <td
                             th:text="${#numbers.formatInteger(order.orderQty, 0, 'COMMA')}"
-                            class="text-end"></td>
+                            class="text-end">
+                        </td>
+                        <!-- 7) 보유수량 -->
                         <td
                             th:text="${order.stockQty != null ? #numbers.formatInteger(order.stockQty, 0, 'COMMA') : '-'}"
-                            class="text-end"></td>
+                            class="text-end">
+                        </td>
+                        <!-- 8) 납기일 -->
                         <td
-                            th:text="${order.requiredDate != null ? #temporals.format(order.requiredDate, 'yyyy-MM-dd') : '-'}"></td>
+                            th:text="${order.requiredDate != null ? #temporals.format(order.requiredDate, 'yyyy-MM-dd') : '-'}">
+                        </td>
+                        <!-- 9) 출고작업 버튼 -->
                         <td class="text-center">
                             <th:block th:if="
                                 ${order.detailStatus != '완료'}

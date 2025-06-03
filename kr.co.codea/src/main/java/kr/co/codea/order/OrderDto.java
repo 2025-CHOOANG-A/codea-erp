@@ -111,4 +111,38 @@ public class OrderDto {
         private Integer itemId;      // 품목 ID (조회용 파라미터)
         private Integer realQty;     // 실시간 보유 수량 (조회 결과)
     }
+    /**
+     * 주문 상세 페이지 렌더링용 DTO
+     * (헤더 정보 + 각 주문 아이템 리스트)
+     */
+    @Data
+    public static class OrderDetailPage {
+        private Long ordId;           // ORD_HEADER.ORD_ID
+        private String ordCode;       // ORD_HEADER.ORD_CODE
+        private LocalDate orderDate;  // ORD_HEADER.ORDER_DATE
+        private String bpName;        // BUSINESS_PARTNER.BP_NAME
+        private String empName;       // EMPLOYEE.EMP_NAME
+        private String status;        // ORD_HEADER.STATUS
+        private String remark;        // ORD_HEADER.REMARK
+
+        private List<OrderItem> items; // ORD_DETAIL 목록
+    }
+
+    /**
+     * 주문 상세 페이지에서 보여줄 개별 아이템 DTO
+     */
+    @Data
+    public static class OrderItem {
+        private Long ordDetailId;     // ORD_DETAIL.ORD_DETAIL_ID
+        private Long itemId;          // ORD_DETAIL.ITEM_ID
+        private String productName;   // ITEM.ITEM_NAME
+        private String spec;          // ITEM.SPEC
+        private String unit;          // ITEM.UNIT
+        private int orderQty;         // ORD_DETAIL.ORDER_QTY
+        private BigDecimal unitPrice; // ORD_DETAIL.UNIT_PRICE
+        private BigDecimal totalPrice; // (ORDER_QTY * UNIT_PRICE)
+        private LocalDate requiredDate; // ORD_DETAIL.REQUIRED_DELIVERY_DATE
+        private String remark;        // ORD_DETAIL.REMARK
+    }
+    
 }
