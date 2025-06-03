@@ -71,4 +71,6 @@ public interface OrderMapper {
      *    아직 STATUS <> '완료'인 건의 개수를 조회
      */
     int countPendingDetail(@Param("ordId") Long ordId);
+    
+    Integer selectRealInventoryQty(@Param("itemId") int itemId);
 }

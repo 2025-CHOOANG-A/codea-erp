@@ -105,4 +105,10 @@ public class OrderDto {
         private Long empId;             // 직원 ID - INOUT.EMP_ID 용 (선택 사항, 현재 로그인 사용자 등)
         private String remark;          // 비고 - INOUT.REMARK 용 (선택 사항)
     }
+    
+    @Data
+    public class InventoryDto {
+        private Integer itemId;      // 품목 ID (조회용 파라미터)
+        private Integer realQty;     // 실시간 보유 수량 (조회 결과)
+    }
 }

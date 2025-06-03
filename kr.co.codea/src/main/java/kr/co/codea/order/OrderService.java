@@ -55,4 +55,6 @@ public interface OrderService {
      * @throws Exception 처리 중 발생할 수 있는 예외
      */
     void processProvisionalShipment(OrderDto.ProvisionalShipmentRequest request) throws Exception;
+    
+    int getRealInventoryQty(Long itemId);
 }

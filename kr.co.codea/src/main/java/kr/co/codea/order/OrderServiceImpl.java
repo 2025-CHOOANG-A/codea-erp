@@ -134,4 +134,11 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("가출고 처리 완료: ORD_ID={}, OrderDetailID={}", request.getOrdId(), request.getOrderDetailId());
     }
+    
+    @Override
+    public int getRealInventoryQty(Long itemId) {
+        if (itemId == null) return 0;
+        Integer qty = orderMapper.selectRealInventoryQty(itemId.intValue());
+        return qty != null ? qty : 0;
+    }
 }
