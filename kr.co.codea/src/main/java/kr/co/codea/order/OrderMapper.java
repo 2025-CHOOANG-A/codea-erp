@@ -59,4 +59,12 @@ public interface OrderMapper {
      * @return 업데이트 성공 시 1, 실패 시 0 (또는 영향받은 행의 수)
      */
     int updateOrderHeaderStatus(@Param("ordId") Long ordId);
+    
+    int updateOrderDetailStatus(@Param("ordDetailId") Long ordDetailId);
+
+    /**
+     * ② 주어진 ORD_HEADER(ID)에 속한 ORD_DETAIL 중
+     *    아직 STATUS <> '완료'인 건의 개수를 조회
+     */
+    int countPendingDetail(@Param("ordId") Long ordId);
 }

@@ -22,6 +22,7 @@ public class OrderDto {
         private String orderDetailRemark; 
         // private String orderDetailRemark; // 주문 상세 비고 (ORD_DETAIL.REMARK) - 필요시 OrderMapper.xml에서 alias 설정 후 추가
         private String status;              // 주문 상태 (ORD_HEADER.STATUS)
+        private String detailStatus;
         private String bpName;              // 거래처명 (BUSINESS_PARTNER.BP_NAME)
         private String productName;         // 제품명 (ITEM.ITEM_NAME)
         private int orderQty;               // 주문 수량 (ORD_DETAIL.ORDER_QTY)
