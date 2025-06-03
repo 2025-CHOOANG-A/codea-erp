@@ -149,10 +149,18 @@
   </div>
 
   <script>
-    // 페이지 로드시 오늘 날짜 설정
+    // 페이지 로드시 오늘 날짜 설정 (시간대 보정)
     document.addEventListener("DOMContentLoaded", () => {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById("orderDate").value = today;
+      const today = new Date();
+      const kstOffset = 9 * 60; // 한국 시간 오프셋 (분)
+      const utc = today.getTime() + (today.getTimezoneOffset() * 60000);
+      const kstTime = new Date(utc + (kstOffset * 60000));
+      
+      const yyyy = kstTime.getFullYear();
+      const mm = String(kstTime.getMonth() + 1).padStart(2, '0');
+      const dd = String(kstTime.getDate()).padStart(2, '0');
+      
+      document.getElementById("orderDate").value = `${yyyy}-${mm}-${dd}`;
 
       // 첫 번째 제품 행 자동 추가
       addItemRow();
@@ -255,12 +263,21 @@
       const tbody = document.getElementById("itemTableBody");
       const rowIndex = tbody.rows.length;
       const rowId = Date.now() + Math.random(); // 고유 ID 생성
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date();
+      const kstOffset = 9 * 60;
+      const utc = today.getTime() + (today.getTimezoneOffset() * 60000);
+      const kstTime = new Date(utc + (kstOffset * 60000));
+      
+      const yyyy = kstTime.getFullYear();
+      const mm = String(kstTime.getMonth() + 1).padStart(2, '0');
+      const dd = String(kstTime.getDate()).padStart(2, '0');
+      
+      const todayStr = `${yyyy}-${mm}-${dd}`;
 
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>
-          <input type="date" name="detailList[${rowIndex}].requiredDate" class="form-control" min="${today}" required>
+          <input type="date" name="detailList[${rowIndex}].requiredDate" class="form-control" min="${todayStr}" required>
         </td>
         <td style="position: relative;">
           <input type="hidden" name="detailList[${rowIndex}].itemId" class="itemIdHidden">
