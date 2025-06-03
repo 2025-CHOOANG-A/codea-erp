@@ -5,142 +5,329 @@
 
 <mapper namespace="kr.co.codea.productplan.ProductPlanMapper">
 
-
-<!--작업지시생성  -->
-   <select id="findByPlanIdAndStatus" resultType="kr.co.codea.productplan.ProductPlanDTO">
+    <!-- 작업지시 관련 쿼리 (PLAN_NO 포함) -->
+    <select id="findByPlanIdAndStatus" resultType="kr.co.codea.productplan.ProductPlanDTO">
         SELECT
-            PLAN_ID,
-            ITEM_CODE,
-            PLAN_QTY,
-            START_DATE,
-            DUE_DATE,
-            STATUS,
-            REMARK,
-            EMP_NO
-            FROM
-            PRODUCTION_PLAN
-        WHERE
-            PLAN_ID = #{planId}
-          AND STATUS = #{status}
-          
-          </select>
+            PLAN_ID as planId,
+            PLAN_NO as planNo,           <!-- PLAN_NO 추가 -->
+            ITEM_CODE as itemCode,
+            PLAN_QTY as planQty,
+            START_DATE as startDate,
+            DUE_DATE as dueDate,
+            STATUS as status,
+            REMARK as remark,
+            EMP_NO as empNo,
+            (SELECT ITEM_NAME FROM ITEM WHERE ITEM_CODE = PRODUCTION_PLAN.ITEM_CODE) as itemName
+        FROM PRODUCTION_PLAN
+        WHERE PLAN_ID = #{planId} AND STATUS = #{status}
+    </select>
 
     <update id="updateStatus">
         UPDATE PRODUCTION_PLAN
-        SET
-            STATUS = #{targetStatus} WHERE
-            PLAN_ID = #{planId}
+        SET STATUS = #{targetStatus} 
+        WHERE PLAN_ID = #{planId}
     </update>
 
+    <!-- 생산계획 CRUD (PLAN_NO 포함) -->
+    <insert id="insertProductPlan">
+        INSERT INTO PRODUCTION_PLAN 
+        (ITEM_CODE, START_DATE, DUE_DATE, PLAN_QTY, EMP_NO, REMARK)
+        VALUES (
+            #{itemCode}, #{startDate, jdbcType=DATE}, #{dueDate, jdbcType=DATE}, 
+            #{planQty}, #{empNo}, #{remark}
+        )
+        <!-- PLAN_NO와 PLAN_ID는 트리거에서 자동 생성 -->
+    </insert>
 
+    <update id="productPlanUpdate">
+        UPDATE PRODUCTION_PLAN
+        SET
+            ITEM_CODE = #{itemCode},
+            PLAN_QTY = #{planQty},
+            START_DATE = #{startDate},
+            DUE_DATE = #{dueDate},
+            STATUS = #{status},
+            REMARK = #{remark},
+            EMP_NO = #{empNo}
+        WHERE PLAN_ID = #{planId}
+    </update>
 
-
-
-<!--생산계획 수정  -->
-<update id="productPlanUpdate">
-UPDATE PRODUCTION_PLAN
-SET
-    ITEM_CODE = #{itemCode},
-    PLAN_QTY = #{planQty},
-    START_DATE = #{startDate},
-    DUE_DATE = #{dueDate},
-    STATUS = #{status},
-    REMARK = #{remark},
-    EMP_NO = #{empNo}
-WHERE
-    PLAN_ID = #{planId}
-</update>
-
-
-<!--생산계획 생성  -->
-<insert id="insertProductPlan">
-INSERT INTO PRODUCTION_PLAN 
-(ITEM_CODE,START_DATE,DUE_DATE,PLAN_QTY,EMP_NO,REMARK)
-VALUES (
-#{itemCode},#{startDate, jdbcType=DATE},#{dueDate, jdbcType=DATE},#{planQty},#{empNo},#{remark}
-)
-</insert>
-
-
-<!--아이템 코드 조회 api  -->
-      <select id="searchItem" resultType="kr.co.codea.productplan.ProductPlanDTO"> 
+    <select id="productPlanDetail" resultType="kr.co.codea.productplan.ProductPlanDTO">
         SELECT
-            ITEM_CODE, ITEM_NAME
-		FROM
-            ITEM 
-            <where>
+            PP.PLAN_ID as planId,
+            PP.PLAN_NO as planNo,        <!-- PLAN_NO 추가 -->
+            PP.ITEM_CODE as itemCode,
+            PP.PLAN_QTY as planQty,
+            PP.START_DATE as startDate,
+            PP.DUE_DATE as dueDate,
+            PP.COMPLETION_DATE as completionDate,
+            PP.ACTUAL_QTY as actualQty,
+            PP.STATUS as status,
+            PP.EMP_NO as empNo,
+            PP.REMARK as remark,
+            I.ITEM_NAME as itemName,
+            E.EMP_NAME as empName
+        FROM PRODUCTION_PLAN PP    
+        LEFT JOIN ITEM I ON PP.ITEM_CODE = I.ITEM_CODE    
+        LEFT JOIN EMPLOYEE E ON PP.EMP_NO = E.EMP_NO      
+        WHERE PP.PLAN_ID = #{planId}
+    </select>
+
+    <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
+        SELECT
+            PP.PLAN_ID as planId,
+            PP.PLAN_NO as planNo,        <!-- PLAN_NO 추가 -->
+            PP.ITEM_CODE as itemCode,
+            I.ITEM_NAME as itemName,
+            PP.START_DATE as startDate,
+            PP.DUE_DATE as dueDate,
+            PP.COMPLETION_DATE as completionDate, 
+            PP.PLAN_QTY as planQty,
+            PP.ACTUAL_QTY as actualQty,       
+            PP.STATUS as status,
+            PP.REMARK as remark,
+            PP.EMP_NO as empNo
+        FROM PRODUCTION_PLAN PP
+        JOIN ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    PP.PLAN_ID LIKE '%' || #{keyword} || '%'
+                    OR I.ITEM_NAME LIKE '%' || #{keyword} || '%'
+                )
+            </if>
+            <if test="startDate != null">
+                AND PP.START_DATE >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND PP.DUE_DATE &lt;= #{endDate}
+            </if>
+            <if test="status != null and status != ''">
+                AND PP.STATUS = #{status}
+            </if>
+            <if test="empNo != null and empNo != ''">
+                AND PP.EMP_NO = #{empNo}
+            </if>
+        </where>
+        ORDER BY PP.PLAN_NO DESC  <!-- PLAN_NO로 정렬 -->
+    </select>
+
+    <!-- 아이템 검색 API -->
+    <select id="searchItem" resultType="kr.co.codea.productplan.ProductPlanDTO"> 
+        SELECT
+            ITEM_CODE as itemCode, 
+            ITEM_NAME as itemName
+        FROM ITEM 
+        <where>
            ITEM_TYPE = '완제품'
             <if test="query != null and !query.isEmpty()">
-          AND
-                (LOWER(ITEM_CODE) LIKE '%' || LOWER(#{query}) || '%' OR
-                 LOWER(ITEM_NAME) LIKE '%' || LOWER(#{query}) || '%')
+          AND (LOWER(ITEM_CODE) LIKE '%' || LOWER(#{query}) || '%' OR
+               LOWER(ITEM_NAME) LIKE '%' || LOWER(#{query}) || '%')
             </if>
         </where>
         ORDER BY ITEM_NAME ASC
     </select>
 
-
-<!--생산계획 상세 by planId  -->
-    <select id="productPlanDetail" resultType="kr.co.codea.productplan.ProductPlanDTO">
-        SELECT
-            PP.PLAN_ID,
-             PP.ITEM_CODE,
-             PP.PLAN_QTY,
-             PP.START_DATE,
-              PP.DUE_DATE,
-              PP.COMPLETION_DATE,
-              PP.ACTUAL_QTY,
-              PP.STATUS,
-              PP.EMP_NO,
-              PP.REMARK,
-              I.ITEM_NAME,
-              E.EMP_NAME
-            FROM
-            PRODUCTION_PLAN PP    LEFT JOIN
-            ITEM I ON PP.ITEM_CODE = I.ITEM_CODE    LEFT JOIN
-            EMPLOYEE E ON PP.EMP_NO = E.EMP_NO      WHERE
-            PP.PLAN_ID = #{planId}  </select>
-
-
-
-<!-- 생산계획 조회 -->
-    <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
-SELECT
-	    PP.PLAN_ID,
-	    PP.ITEM_CODE,
-	    I.ITEM_NAME,
-	    PP.START_DATE,
-	    PP.DUE_DATE,
-	    PP.COMPLETION_DATE, 
-	    PP.PLAN_QTY,
-	    PP.ACTUAL_QTY,       
-	    PP.STATUS,
-	    PP.REMARK,
-	    PP.EMP_NO
-	FROM
-	    PRODUCTION_PLAN PP
-	JOIN
-	    ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
-    <where>
-        <if test="keyword != null and keyword != ''">
-            AND (
-                PP.PLAN_ID LIKE '%' || #{keyword} || '%'
-                OR I.ITEM_NAME LIKE '%' || #{keyword} || '%'
-            )
-        </if>
-        <if test="startDate != null">
-            AND PP.START_DATE >= #{startDate}
-        </if>
-        <if test="endDate != null">
-            AND PP.DUE_DATE &lt;= #{endDate}
-        </if>
-        <if test="status != null and status != ''">
-            AND PP.STATUS = #{status}
-        </if>
-        <if test="empNo != null and empNo != ''">
-            AND PP.EMP_NO = #{empNo}
-        </if>
-    </where>
-    ORDER BY PP.PLAN_ID DESC
+    <!-- MRP 데이터에서 자재 소요량 조회 (순수한 자재 정보만) -->
+    <select id="getMaterialRequirements" parameterType="String" resultType="kr.co.codea.productplan.MaterialRequirementDTO">
+        SELECT 
+            m.PLAN_ID as planId,
+            m.ITEM_ID as itemId,
+            i.ITEM_CODE as itemCode,
+            i.ITEM_NAME as itemName,
+            m.REQUIRED_QTY as requiredQty,
+            cc.CODE as unit,
+            COALESCE(i.PRICE, 0) as unitCost,
+            COALESCE(inv.WH_ID, 1) as whId,
+            COALESCE(w.WH_NAME, '기본창고') as whName,
+            e.EMP_ID as empId  <!-- 담당자 ID -->
+        FROM MRP m
+        JOIN ITEM i ON m.ITEM_ID = i.ITEM_ID
+        JOIN COMMON_CODE cc ON i.UNIT_CODE = cc.CODE_ID
+        JOIN PRODUCTION_PLAN pp ON m.PLAN_ID = pp.PLAN_ID
+        JOIN EMPLOYEE e ON pp.EMP_NO = e.EMP_NO
+        LEFT JOIN (
+            SELECT ITEM_ID, WH_ID, 
+                   ROW_NUMBER() OVER (PARTITION BY ITEM_ID ORDER BY CURRENT_QTY DESC) as rn
+            FROM INVENTORY 
+            WHERE CURRENT_QTY > 0
+        ) inv ON m.ITEM_ID = inv.ITEM_ID AND inv.rn = 1
+        LEFT JOIN WAREHOUSE w ON inv.WH_ID = w.WH_ID
+        WHERE m.PLAN_ID = #{planId}
+        AND i.ITEM_TYPE = '원자재'
+        ORDER BY i.ITEM_CODE
     </select>
-</mapper>
+
+    <!-- 가용 재고 수량 조회 (여러 창고 합계) -->
+    <select id="getAvailableInventory" parameterType="int" resultType="int">
+        SELECT COALESCE(SUM(CURRENT_QTY - ALLOCATED_QTY), 0) as availableQty
+        FROM INVENTORY 
+        WHERE ITEM_ID = #{itemId}
+        AND CURRENT_QTY > ALLOCATED_QTY
+    </select>
+
+    <!-- 특정 창고의 가용 재고 수량 조회 -->
+    <select id="getAvailableInventoryByWarehouse" resultType="int">
+        SELECT COALESCE((CURRENT_QTY - ALLOCATED_QTY), 0) as availableQty
+        FROM INVENTORY 
+        WHERE ITEM_ID = #{itemId} 
+        AND WH_ID = #{whId}
+        AND CURRENT_QTY > ALLOCATED_QTY
+    </select>
+
+    <!-- 자재 가출고 등록 (PLAN_NO 사용으로 Integer overflow 해결!) -->
+    <insert id="insertOutbound">
+        INSERT INTO INOUT (
+            INOUT_TIME, 
+            INOUT_TYPE, 
+            ITEM_ID, 
+            WH_ID, 
+            QUANTITY, 
+            ITEM_UNIT_COST, 
+            SOURCE_DOC_TYPE, 
+            SOURCE_DOC_HEADER_ID, 
+            SOURCE_DOC_DETAIL_ID,
+            EMP_ID, 
+            REMARK, 
+            CREATED_AT
+        ) VALUES (
+            SYSDATE,
+            24,  <!-- 가출고 -->
+            #{material.itemId},
+            #{material.whId},
+            #{material.requiredQty},
+            #{material.unitCost},
+            43,  <!-- 생산지시 -->
+            (SELECT PLAN_NO FROM PRODUCTION_PLAN WHERE PLAN_ID = #{planId}),  <!-- ✅ PLAN_NO 사용! -->
+            NULL,
+            #{material.empId},
+            '작업지시에 의한 자재 가출고 - 목적지: 생산공장01 - 계획번호: ' || #{planId},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 재고 테이블의 할당 수량 업데이트 -->
+    <update id="updateInventoryAllocated">
+        UPDATE INVENTORY 
+        SET ALLOCATED_QTY = ALLOCATED_QTY + #{quantity}
+        WHERE ITEM_ID = #{itemId} 
+        AND WH_ID = #{whId}
+    </update>
+
+    <!-- 생산계획별 가출고 내역 삭제 (PLAN_NO 기준) -->
+    <delete id="deleteOutboundsByPlanId" parameterType="String">
+        DELETE FROM INOUT 
+        WHERE SOURCE_DOC_TYPE = 43 
+        AND SOURCE_DOC_HEADER_ID = (
+            SELECT PLAN_NO FROM PRODUCTION_PLAN WHERE PLAN_ID = #{planId}  <!-- ✅ PLAN_NO 사용! -->
+        )
+        AND INOUT_TYPE = 24
+    </delete>
+
+    <!-- 작업지시별 가출고 내역 조회 (PLAN_NO 기준) -->
+    <select id="getOutboundsByPlanId" parameterType="String" resultType="map">
+        SELECT 
+            io.INOUT_ID,
+            io.ITEM_ID,
+            io.WH_ID,
+            io.QUANTITY,
+            io.ITEM_UNIT_COST,
+            i.ITEM_CODE,
+            i.ITEM_NAME,
+            w.WH_NAME,
+            io.INOUT_TIME
+        FROM INOUT io
+        JOIN ITEM i ON io.ITEM_ID = i.ITEM_ID
+        JOIN WAREHOUSE w ON io.WH_ID = w.WH_ID
+        WHERE io.SOURCE_DOC_TYPE = 43 
+        AND io.SOURCE_DOC_HEADER_ID = (
+            SELECT PLAN_NO FROM PRODUCTION_PLAN WHERE PLAN_ID = #{planId}  <!-- ✅ PLAN_NO 사용! -->
+        )
+        AND io.INOUT_TYPE = 24
+        ORDER BY io.INOUT_TIME DESC
+    </select>
+
+    <!-- 작업지시 취소시 재고 할당 수량 원복 (PLAN_NO 기준) -->
+    <update id="restoreInventoryAllocated" parameterType="String">
+        UPDATE INVENTORY 
+        SET ALLOCATED_QTY = GREATEST(0, ALLOCATED_QTY - COALESCE((
+            SELECT SUM(QUANTITY) 
+            FROM INOUT 
+            WHERE SOURCE_DOC_TYPE = 43 
+            AND SOURCE_DOC_HEADER_ID = (
+                SELECT PLAN_NO FROM PRODUCTION_PLAN WHERE PLAN_ID = #{planId}  <!-- ✅ PLAN_NO 사용! -->
+            )
+            AND INOUT_TYPE = 24
+            AND ITEM_ID = INVENTORY.ITEM_ID
+            AND WH_ID = INVENTORY.WH_ID
+        ), 0))
+        WHERE EXISTS (
+            SELECT 1 
+            FROM INOUT 
+            WHERE SOURCE_DOC_TYPE = 43 
+            AND SOURCE_DOC_HEADER_ID = (
+                SELECT PLAN_NO FROM PRODUCTION_PLAN WHERE PLAN_ID = #{planId}  <!-- ✅ PLAN_NO 사용! -->
+            )
+            AND INOUT_TYPE = 24
+            AND ITEM_ID = INVENTORY.ITEM_ID
+            AND WH_ID = INVENTORY.WH_ID
+        )
+    </update>
+
+    <!-- 생산공장 창고 정보 조회 -->
+    <select id="getFactoryWarehouse" resultType="map">
+        SELECT WH_ID, WH_CODE, WH_NAME, ADDRESS
+        FROM WAREHOUSE 
+        WHERE WH_CODE = 'FACTORY01'
+        OR WH_NAME LIKE '%생산공장%'
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 사번으로 사원 ID 조회 -->
+    <select id="getEmpIdByEmpNo" parameterType="String" resultType="Long">
+        SELECT EMP_ID 
+        FROM EMPLOYEE 
+        WHERE EMP_NO = #{empNo}
+    </select>
+
+    <!-- 자재 현황 조회 메소드들 (PLAN_NO 기준) -->
+    <select id="getMaterialInventoryStatus" parameterType="String" resultType="map">
+        SELECT 
+            m.ITEM_ID,
+            i.ITEM_CODE,
+            i.ITEM_NAME,
+            m.REQUIRED_QTY,
+            COALESCE(SUM(inv.CURRENT_QTY - inv.ALLOCATED_QTY), 0) as AVAILABLE_QTY,
+            CASE 
+                WHEN COALESCE(SUM(inv.CURRENT_QTY - inv.ALLOCATED_QTY), 0) >= m.REQUIRED_QTY 
+                THEN 'SUFFICIENT' 
+                ELSE 'SHORTAGE' 
+            END as STATUS
+        FROM MRP m
+        JOIN ITEM i ON m.ITEM_ID = i.ITEM_ID
+        LEFT JOIN INVENTORY inv ON m.ITEM_ID = inv.ITEM_ID
+        WHERE m.PLAN_ID = #{planId}
+        AND i.ITEM_TYPE = '원자재'
+        GROUP BY m.ITEM_ID, i.ITEM_CODE, i.ITEM_NAME, m.REQUIRED_QTY
+        ORDER BY i.ITEM_CODE
+    </select>
+
+<select id="getMaterialSummary" parameterType="String" resultType="map">
+    SELECT
+        COUNT(*) as TOTAL_MATERIALS,
+        COUNT(CASE WHEN available_qty >= required_qty THEN 1 END) as SUFFICIENT_MATERIALS,
+        COUNT(CASE WHEN available_qty <![CDATA[<]]> required_qty THEN 1 END) as SHORTAGE_MATERIALS
+    FROM (
+        SELECT
+            m.ITEM_ID,
+            m.REQUIRED_QTY as required_qty,
+            COALESCE(SUM(inv.CURRENT_QTY - inv.ALLOCATED_QTY), 0) as available_qty
+        FROM MRP m
+        JOIN ITEM i ON m.ITEM_ID = i.ITEM_ID
+        LEFT JOIN INVENTORY inv ON m.ITEM_ID = inv.ITEM_ID
+        WHERE m.PLAN_ID = #{planId}
+        AND i.ITEM_TYPE = '원자재'
+        GROUP BY m.ITEM_ID, m.REQUIRED_QTY
+    ) subquery
+</select>
+    </mapper>

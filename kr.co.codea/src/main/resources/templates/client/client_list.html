@@ -213,7 +213,7 @@
                 <!-- 오른쪽: 등록 버튼 -->
                 <div>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clientRegisterModal">
-                        <i class="bi bi-plus-circle"></i> 거래처 등록
+                        거래처 등록
                     </button>
                 </div>
             </div>
@@ -465,10 +465,10 @@
                                     <label for="contactBcPosition" class="form-label text-muted small">직책</label>
                                     <input type="text" class="form-control border-light" id="contactBcPosition" name="bcPosition">
                                 </div>
-                                <div class="col-6">
-                                    <label for="contactTel" class="form-label text-muted small">전화번호</label>
-                                    <input type="text" class="form-control border-light" id="contactTel" name="tel">
-                                </div>
+								<div class="col-6">
+								    <label for="contactTel" class="form-label text-muted small">전화번호</label>
+								    <input type="text" class="form-control border-light" id="contactTel" name="bc_tel" required>
+								</div>
                                 <div class="col-6">
                                     <label for="contactHp" class="form-label text-muted small">휴대폰</label>
                                     <input type="text" class="form-control border-light" id="contactHp" name="hp">
@@ -478,9 +478,9 @@
                                     <input type="email" class="form-control border-light" id="contactEmail" name="email">
                                 </div>
                                 <div class="col-12">
-                                    <label for="contactRemark" class="form-label text-muted small">비고</label>
-                                    <textarea class="form-control border-light" id="contactRemark" name="remark" rows="3"></textarea>
-                                </div>
+								    <label for="contactRemark" class="form-label text-muted small">비고</label>
+								    <textarea class="form-control border-light" id="contactRemark" name="bc_remark" rows="3"></textarea>
+								</div>
                             </div>
                         </form>
                     </div>

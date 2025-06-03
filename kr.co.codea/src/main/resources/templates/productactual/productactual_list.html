@@ -922,7 +922,7 @@
 
             // 실적등록 버튼 (상단) 클릭 이벤트
             actualRegisterButton.addEventListener('click', function() {
-                const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
+                const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');I
                 if (!selectedRadio) {
                     alert('실적을 등록할 생산 계획을 선택해주세요.');
                     return;
@@ -940,4 +940,5 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script th:src="@{/js/productplan_list.js}"></script>
+    <script th:src="@{/js/productactual_list.js}"></script>
 </div>

@@ -99,10 +99,10 @@
         BP_ID as bpId,
         BC_NAME as bcName,
         BC_POSITION as bcPosition,
-        TEL as tel,
+       TEL as bc_tel,       
         HP as hp,
         EMAIL as email,
-        REMARK as remark
+        REMARK as bc_remark   
     FROM
         BUSINESS_CONTACT
     WHERE
@@ -180,13 +180,13 @@
         EMAIL,
         REMARK
     ) VALUES (
-        #{bpId},
+     		#{bpId},
         #{bcName},
         #{bcPosition},
-        #{tel},
+        #{bc_tel},      
         #{hp},
         #{email},
-        #{remark}
+        #{bc_remark}    
     )
   </insert>
 
@@ -196,13 +196,10 @@
     SET
         BC_NAME = #{bcName},
         BC_POSITION = #{bcPosition},
-        TEL = #{tel},
+        TEL = #{bc_tel},       
         HP = #{hp},
         EMAIL = #{email},
-        REMARK = #{remark}
-    WHERE
-        BC_ID = #{bcId}
-        AND BP_ID = #{bpId}
+        REMARK = #{bc_remark} 
   </update>
 
   <!-- 담당자 삭제 -->

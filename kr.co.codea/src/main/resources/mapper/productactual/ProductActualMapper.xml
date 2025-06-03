@@ -5,7 +5,7 @@
 
 <mapper namespace="kr.co.codea.productactual.ProductActualMapper">
 
-
+<!-- 생산계획의 실제 수량 업데이트 -->
 <update id="updateProductionPlanActualQty">
     UPDATE PRODUCTION_PLAN
     SET ACTUAL_QTY = (SELECT NVL(SUM(DAILY_QTY), 0) FROM PRODUCTION_DAILY WHERE PLAN_ID = #{planId})
@@ -49,44 +49,87 @@
     </insert>
     
     
-  
-    <select id="productActualList" parameterType="kr.co.codea.productactual.ProductActualDTO" resultType="kr.co.codea.productactual.ProductActualDTO">
+  <!-- 생산실적 목록 조회 -->
+<select id="productActualList" parameterType="kr.co.codea.productactual.ProductActualDTO" resultType="kr.co.codea.productactual.ProductActualDTO">
 SELECT
-	    PP.PLAN_ID,
-	    PP.ITEM_CODE,
-	    I.ITEM_NAME,
-	    PP.START_DATE,
-	    PP.DUE_DATE,
-	    PP.COMPLETION_DATE,
-	    PP.PLAN_QTY,
-	    PP.ACTUAL_QTY,
-	    PP.STATUS,
-	    PP.REMARK,
-	    PP.EMP_NO
-	FROM
-	    PRODUCTION_PLAN PP
-	JOIN
-	    ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
-    <where>
-        PP.STATUS = '작업지시'
-        <if test="keyword != null and keyword != ''">
-            AND (
-                PP.PLAN_ID LIKE '%' || #{keyword} || '%'
-                OR I.ITEM_NAME LIKE '%' || #{keyword} || '%'
-            )
-        </if>
-        <if test="startDate != null">
-            AND PP.START_DATE >= #{startDate}
-        </if>
-        <if test="endDate != null">
-            AND PP.DUE_DATE &lt;= #{endDate}
-        </if>
-        <if test="empNo != null and empNo != ''">
-            AND PP.EMP_NO = #{empNo}
-        </if>
-    </where>
-    ORDER BY PP.PLAN_ID DESC
-    </select>
+    PP.PLAN_ID,
+    PP.ITEM_CODE,
+    I.ITEM_NAME,
+    PP.START_DATE,
+    PP.DUE_DATE,
+    PP.ACTUAL_START_DATE,
+    PP.COMPLETION_DATE,
+    PP.PLAN_QTY,
+    PP.ACTUAL_QTY,
+    PP.STATUS,
+    PP.REMARK,
+    PP.EMP_NO,
+    E.EMP_NAME
+FROM
+    PRODUCTION_PLAN PP
+JOIN
+    ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
+LEFT JOIN
+    EMPLOYEE E ON PP.EMP_NO = E.EMP_NO
+<where>
+    PP.STATUS IN ('작업지시', '진행중', '완료')
+    <if test="keyword != null and keyword != ''">
+        AND (
+            PP.PLAN_ID LIKE '%' || #{keyword} || '%'
+            OR I.ITEM_NAME LIKE '%' || #{keyword} || '%'
+        )
+    </if>
+    <if test="startDate != null">
+        AND PP.START_DATE >= #{startDate}
+    </if>
+    <if test="endDate != null">
+        AND PP.DUE_DATE &lt;= #{endDate}
+    </if>
+    <if test="status != null and status != ''">
+        AND PP.STATUS = #{status}
+    </if>
+    <if test="empNo != null and empNo != ''">
+        AND PP.EMP_NO = #{empNo}
+    </if>
+</where>
+ORDER BY PP.PLAN_ID DESC
+</select>
 
+<!-- 작업 시작 : 상태를 '진행중'으로 변경하고 실제 시작일 설정) -->
+<update id="startWork">
+    UPDATE PRODUCTION_PLAN 
+    SET STATUS = '진행중',
+        ACTUAL_START_DATE = SYSDATE,
+        UPDATED_AT = SYSDATE
+    WHERE PLAN_ID = #{planId} 
+    AND STATUS = '작업지시'
+</update>
+
+<!-- 작업 종료 (상태를 '완료'로 변경하고 실제 완료일 설정) -->
+<update id="endWork">
+    UPDATE PRODUCTION_PLAN 
+    SET STATUS = '완료',
+        COMPLETION_DATE = SYSDATE,
+        UPDATED_AT = SYSDATE
+    WHERE PLAN_ID = #{planId} 
+    AND STATUS = '진행중'
+</update>
+
+
+<!-- 완제품 입고를 위한 생산계획 정보 조회 -->
+<select id="getProductionPlanForReceiving" resultType="kr.co.codea.productactual.ProductActualDTO">
+    SELECT 
+        PP.PLAN_ID,
+        PP.ITEM_CODE,
+        I.ITEM_ID,
+        I.ITEM_NAME,
+        PP.ACTUAL_QTY,
+        I.PRICE
+    FROM PRODUCTION_PLAN PP
+    JOIN ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
+    WHERE PP.PLAN_ID = #{planId}
+    AND PP.STATUS = '완료'
+    AND PP.ACTUAL_QTY > 0
+</select>
 
 </mapper>

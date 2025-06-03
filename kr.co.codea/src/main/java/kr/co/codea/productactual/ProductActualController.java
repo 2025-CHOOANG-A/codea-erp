@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,8 @@ public class ProductActualController {
 	public ProductActualController(ProductActualService service) {
 		this.service = service;
 	}
+	
+	
 	//생산실적 페이징 엔드포인트
 	@GetMapping("/page")
 	public String page (Model m, ProductActualDTO dto,
@@ -94,5 +97,56 @@ public class ProductActualController {
         return ResponseEntity.ok(dailyActuals);
     }
 	
+    /**
+     * 작업 시작
+     */
+    @PostMapping("/start-work/{planId}")
+    @ResponseBody
+    public ResponseEntity<?> startWork(@PathVariable(name = "planId") String planId) {
+        try {
+            service.startWork(planId);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "작업이 시작되었습니다.",
+                "planId", planId
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "success", false,
+                "message", "작업 시작 처리 중 오류가 발생했습니다: " + e.getMessage()
+            ));
+        }
+    }
+    
+    /**
+     * 작업 종료 (완제품 자동 입고 포함)
+     */
+    @PostMapping("/end-work/{planId}")
+    @ResponseBody
+    public ResponseEntity<?> endWork(@PathVariable(name = "planId") String planId) {
+        try {
+            service.endWork(planId);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "작업이 종료되었습니다. 완제품이 자동으로 입고되었습니다.",
+                "planId", planId
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "success", false,
+                "message", "작업 종료 처리 중 오류가 발생했습니다: " + e.getMessage()
+            ));
+        }
+    }
 
 }

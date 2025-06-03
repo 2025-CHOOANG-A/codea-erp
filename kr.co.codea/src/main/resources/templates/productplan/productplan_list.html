@@ -24,20 +24,6 @@
                 </button>
             </div>
 
-            <!-- 상태 가이드 (숨겨진 상태로 시작) -->
-            <div class="alert alert-info d-none" id="statusGuideAlert">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <div>
-                        <strong>상태별 가능한 작업:</strong><br/>
-                        <span class="badge bg-primary me-1">📝 계획</span> → 자재소요량 계산 가능<br/>
-                        <span class="badge bg-success me-1">✅ 자재계획완료</span> → 작업지시 생성 가능<br/>
-                        <span class="badge bg-warning me-1">🔧 진행중</span> → 진행중인 작업<br/>
-                        <span class="badge bg-success me-1">🎉 완료</span> → 완료된 작업
-                    </div>
-                </div>
-            </div>
-
             <hr class="mb-4" />
 
             <form id="filterForm" class="filter-bar flex flex-wrap items-center gap-3 mb-4 p-3 border rounded-md shadow-sm bg-white">
@@ -115,7 +101,7 @@
             <!-- 페이지 정보 표시 -->
             <div class="d-flex justify-content-between align-items-center mb-3" th:if="${pageInfo != null}">
                 <div class="text-muted">
-                    <span th:text="|총 ${pageInfo.total}건 중 ${pageInfo.startRow}-${pageInfo.endRow}번째 표시|"></span>
+                    <span th:text="|총 ${pageInfo.total}건|"></span>
                 </div>
                 <div class="text-muted">
                     <span th:text="|${pageInfo.pageNum}/${pageInfo.pages} 페이지|"></span>
@@ -140,9 +126,9 @@
                             <th scope="col">품목 이름</th>
                             <th scope="col">생산계획시작일</th>
                             <th scope="col">생산완료계획일</th>
-                            <th scope="col">실제 완료일</th>
+                            <th scope="col">생산완료일</th>
                             <th scope="col">생산계획수량</th>
-                            <th scope="col">실제 수량</th>
+                            <th scope="col">생산수량</th>
                             <th scope="col">상태</th>
                             <th scope="col">담당자 사번</th>
                             
@@ -178,35 +164,24 @@
                                 <td th:text="${plan.planQty}"></td>
                                 <td th:text="${plan.actualQty}"></td>
                                 
-   <td>
-        <span th:if="${plan.status == '계획'}" 
-              class="badge bg-primary fs-6 px-3 py-2">
-            계획
-        </span>
-        <span th:if="${plan.status == '자재계획완료'}" 
-              class="badge bg-success fs-6 px-3 py-2">
-            자재계획완료
-        </span>
-        <span th:if="${plan.status == '작업지시'}" 
-              class="badge bg-secondary fs-6 px-3 py-2">
-            작업지시
-        </span>
-        <span th:if="${plan.status == '진행중'}" 
-              class="badge bg-warning text-dark fs-6 px-3 py-2">
-            진행중
-        </span>
-        <span th:if="${plan.status == '완료'}" 
-              class="badge bg-info text-dark fs-6 px-3 py-2">
-            완료
-        </span>
-        <span th:if="${plan.status == '취소'}" 
-              class="badge bg-danger fs-6 px-3 py-2">
-            취소
-        </span>
-        <span th:unless="${plan.status == '계획' or plan.status == '자재계획완료' or plan.status == '작업지시' or plan.status == '진행중' or plan.status == '완료' or plan.status == '취소'}"
-              class="badge bg-secondary fs-6 px-3 py-2" th:text="${plan.status}">
-        </span>
-    </td>
+<td>
+    <span th:if="${plan.status == '자재계획완료'}" 
+          class="badge bg-primary clickable-status" 
+          style="cursor: pointer; text-decoration: underline;"
+          th:data-plan-id="${plan.planId}"
+          onclick="showMaterialRequirementsForPlan(this.dataset.planId)"
+          title="클릭하여 자재 소요량 확인">
+        <i class="bi bi-list-check"></i> 자재계획완료
+    </span>
+    <span th:unless="${plan.status == '자재계획완료'}" 
+          th:class="|badge ${plan.status == '계획' ? 'bg-secondary' : 
+                           plan.status == '작업지시' ? 'bg-info' : 
+                           plan.status == '진행중' ? 'bg-warning text-dark' : 
+                           plan.status == '완료' ? 'bg-success' : 
+                           plan.status == '취소' ? 'bg-danger' : 'bg-secondary'}|" 
+          th:text="${plan.status}">
+    </span>
+</td>
                                 
                                 <td th:text="${plan.empNo}"></td>
                                 

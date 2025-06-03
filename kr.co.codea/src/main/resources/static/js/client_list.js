@@ -1,7 +1,18 @@
-// client_list.js - 완전한 버전
+// client_list.js - 완전한 버전 (모든 문제 해결)
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
+    cleanupModalEvents(); // 초기 모달 정리
+    
+    // 전역 모달 이벤트 리스너
+    document.addEventListener('hidden.bs.modal', function(e) {
+        setTimeout(() => {
+            const openModals = document.querySelectorAll('.modal.show');
+            if (openModals.length === 0) {
+                cleanupModalEvents();
+            }
+        }, 100);
+    });
 });
 
 // 이벤트 리스너 초기화
@@ -11,13 +22,11 @@ function initializeEventListeners() {
     const editButton = document.getElementById('editClientButton');
     const deleteButton = document.getElementById('deleteClientButton');
     const addContactButton = document.getElementById('addContactButton');
-	
-	initializeBizCondSearch();
-
+    
+    initializeBizCondSearch();
 
     radioButtons.forEach(radio => {
         radio.addEventListener('change', function() {
-            console.log('라디오 버튼 선택됨:', this.checked); // 디버그용
             if (this.checked) {
                 if (editButton) editButton.disabled = false;
                 if (deleteButton) deleteButton.disabled = false;
@@ -86,7 +95,6 @@ function initializeEventListeners() {
     if (filterForm) {
         filterForm.addEventListener('submit', function(e) {
             // 기본 폼 제출 동작 허용 (페이지 리로드)
-            // e.preventDefault() 제거
         });
     }
 
@@ -123,6 +131,16 @@ function initializeEventListeners() {
     }
 }
 
+// 모달 이벤트 정리 함수
+function cleanupModalEvents() {
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(backdrop => backdrop.remove());
+    
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('padding-right');
+    document.body.style.removeProperty('overflow');
+}
+
 // 선택된 거래처 수정
 function editSelectedClient(selectedRadio) {
     const clientData = {
@@ -133,6 +151,7 @@ function editSelectedClient(selectedRadio) {
         ceoName: selectedRadio.getAttribute('data-ceo-name'),
         bizNo: selectedRadio.getAttribute('data-biz-no'),
         bizCond: selectedRadio.getAttribute('data-biz-cond'),
+        bizCondCode: selectedRadio.getAttribute('data-biz-cond-code'),
         bizType: selectedRadio.getAttribute('data-biz-type'),
         bp_tel: selectedRadio.getAttribute('data-bp-tel'),
         fax: selectedRadio.getAttribute('data-fax'),
@@ -165,7 +184,7 @@ function deleteSelectedClient(selectedRadio) {
     })
     .then(data => {
         alert(data.message || '거래처가 삭제되었습니다.');
-        location.reload(); // 페이지 새로고침
+        location.reload();
     })
     .catch(error => {
         console.error('Error:', error);
@@ -173,7 +192,7 @@ function deleteSelectedClient(selectedRadio) {
     });
 }
 
-// 거래처 모달 열기
+// 거래처 모달 열기 - backdrop 문제 해결
 function openClientModal(mode, clientData = null) {
     const modal = document.getElementById('clientRegisterModal');
     const title = document.getElementById('clientRegisterModalLabel');
@@ -189,8 +208,16 @@ function openClientModal(mode, clientData = null) {
         fillClientForm(clientData);
     }
     
-    const modalInstance = new bootstrap.Modal(modal);
+    const modalInstance = new bootstrap.Modal(modal, {
+        backdrop: true,
+        keyboard: true
+    });
     modalInstance.show();
+    
+    // 모달 닫힐 때 backdrop 정리
+    modal.addEventListener('hidden.bs.modal', function() {
+        cleanupModalEvents();
+    }, { once: true });
 }
 
 // 거래처 폼 초기화
@@ -198,9 +225,21 @@ function clearClientForm() {
     const form = document.getElementById('clientForm');
     if (form) {
         form.reset();
-        // 숨겨진 ID 필드도 초기화
+        
+        // 숨겨진 필드들 초기화
         const bpIdField = document.getElementById('modalBpId');
         if (bpIdField) bpIdField.value = '';
+        
+        // 업태 관련 필드들 초기화
+        const bizCondInput = document.getElementById('modalBizCondInput');
+        const bizCond = document.getElementById('modalBizCond');
+        const bizCondCode = document.getElementById('modalBizCondCode');
+        
+        if (bizCondInput) bizCondInput.value = '';
+        if (bizCond) bizCond.value = '';
+        if (bizCondCode) bizCondCode.value = '';
+        
+        hideBizCondDropdown();
     }
 }
 
@@ -215,7 +254,6 @@ function fillClientForm(clientData) {
         'modalBpType': clientData.bpType,
         'modalCeoName': clientData.ceoName,
         'modalBizNo': clientData.bizNo,
-        'modalBizCond': clientData.bizCond,
         'modalBizType': clientData.bizType,
         'modalBpTel': clientData.bp_tel,
         'modalFax': clientData.fax,
@@ -231,6 +269,18 @@ function fillClientForm(clientData) {
             field.value = value || '';
         }
     });
+    
+    // 업태 관련 필드들 특별 처리
+    const bizCondInput = document.getElementById('modalBizCondInput');
+    const bizCond = document.getElementById('modalBizCond');
+    const bizCondCode = document.getElementById('modalBizCondCode');
+    
+    if (bizCondInput && bizCond && bizCondCode) {
+        // 수정할 때는 한글명(bizCondCode)을 표시하고, 숫자ID(bizCond)도 설정
+        bizCondInput.value = clientData.bizCondCode || '';
+        bizCond.value = clientData.bizCond || '';
+        bizCondCode.value = clientData.bizCondCode || '';
+    }
 }
 
 // 비고 모달 표시
@@ -248,7 +298,6 @@ function loadClientDetail(bpId) {
         return;
     }
 
-    // 현재 bpId를 모달에 저장 (담당자 추가 시 사용)
     const modalElement = document.getElementById('clientDetailModal');
     if (modalElement) {
         modalElement.setAttribute('data-current-bp-id', bpId);
@@ -339,16 +388,16 @@ function displayContacts(contacts, bpId) {
     }
 }
 
-// 담당자 행 생성
+// 담당자 행 생성 - 필드명 수정
 function createContactRow(contact, bpId) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
         <td class="py-3 border-light">${contact.bcName || '-'}</td>
         <td class="py-3 border-light">${contact.bcPosition || '-'}</td>
-        <td class="py-3 border-light">${contact.tel || '-'}</td>
+        <td class="py-3 border-light">${contact.bc_tel || '-'}</td>
         <td class="py-3 border-light">${contact.hp || '-'}</td>
         <td class="py-3 border-light">${contact.email || '-'}</td>
-        <td class="py-3 border-light">${contact.remark || '-'}</td>
+        <td class="py-3 border-light">${contact.bc_remark || '-'}</td>
         <td class="py-3 border-light text-center">
             <div class="btn-group" role="group">
                 <button type="button" class="btn btn-sm btn-outline-primary px-3" 
@@ -379,8 +428,11 @@ function displayContactsError() {
     }
 }
 
-// 담당자 모달 열기
+// 담당자 모달 열기 - 포커스 문제 및 중첩 모달 해결
 function openContactModal(mode, bpId, contactData = null) {
+    const clientDetailModal = document.getElementById('clientDetailModal');
+    const clientDetailModalInstance = bootstrap.Modal.getInstance(clientDetailModal);
+    
     const modal = document.getElementById('contactModal');
     const title = document.getElementById('contactModalLabel');
     const submitBtn = document.getElementById('contactSubmitButton');
@@ -396,11 +448,44 @@ function openContactModal(mode, bpId, contactData = null) {
         fillContactForm(contactData);
     }
     
-    const modalInstance = new bootstrap.Modal(modal);
-    modalInstance.show();
+    // 기존 상세 모달이 열려있다면 잠시 숨기기
+    let wasDetailModalOpen = false;
+    if (clientDetailModalInstance && clientDetailModal.classList.contains('show')) {
+        wasDetailModalOpen = true;
+        clientDetailModalInstance.hide();
+    }
+    
+    // 담당자 모달 열기
+    setTimeout(() => {
+        const modalInstance = new bootstrap.Modal(modal, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modalInstance.show();
+        
+        // 모달이 완전히 열린 후 첫 번째 입력 필드에 포커스
+        modal.addEventListener('shown.bs.modal', function() {
+            setTimeout(() => {
+                const firstInput = document.getElementById('contactBcName');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            }, 100);
+        }, { once: true });
+        
+        // 담당자 모달이 닫힐 때 상세 모달 다시 열기
+        if (wasDetailModalOpen) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                setTimeout(() => {
+                    const detailModalInstance = new bootstrap.Modal(clientDetailModal);
+                    detailModalInstance.show();
+                }, 100);
+            }, { once: true });
+        }
+    }, 200);
 }
 
-// 담당자 폼 초기화
+// 담당자 폼 초기화 - 안전한 방법
 function clearContactForm() {
     const form = document.getElementById('contactForm');
     if (form) {
@@ -408,7 +493,7 @@ function clearContactForm() {
     }
 }
 
-// 담당자 폼 채우기
+// 담당자 폼 채우기 - 필드명 수정
 function fillContactForm(contactData) {
     if (!contactData) return;
     
@@ -417,10 +502,10 @@ function fillContactForm(contactData) {
         'contactBcId': contactData.bcId,
         'contactBcName': contactData.bcName,
         'contactBcPosition': contactData.bcPosition,
-        'contactTel': contactData.tel,
+        'contactTel': contactData.bc_tel,        // bc_tel로 수정
         'contactHp': contactData.hp,
         'contactEmail': contactData.email,
-        'contactRemark': contactData.remark
+        'contactRemark': contactData.bc_remark   // bc_remark로 수정
     };
     
     Object.entries(fields).forEach(([fieldId, value]) => {
@@ -464,7 +549,7 @@ function saveClient() {
         alert(data.message || '저장되었습니다.');
         const modalInstance = bootstrap.Modal.getInstance(document.getElementById('clientRegisterModal'));
         modalInstance.hide();
-        location.reload(); // 목록 새로고침
+        location.reload();
     })
     .catch(error => {
         console.error('Error:', error);
@@ -472,7 +557,7 @@ function saveClient() {
     });
 }
 
-// 담당자 저장
+// 담당자 저장 - 더 자세한 디버깅
 function saveContact() {
     const form = document.getElementById('contactForm');
     if (!form) return;
@@ -492,6 +577,12 @@ function saveContact() {
         `/api/client/${bpId}/contact`;
     const method = bcId ? 'PATCH' : 'POST';
 
+    console.log('=== 담당자 저장 디버깅 ===');
+    console.log('URL:', url);
+    console.log('Method:', method);
+    console.log('요청 데이터:', contactData);
+    console.log('JSON 문자열:', JSON.stringify(contactData));
+
     fetch(url, {
         method: method,
         headers: {
@@ -500,26 +591,50 @@ function saveContact() {
         body: JSON.stringify(contactData)
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error('저장에 실패했습니다.');
+        console.log('응답 상태:', response.status, response.statusText);
+        console.log('응답 헤더:', response.headers.get('content-type'));
+        
+        // 500 에러인 경우 응답 본문도 확인
+        if (response.status === 500) {
+            return response.text().then(errorText => {
+                console.log('500 에러 응답 본문:', errorText);
+                throw new Error(`서버 내부 오류 (500): ${errorText.slice(0, 200)}`);
+            });
         }
-        return response.json();
+        
+        if (!response.ok) {
+            return response.text().then(errorText => {
+                console.log('에러 응답 본문:', errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            });
+        }
+        
+        // 응답이 JSON인지 확인
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json();
+        } else {
+            return response.text().then(text => {
+                console.log('응답 내용 (텍스트):', text);
+                return { message: '저장되었습니다.' };
+            });
+        }
     })
     .then(data => {
+        console.log('파싱된 응답 데이터:', data);
         alert(data.message || '저장되었습니다.');
         const modalInstance = bootstrap.Modal.getInstance(document.getElementById('contactModal'));
         modalInstance.hide();
-        loadContacts(bpId); // 담당자 목록 새로고침
+        loadContacts(bpId);
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('저장 중 오류가 발생했습니다.');
+        console.error('담당자 저장 에러:', error);
+        alert('저장 중 오류가 발생했습니다: ' + error.message);
     });
 }
 
 // 담당자 수정
 function editContact(bcId, bpId) {
-    // 담당자 정보를 가져와서 모달에 표시
     fetch(`/api/client/${bpId}/contact/${bcId}`)
         .then(response => {
             if (!response.ok) {
@@ -553,7 +668,7 @@ function deleteContact(bcId, bpId) {
     })
     .then(data => {
         alert(data.message || '삭제되었습니다.');
-        loadContacts(bpId); // 담당자 목록 새로고침
+        loadContacts(bpId);
     })
     .catch(error => {
         console.error('Error:', error);
@@ -606,11 +721,9 @@ function initializeBizCondSearch() {
 
     let searchTimeout;
 
-    // 입력 이벤트
     bizCondInput.addEventListener('input', function() {
         const query = this.value.trim();
         
-        // 디바운싱 적용
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             if (query.length >= 1) {
@@ -621,14 +734,12 @@ function initializeBizCondSearch() {
         }, 300);
     });
 
-    // 포커스 아웃 시 드롭다운 숨기기 (약간의 지연을 두어 클릭 이벤트가 처리되도록)
     bizCondInput.addEventListener('blur', function() {
         setTimeout(() => {
             hideBizCondDropdown();
         }, 200);
     });
 
-    // 포커스 시 기존 검색 결과가 있으면 다시 표시
     bizCondInput.addEventListener('focus', function() {
         if (bizCondDropdown.children.length > 0) {
             showBizCondDropdown();
@@ -638,7 +749,7 @@ function initializeBizCondSearch() {
 
 // 업태 검색 API 호출
 function searchBizCond(query) {
-	fetch(`/api/common-codes/biz-cond?query=${encodeURIComponent(query)}`)
+    fetch(`/api/common-codes/biz-cond?query=${encodeURIComponent(query)}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('업태 검색에 실패했습니다.');
@@ -687,81 +798,19 @@ function displayBizCondResults(results) {
 
 // 업태 선택
 function selectBizCond(item) {
-    document.getElementById('modalBizCondInput').value = item.codeDesc;
-    document.getElementById('modalBizCond').value = item.codeDesc;
-    document.getElementById('modalBizCondCode').value = item.code;
+    document.getElementById('modalBizCondInput').value = item.code;
+    document.getElementById('modalBizCond').value = item.codeId;      // DB에 저장될 숫자값
+    document.getElementById('modalBizCondCode').value = item.code;    // 표시용 한글명
     hideBizCondDropdown();
 }
 
-// 드롭다운 표시
+// 드롭다운 표시/숨기기
 function showBizCondDropdown() {
     const dropdown = document.getElementById('bizCondDropdown');
     dropdown.style.display = 'block';
 }
 
-// 드롭다운 숨기기
 function hideBizCondDropdown() {
     const dropdown = document.getElementById('bizCondDropdown');
     dropdown.style.display = 'none';
-}
-
-// 거래처 폼 초기화 함수 수정
-function clearClientForm() {
-    const form = document.getElementById('clientForm');
-    if (form) {
-        form.reset();
-        // 숨겨진 ID 필드들도 초기화
-        const bpIdField = document.getElementById('modalBpId');
-        if (bpIdField) bpIdField.value = '';
-        
-        // 업태 관련 필드들 초기화
-        const bizCondInput = document.getElementById('modalBizCondInput');
-        const bizCond = document.getElementById('modalBizCond');
-        const bizCondCode = document.getElementById('modalBizCondCode');
-        
-        if (bizCondInput) bizCondInput.value = '';
-        if (bizCond) bizCond.value = '';
-        if (bizCondCode) bizCondCode.value = '';
-        
-        hideBizCondDropdown();
-    }
-}
-
-// 거래처 폼 채우기 함수 수정
-function fillClientForm(clientData) {
-    if (!clientData) return;
-    
-    const fields = {
-        'modalBpId': clientData.bpId,
-        'modalBpCode': clientData.bpCode,
-        'modalBpName': clientData.bpName,
-        'modalBpType': clientData.bpType,
-        'modalCeoName': clientData.ceoName,
-        'modalBizNo': clientData.bizNo,
-        'modalBizType': clientData.bizType,
-        'modalBpTel': clientData.bp_tel,
-        'modalFax': clientData.fax,
-        'modalPostCode': clientData.postCode,
-        'modalAddress': clientData.address,
-        'modalAddressDetail': clientData.addressDetail,
-        'modalBpRemark': clientData.bp_remark
-    };
-    
-    Object.entries(fields).forEach(([fieldId, value]) => {
-        const field = document.getElementById(fieldId);
-        if (field) {
-            field.value = value || '';
-        }
-    });
-    
-    // 업태 관련 필드들 특별 처리
-    const bizCondInput = document.getElementById('modalBizCondInput');
-    const bizCond = document.getElementById('modalBizCond');
-    const bizCondCode = document.getElementById('modalBizCondCode');
-    
-    if (bizCondInput && bizCond && bizCondCode) {
-        bizCondInput.value = clientData.bizCondCode || clientData.bizCond || '';
-        bizCond.value = clientData.bizCond || '';
-        bizCondCode.value = clientData.bizCondCode || '';
-    }
 }
