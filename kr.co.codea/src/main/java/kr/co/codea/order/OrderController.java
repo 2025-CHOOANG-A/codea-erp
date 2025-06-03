@@ -84,10 +84,6 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/register")
-    public String registerOrderForm(Model model) {
-        return "order/order_register";
-    }
 
     @PostMapping("/api/shipment")
     @ResponseBody

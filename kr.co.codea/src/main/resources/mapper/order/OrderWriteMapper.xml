@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.order.OrderWriteMapper">
+
+  <!-- (1) ORD_HEADER에 새 주문을 INSERT -->
+  <insert id="insertOrderHeader"
+          parameterType="kr.co.codea.order.OrderWriteDto$FormOrderCreateRequest"
+          useGeneratedKeys="true" keyProperty="ordId" keyColumn="ORD_ID">
+    INSERT INTO ORD_HEADER (
+      ORDER_DATE,
+      BP_ID,
+      EMP_ID,
+      REMARK,
+      STATUS
+    ) VALUES (
+      #{orderDate},
+      #{bpId},
+      #{empId},
+      #{remark},
+      '접수'
+    )
+  </insert>
+
+  <!-- (2) ORD_DETAIL에 새 주문 상세 라인 INSERT -->
+  <insert id="insertOrderDetail"
+          parameterType="kr.co.codea.order.OrderWriteDto$FormOrderDetailRequest">
+    INSERT INTO ORD_DETAIL (
+      ORD_ID,
+      ITEM_ID,
+      ORDER_QTY,
+      UNIT_PRICE,
+      REQUIRED_DELIVERY_DATE,
+      REMARK,
+      STATUS
+    ) VALUES (
+      #{ordId},
+      #{itemId},
+      #{orderQty},
+      #{unitPrice},
+      #{requiredDate},
+      #{remark},
+      '진행중'
+    )
+  </insert>
+
+</mapper>
