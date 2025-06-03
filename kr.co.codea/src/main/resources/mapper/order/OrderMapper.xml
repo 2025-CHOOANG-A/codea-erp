@@ -2,187 +2,97 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="kr.co.codea.order.OrderMapper">
 
-	<!-- 1) 주문 목록 조회 (페이징) -->
-	<select id="selectOrderList"
-		resultType="kr.co.codea.order.OrderDto$OrderDetailView">
-		SELECT
-		oh.ORD_ID AS ordId,
-		od.ORD_DETAIL_ID AS ordDetailId,
-		i.ITEM_ID AS itemId,
-		oh.ORD_CODE AS ordCode,
-		TRUNC(oh.ORDER_DATE) AS orderDate,
-		oh.REMARK AS remark,
-		od.REMARK AS orderDetailRemark,
-		oh.STATUS AS status,
-		bp.BP_NAME AS bpName,
-		i.ITEM_NAME AS productName,
-		od.ORDER_QTY AS orderQty,
-		inv.CURRENT_QTY AS stockQty,
-		inv.WH_ID AS whId,
-		od.REQUIRED_DELIVERY_DATE AS requiredDate
-		FROM ORD_HEADER oh
-		JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
-		JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
-		JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
-		LEFT JOIN INVENTORY inv ON od.ITEM_ID = inv.ITEM_ID
-		WHERE 1 = 1
-		<if test="keyword != null and keyword != ''">
-			AND (bp.BP_NAME LIKE '%' || #{keyword} || '%'
-			OR i.ITEM_NAME LIKE '%' || #{keyword} || '%')
-		</if>
-		<if test="status != null and status != ''">
-			AND oh.STATUS = #{status}
-		</if>
-		<if test="startDate != null and startDate != ''">
-			AND TRUNC(oh.ORDER_DATE) &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-		</if>
-		<if test="endDate != null and endDate != ''">
-			AND TRUNC(oh.ORDER_DATE) &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-		</if>
-		ORDER BY oh.ORDER_DATE DESC, oh.ORD_ID, od.ORD_DETAIL_ID
-		OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
-	</select>
+    <select id="selectOrderList" resultType="kr.co.codea.order.OrderDto$OrderDetailView">
+        SELECT
+            oh.ORD_ID AS ordId,
+            od.ORD_DETAIL_ID AS ordDetailId, -- 추가: 주문 상세 ID (INOUT 테이블 기록 시 필요)
+            i.ITEM_ID AS itemId,           -- 추가: 품목 ID (INOUT 테이블 기록 시 필요)
+            oh.ORD_CODE AS ordCode,
+            oh.ORDER_DATE AS orderDate,
+            oh.REMARK AS remark,            -- ORD_HEADER.REMARK
+            od.REMARK AS orderDetailRemark, -- ORD_DETAIL.REMARK (필요시 별도 alias 사용)
+            oh.STATUS AS status,
+            bp.BP_NAME AS bpName,
+            i.ITEM_NAME AS productName,
+            od.ORDER_QTY AS orderQty,
+            inv.CURRENT_QTY AS stockQty,
+            inv.WH_ID      AS whId,
+            od.REQUIRED_DELIVERY_DATE AS requiredDate
+        FROM ORD_HEADER oh
+        JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
+        JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
+        JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
+        LEFT JOIN INVENTORY inv ON od.ITEM_ID = inv.ITEM_ID
+        WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+            AND (bp.BP_NAME LIKE '%' || #{keyword} || '%' OR i.ITEM_NAME LIKE '%' || #{keyword} || '%')
+        </if>
+        <if test="status != null and status != ''">
+            AND oh.STATUS = #{status}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+        </if>
+        ORDER BY oh.ORDER_DATE DESC, oh.ORD_ID, od.ORD_DETAIL_ID
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
 
-	<!-- 2) 주문 총 개수 조회 -->
-	<select id="orderCount" resultType="int">
-		SELECT COUNT(DISTINCT oh.ORD_ID)
-		FROM ORD_HEADER oh
-		JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
-		<if test="keyword != null and keyword != ''">
-			JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
-			JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
-		</if>
-		WHERE 1 = 1
-		<if test="keyword != null and keyword != ''">
-			AND (bp.BP_NAME LIKE '%' || #{keyword} || '%'
-			OR i.ITEM_NAME LIKE '%' || #{keyword} || '%')
-		</if>
-		<if test="status != null and status != ''">
-			AND oh.STATUS = #{status}
-		</if>
-		<if test="startDate != null and startDate != ''">
-			AND TRUNC(oh.ORDER_DATE) &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-		</if>
-		<if test="endDate != null and endDate != ''">
-			AND TRUNC(oh.ORDER_DATE) &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-		</if>
-	</select>
+    <select id="orderCount" resultType="int">
+        SELECT COUNT(DISTINCT oh.ORD_ID)
+        FROM ORD_HEADER oh
+        JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
+        <if test="keyword != null and keyword != ''">
+            JOIN ORD_DETAIL od ON oh.ORD_ID = od.ORD_ID
+            JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
+        </if>
+        WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+            AND (bp.BP_NAME LIKE '%' || #{keyword} || '%' OR i.ITEM_NAME LIKE '%' || #{keyword} || '%')
+        </if>
+        <if test="status != null and status != ''">
+            AND oh.STATUS = #{status}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND oh.ORDER_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND oh.ORDER_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+        </if>
+    </select>
 
-	<!-- 3) INOUT 테이블에 가출고 정보 삽입 -->
-	<insert id="insertProvisionalShipmentToInOut"
-		parameterType="kr.co.codea.order.OrderDto$ProvisionalShipmentRequest">
-		INSERT INTO INOUT (
-		INOUT_TYPE,
-		ITEM_ID,
-		QUANTITY,
-		SOURCE_DOC_TYPE,
-		SOURCE_DOC_HEADER_ID,
-		SOURCE_DOC_DETAIL_ID,
-		WH_ID,
-		EMP_ID,
-		REMARK
-		) VALUES (
-		24, -- 가출고 유형 (공통코드: 24)
-		#{itemId},
-		#{quantity},
-		42, -- 주문(SO) 공통코드 ID
-		#{ordId},
-		#{orderDetailId},
-		#{whId},
-		#{empId, jdbcType=NUMERIC},
-		#{remark, jdbcType=VARCHAR}
-		)
-	</insert>
+    <insert id="insertProvisionalShipmentToInOut" parameterType="kr.co.codea.order.OrderDto$ProvisionalShipmentRequest">
+        INSERT INTO INOUT (
+            INOUT_TYPE,          -- 가출고 유형 (공통코드: 24)
+            ITEM_ID,
+            QUANTITY,
+            SOURCE_DOC_TYPE,     -- 주문 유형 (공통코드: 42)
+            SOURCE_DOC_HEADER_ID,
+            SOURCE_DOC_DETAIL_ID,
+            WH_ID,
+            EMP_ID,
+            REMARK
+        ) VALUES (
+            24,                  -- 가출고 공통 코드 ID
+            #{itemId},
+            #{quantity},
+            42,                  -- 주문(SO) 공통 코드 ID
+            #{ordId},
+            #{orderDetailId},
+            #{whId},
+            #{empId, jdbcType=NUMERIC},
+            #{remark, jdbcType=VARCHAR}
+        )
+    </insert>
 
-	<!-- 4) 주문 헤더 상태 조회 -->
-	<select id="selectOrderHeaderStatus" resultType="string">
-		SELECT STATUS
-		FROM ORD_HEADER
-		WHERE ORD_ID = #{ordId}
-	</select>
-
-	<!-- 5) ORD_DETAIL 상태 조회 -->
-	<select id="selectOrderDetailStatus" resultType="string">
-		SELECT STATUS
-		FROM ORD_DETAIL
-		WHERE ORD_DETAIL_ID = #{ordDetailId}
-	</select>
-
-	<!-- 6) ORD_DETAIL 상태를 '완료'로 업데이트 -->
-	<update id="updateOrderDetailStatusToCompleted">
-		UPDATE ORD_DETAIL
-		SET STATUS = '완료'
-		WHERE ORD_DETAIL_ID = #{ordDetailId}
-	</update>
-
-	<!-- 7) 같은 ORD_ID에서 아직 완료되지 않은 상세 개수 조회 -->
-	<select id="countRemainingOrderDetail" resultType="int">
-		SELECT COUNT(*)
-		FROM ORD_DETAIL
-		WHERE ORD_ID = #{ordId}
-		AND STATUS != '완료'
-	</select>
-
-	<!-- 8) ORD_HEADER 상태를 '완료'로 변경 -->
-	<update id="updateOrderHeaderStatusToCompleted">
-		UPDATE ORD_HEADER
-		SET STATUS = '완료'
-		WHERE ORD_ID = #{ordId}
-	</update>
-
-	<!-- 9) ORD_HEADER 상태를 '진행중'으로 변경 -->
-	<update id="updateOrderHeaderStatusToInProgress">
-		UPDATE ORD_HEADER
-		SET STATUS = '진행중'
-		WHERE ORD_ID = #{ordId}
-	</update>
-
-	<!-- =================== 여기부터 “주문 상세” 기능을 위한 매퍼 =================== -->
-
-	<!-- 10) 단일 주문 헤더 + 거래처명·사원명 포함 조회 -->
-	<select id="selectOrderHeaderDetailById" parameterType="long"
-		resultType="kr.co.codea.order.OrderDto$OrderHeaderDetail">
-		SELECT
-		oh.ORD_ID AS ordId,
-		oh.ORD_CODE AS ordCode,
-		TRUNC(oh.ORDER_DATE) AS orderDate,
-		oh.BP_ID AS bpId,
-		oh.STATUS AS status,
-		oh.EMP_ID AS empId,
-		oh.REMARK AS remark,
-		bp.BP_NAME AS bpName,
-		e.EMP_NAME AS empName
-		FROM ORD_HEADER oh
-		JOIN BUSINESS_PARTNER bp ON oh.BP_ID = bp.BP_ID
-		JOIN EMPLOYEE e ON oh.EMP_ID = e.EMP_ID
-		WHERE oh.ORD_ID = #{ordId}
-	</select>
-
-	<!-- 2) 해당 ORD_ID의 주문 상세(아이템) 목록 조회 -->
-	<select id="selectOrderItemsByOrderId" parameterType="long"
-		resultType="kr.co.codea.order.OrderDto$OrderItemDetail">
-		SELECT
-		od.ORD_DETAIL_ID AS ordDetailId,
-		od.ORD_ID AS ordId,
-		od.ITEM_ID AS itemId,
-
-		i.ITEM_NAME AS productName,
-		i.SPEC AS spec,       <!-- ITEM 테이블에 SPEC 컬럼이 있다고 가정 -->
-
-		od.ORDER_QTY AS orderQty,
-		od.UNIT_PRICE AS unitPrice,
-		(od.ORDER_QTY * od.UNIT_PRICE) AS totalPrice,
-
-		TRUNC(od.REQUIRED_DELIVERY_DATE) AS requiredDate,
-		od.REMARK AS remark,
-		od.STATUS AS detailStatus
-		FROM ORD_DETAIL od
-		JOIN ITEM i ON od.ITEM_ID = i.ITEM_ID
-		WHERE od.ORD_ID = #{ordId}
-		ORDER BY od.ORD_DETAIL_ID
-	</select>
+    <update id="updateOrderHeaderStatus">
+        UPDATE ORD_HEADER
+        SET STATUS = '완료',
+            UPDATED_AT = SYSDATE WHERE ORD_ID = #{ordId}
+    </update>
 
 </mapper>

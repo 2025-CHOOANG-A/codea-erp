@@ -1,62 +1,62 @@
 package kr.co.codea.order;
 
-import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface OrderMapper {
 
-    // 1) 주문 목록 조회 (페이징)
+    /**
+     * 주문 목록 조회 (페이징)
+     * @param keyword 검색 키워드 (거래처명 또는 제품명)
+     * @param status 주문 상태 (진행중, 완료 등)
+     * @param startDate 시작일 (yyyy-MM-dd 형식)
+     * @param endDate 종료일 (yyyy-MM-dd 형식)
+     * @param offset 페이징 오프셋
+     * @param limit 페이징 리미트
+     * @return 주문 상세 정보 리스트
+     */
     List<OrderDto.OrderDetailView> selectOrderList(
             @Param("keyword") String keyword,
-            @Param("status")  String status,
+            @Param("status") String status,
             @Param("startDate") String startDate,
-            @Param("endDate")   String endDate,
-            @Param("offset")    int offset,
-            @Param("limit")     int limit
+            @Param("endDate") String endDate,
+            @Param("offset") int offset,
+            @Param("limit") int limit
     );
 
-    // 2) 주문 총 개수 조회 (페이징용)
+    /**
+     * 주문 총 개수 조회
+     * @param keyword 검색 키워드 (거래처명 또는 제품명)
+     * @param status 주문 상태 (진행중, 완료 등)
+     * @param startDate 시작일 (yyyy-MM-dd 형식)
+     * @param endDate 종료일 (yyyy-MM-dd 형식)
+     * @return 조건에 맞는 주문 총 개수
+     */
     int orderCount(
             @Param("keyword") String keyword,
-            @Param("status")  String status,
+            @Param("status") String status,
             @Param("startDate") String startDate,
-            @Param("endDate")   String endDate
+            @Param("endDate") String endDate
     );
 
-    // 3) 가출고 정보 INOUT 테이블에 삽입
-    void insertProvisionalShipmentToInOut(OrderDto.ProvisionalShipmentRequest request);
-
-    // 4) 헤더 상태 조회
-    String selectOrderHeaderStatus(Long ordId);
-
-    // 5) ORD_DETAIL 상태 조회
-    String selectOrderDetailStatus(Long ordDetailId);
-
-    // 6) ORD_DETAIL 상태를 '완료'로 업데이트
-    void updateOrderDetailStatusToCompleted(Long ordDetailId);
-
-    // 7) 같은 ORD_ID에서 아직 완료되지 않은 상세 개수 조회
-    int countRemainingOrderDetail(Long ordId);
-
-    // 8) ORD_HEADER 상태를 '완료'로 변경
-    void updateOrderHeaderStatusToCompleted(Long ordId);
-
-    // 9) ORD_HEADER 상태를 '진행중'으로 변경
-    void updateOrderHeaderStatusToInProgress(Long ordId);
-
-    // =================== 아래부터 “주문 상세” 기능을 위한 메서드 ===================
+    /**
+     * 가출고 정보를 INOUT 테이블에 삽입합니다.
+     * (OrderMapper.xml의 insertProvisionalShipmentToInOut 구문과 매핑)
+     *
+     * @param request 가출고 요청 정보를 담은 DTO
+     * @return 삽입 성공 시 1, 실패 시 0 (또는 설정에 따라 다를 수 있음)
+     */
+    int insertProvisionalShipmentToInOut(OrderDto.ProvisionalShipmentRequest request);
 
     /**
-     * 10) 단일 주문 헤더 + 거래처명·사원명 포함 조회
-     *     resultType = "kr.co.codea.order.OrderDto$OrderHeaderDetail"
+     * 주문 헤더의 상태를 '완료'로 업데이트합니다.
+     * (OrderMapper.xml의 updateOrderHeaderStatus 구문과 매핑)
+     *
+     * @param ordId 상태를 변경할 주문의 ID (ORD_HEADER.ORD_ID)
+     * @return 업데이트 성공 시 1, 실패 시 0 (또는 영향받은 행의 수)
      */
-    OrderDto.OrderHeaderDetail selectOrderHeaderDetailById(Long ordId);
-
-    /**
-     * 11) 해당 ORD_ID에 속한 모든 주문 상세(아이템) 조회
-     *     resultType = "kr.co.codea.order.OrderDto$OrderItemDetail"
-     */
-    List<OrderDto.OrderItemDetail> selectOrderItemsByOrderId(Long ordId);
+    int updateOrderHeaderStatus(@Param("ordId") Long ordId);
 }
