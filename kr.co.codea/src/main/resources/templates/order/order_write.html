@@ -91,7 +91,7 @@
               <td style="position: relative;">
                 <input th:field="*{bpId}" type="hidden" id="bpId">
                 <input type="text" class="form-control" placeholder="발주처 검색" autocomplete="off"
-                       oninput="searchAutocomplete(this, '/order/customers/search', 'bpId')">
+                       oninput="searchAutocomplete(this, '/order/partners/search', 'bpId')">
                 <div class="autocomplete-list"></div>
               </td>
               <th style="background-color: #f8f9fa;">비고</th>
@@ -201,7 +201,7 @@
       return true;
     }
 
-    // 자동완성 검색 함수
+    // 자동완성 검색 함수 (담당자, 발주처용)
     function searchAutocomplete(input, apiUrl, hiddenId) {
       const keyword = input.value.trim();
       const wrapper = input.parentElement;
@@ -227,6 +227,7 @@
             listBox.appendChild(div);
           } else {
             data.forEach(item => {
+              // 백엔드 응답 구조에 맞춰 수정
               const name = item.bpName || item.empName;
               const id = item.bpId || item.empId;
               const div = document.createElement("div");
@@ -263,7 +264,7 @@
         </td>
         <td style="position: relative;">
           <input type="hidden" name="detailList[${rowIndex}].itemId" class="itemIdHidden">
-          <input type="text" class="form-control itemSearch" placeholder="완제품 검색" autocomplete="off"
+          <input type="text" class="form-control itemSearch" placeholder="품목 검색" autocomplete="off"
                  oninput="onProductSearch(this, ${rowId})">
           <div class="autocomplete-list" id="autocomplete-${rowId}" style="display:none;"></div>
         </td>
@@ -291,7 +292,7 @@
       row.querySelector("input[type='date']").focus();
     }
 
-    // 완제품 검색
+    // 품목 검색 (백엔드 API에 맞춰 수정)
     function onProductSearch(input, rowId) {
       const keyword = input.value.trim();
       const listBox = document.getElementById(`autocomplete-${rowId}`);
@@ -307,39 +308,40 @@
         return;
       }
 
-      fetch(`/order/products/search?keyword=${encodeURIComponent(keyword)}`)
+      // 백엔드 API 엔드포인트 수정: /order/items/search
+      fetch(`/order/items/search?keyword=${encodeURIComponent(keyword)}`)
         .then(res => res.json())
         .then(data => {
           if (!Array.isArray(data)) throw new Error("Invalid response format");
 
           listBox.innerHTML = "";
           if (data.length === 0) {
-            listBox.innerHTML = "<div class='autocomplete-item' style='color: #6c757d;'>검색된 완제품이 없습니다.</div>";
+            listBox.innerHTML = "<div class='autocomplete-item' style='color: #6c757d;'>검색된 품목이 없습니다.</div>";
           } else {
             listBox.innerHTML = data.map(item => `
               <div class='autocomplete-item'
                    onclick='selectProduct(this, ${JSON.stringify(item)}, ${rowId})'>
-                <strong>${item.productName}</strong><br>
-                <small class="text-muted">코드: ${item.productCode} | 단가: ₩${item.unitPrice.toLocaleString()}</small>
+                <strong>${item.itemName}</strong><br>
+                <small class="text-muted">코드: ${item.itemCode} | 단위: ${item.unitName} | 단가: ₩${item.unitPrice ? item.unitPrice.toLocaleString() : '0'}</small>
               </div>
             `).join('');
           }
           listBox.style.display = "block";
         })
         .catch(error => {
-          console.error("완제품 자동완성 오류:", error);
+          console.error("품목 자동완성 오류:", error);
           listBox.innerHTML = "<div class='autocomplete-item' style='color: #dc3545;'>검색 중 오류가 발생했습니다.</div>";
           listBox.style.display = "block";
         });
     }
 
-    // 완제품 선택
-    function selectProduct(div, product, rowId) {
+    // 품목 선택 (백엔드 응답 구조에 맞춰 수정)
+    function selectProduct(div, item, rowId) {
       const row = document.getElementById(`autocomplete-${rowId}`).closest("tr");
-      row.querySelector(".itemIdHidden").value = product.productId;
-      row.querySelector(".itemSearch").value = product.productName;
-      row.querySelector(".unit").value = product.unit;
-      row.querySelector(".price").value = product.unitPrice;
+      row.querySelector(".itemIdHidden").value = item.itemId;
+      row.querySelector(".itemSearch").value = item.itemName;
+      row.querySelector(".unit").value = item.unitName || '';
+      row.querySelector(".price").value = item.unitPrice || 0;
       updateAmount(row.querySelector(".qty"));
       document.getElementById(`autocomplete-${rowId}`).style.display = "none";
     }
@@ -358,7 +360,7 @@
     function removeRow(button) {
       const tbody = document.getElementById("itemTableBody");
       if (tbody.rows.length <= 1) {
-        alert("최소 1개의 제품은 있어야 합니다.");
+        alert("최소 1개의 품목은 있어야 합니다.");
         return;
       }
       button.closest("tr").remove();

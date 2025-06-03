@@ -1,8 +1,17 @@
 package kr.co.codea.order;
 
-/**
- * 주문 등록 관련 비즈니스 로직 인터페이스
- */
+import java.util.List;
+
 public interface OrderWriteService {
+    /** (1) 주문 등록 (헤더+상세) */
     void createOrder(OrderWriteDto.FormOrderCreateRequest request) throws Exception;
+
+    /** (3) 품목 검색 */
+    List<OrderWriteDto.ItemSimple> searchItems(String keyword);
+
+    /** (4) 발주처 검색 */
+    List<OrderWriteDto.PartnerSimple> searchPartners(String keyword);
+
+    /** (5) 담당자 검색 */
+    List<OrderWriteDto.EmployeeSimple> searchEmployees(String keyword);
 }
