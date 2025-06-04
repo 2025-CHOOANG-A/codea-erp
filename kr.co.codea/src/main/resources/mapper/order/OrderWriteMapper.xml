@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.order.OrderWriteMapper">
+
+<!-- (수정) ORD_HEADER INSERT - useGeneratedKeys 확인 -->
+<insert id="insertOrderHeader"
+        parameterType="kr.co.codea.order.OrderWriteDto$FormOrderCreateRequest"
+        useGeneratedKeys="true" keyProperty="ordId" keyColumn="ORD_ID">
+    INSERT INTO ORD_HEADER (
+        ORDER_DATE,
+        BP_ID,
+        EMP_ID,
+        REMARK,
+        STATUS
+    ) VALUES (
+        #{orderDate}, 
+        #{bpId},
+        #{empId},
+        #{remark},
+        '접수'
+    )
+</insert>
+
+<!-- (수정) ORD_DETAIL INSERT - 시퀀스나 AUTO_INCREMENT 확인 -->
+<insert id="insertOrderDetail"
+        parameterType="kr.co.codea.order.OrderWriteDto$FormOrderDetailRequest">
+    INSERT INTO ORD_DETAIL (
+        ORD_ID,
+        ITEM_ID,
+        ORDER_QTY,
+        UNIT_PRICE,
+        REQUIRED_DELIVERY_DATE,
+        REMARK,
+        STATUS
+    ) VALUES (
+        #{ordId},
+        #{itemId},
+        #{orderQty},
+        #{unitPrice},
+        #{requiredDate},
+        #{remark},
+        '진행중'
+    )
+</insert>
+
+<!-- ========== 자동완성용 검색 쿼리 ========== -->
+
+<!-- 1) 품목 자동완성 -->
+<select id="searchItems" parameterType="string"
+        resultType="kr.co.codea.order.OrderWriteDto$ItemSimple">
+    SELECT
+        i.ITEM_ID AS itemId,
+        i.ITEM_NAME AS itemName,
+        i.ITEM_CODE AS itemCode,
+        cc.CODE_DESC AS unitName,
+        i.PRICE AS unitPrice
+    FROM ITEM i
+    LEFT JOIN COMMON_CODE cc
+        ON i.UNIT_CODE = cc.CODE_ID
+        AND cc.CODE_TYPE = 'UNIT_CODE'
+    WHERE i.ITEM_NAME LIKE '%' || #{keyword} || '%'
+    ORDER BY i.ITEM_NAME
+    FETCH FIRST 10 ROWS ONLY
+</select>
+
+<!-- 2) 발주처(거래처) 자동완성 -->
+<select id="searchPartners" parameterType="string"
+        resultType="kr.co.codea.order.OrderWriteDto$PartnerSimple">
+    SELECT
+        bp.BP_ID AS bpId,
+        bp.BP_NAME AS bpName
+    FROM BUSINESS_PARTNER bp
+    WHERE bp.BP_NAME LIKE '%' || #{keyword} || '%'
+    ORDER BY bp.BP_NAME
+    FETCH FIRST 10 ROWS ONLY
+</select>
+
+<!-- 3) 담당자 자동완성 -->
+<select id="searchEmployees" parameterType="string"
+        resultType="kr.co.codea.order.OrderWriteDto$EmployeeSimple">
+    SELECT
+        e.EMP_ID AS empId,
+        e.EMP_NAME AS empName
+    FROM EMPLOYEE e
+    WHERE e.EMP_NAME LIKE '%' || #{keyword} || '%'
+    ORDER BY e.EMP_NAME
+    FETCH FIRST 10 ROWS ONLY
+</select>
+
+</mapper>

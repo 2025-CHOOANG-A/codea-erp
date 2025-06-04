@@ -47,5 +47,27 @@ public class bomDTO {
     private String childId;        // 자재 ITEM_ID (CHILD_ID)          // 자재 단가
     private double lossRate;       // 손실률
     
-	 private List<bomDTO> materials;
+	private List<bomDTO> materials;
+	
+	
+	
+	/*BOM 등록 (선택 자제 추가)*/
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

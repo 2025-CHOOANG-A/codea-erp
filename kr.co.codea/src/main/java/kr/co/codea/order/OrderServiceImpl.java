@@ -1,81 +1,157 @@
 package kr.co.codea.order;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
-import java.time.format.DateTimeFormatter;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)  // 기본적으로 조회 전용, 데이터 변경 메서드에 별도 @Transactional 적용
 public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper orderMapper;
-    private final int DEFAULT_PAGE_SIZE = 10;
-
-    @Autowired
-    public OrderServiceImpl(OrderMapper orderMapper) {
-        this.orderMapper = orderMapper;
-    }
 
     @Override
-    public OrderDto.PagingResult<OrderDto.OrderDetailView> getOrderList(
-            String keyword, String status,
-            String startDate, String endDate,
-            int page, int size) {
-
-        // 0) 페이징 인덱스 계산
-        int currentPage = page < 0 ? 0 : page;
-        int pageSize = size <= 0 ? DEFAULT_PAGE_SIZE : size;
-        int offset = currentPage * pageSize;
-
-        // 1) 총 개수 조회
-        int totalCount = orderMapper.orderCount(keyword, status, startDate, endDate);
-
-        // 2) 페이징된 목록 조회
-        List<OrderDto.OrderDetailView> list =
-                orderMapper.selectOrderList(keyword, status, startDate, endDate, offset, pageSize);
-
-        // 3) 전체 페이지 수 계산
-        int totalPages = (int) Math.ceil((double) totalCount / pageSize);
-
-        // 4) PagingResult 반환
-        return new OrderDto.PagingResult<>(list, currentPage, totalPages, totalCount);
-    }
-
-    @Override
-    public OrderDto.OrderHeaderDetail getOrderHeaderDetail(Long ordId) {
-        return orderMapper.selectOrderHeaderDetailById(ordId);
-    }
-
-    @Override
-    public List<OrderDto.OrderItemDetail> getOrderItems(Long ordId) {
-        return orderMapper.selectOrderItemsByOrderId(ordId);
-    }
-
-    @Override
-    public boolean processShipment(OrderDto.ProvisionalShipmentRequest request) {
-        // 1) 해당 ORD_DETAIL의 상태를 먼저 확인
-        String detailStatus = orderMapper.selectOrderDetailStatus(request.getOrderDetailId());
-        if (!"진행중".equals(detailStatus) && !"접수".equals(detailStatus)) {
-            // 이미 완료이거나 취소된 항목이라면 처리 불가
-            return false;
+    public List<OrderDto.OrderDetailView> getPagedOrders(
+            String keyword,
+            String status,
+            LocalDate startDate,
+            LocalDate endDate,
+            int page,
+            int size
+    ) {
+        if (page < 0) {
+            log.warn("Invalid page number: {}. Setting to 0.", page);
+            page = 0;
+        }
+        if (size <= 0) {
+            log.warn("Invalid page size: {}. Setting to 10.", size);
+            size = 10;
         }
 
-        // 2) INOUT 테이블에 가출고 정보 삽입
-        orderMapper.insertProvisionalShipmentToInOut(request);
+        String startDateStr = (startDate != null) ? startDate.toString() : null;
+        String endDateStr = (endDate != null) ? endDate.toString() : null;
+        int offset = page * size;
 
-        // 3) 해당 ORD_DETAIL 상태를 '완료'로 변경
-        orderMapper.updateOrderDetailStatusToCompleted(request.getOrderDetailId());
+        log.debug("Searching orders with params keyword={}, status={}, startDate={}, endDate={}, page={}, size={}",
+                keyword, status, startDateStr, endDateStr, page, size);
 
-        // 4) 같은 ORD_ID에서 남은 완료 전(STATUS != '완료') 상세 개수 확인
-        int remaining = orderMapper.countRemainingOrderDetail(request.getOrdId());
-        if (remaining == 0) {
-            // 5) 남은 상세가 없으면 ORD_HEADER 상태를 '완료'로 변경
-            orderMapper.updateOrderHeaderStatusToCompleted(request.getOrdId());
+        try {
+            List<OrderDto.OrderDetailView> result = orderMapper.selectOrderList(
+                    keyword, status, startDateStr, endDateStr, offset, size
+            );
+            log.debug("Found {} order-detail items for page {}", result.size(), page);
+            return result;
+        } catch (Exception e) {
+            log.error("Error occurred while fetching paged orders", e);
+            throw new RuntimeException("주문 목록 조회 중 오류가 발생했습니다. 관리자에게 문의하세요.", e);
+        }
+    }
+
+    @Override
+    public int getOrderCount(
+            String keyword,
+            String status,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        String startDateStr = (startDate != null) ? startDate.toString() : null;
+        String endDateStr = (endDate != null) ? endDate.toString() : null;
+
+        log.debug("Counting orders with params keyword={}, status={}, startDate={}, endDate={}",
+                keyword, status, startDateStr, endDateStr);
+
+        try {
+            int count = orderMapper.orderCount(keyword, status, startDateStr, endDateStr);
+            log.debug("Total order count: {}", count);
+            return count;
+        } catch (Exception e) {
+            log.error("Error occurred while counting orders", e);
+            throw new RuntimeException("주문 개수 조회 중 오류가 발생했습니다. 관리자에게 문의하세요.", e);
+        }
+    }
+
+    @Override
+    @Transactional  // INSERT/UPDATE 작업을 위해 트랜잭션 적용
+    public void processProvisionalShipment(OrderDto.ProvisionalShipmentRequest request) throws Exception {
+        log.info("가출고 처리 시작: OrderDetailID={}, ItemID={}, Quantity={}",
+                request.getOrderDetailId(), request.getItemId(), request.getQuantity());
+
+        // 1) 창고 ID(whId) 필수 검증
+        if (request.getWhId() == null) {
+            log.error("창고 ID(whId)가 없습니다. 가출고 처리를 위해 whId는 필수입니다.");
+            throw new IllegalArgumentException("가출고 처리를 위한 창고 ID(whId)가 누락되었습니다.");
+        }
+
+        // 2) ITEM 테이블에서 PRICE 조회
+        BigDecimal price = orderMapper.selectItemPrice(request.getItemId());
+        log.debug("selectItemPrice 호출 결과 price = {}", price);
+        if (price == null) {
+            log.error("해당 Item ID의 가격을 찾을 수 없습니다. ItemID={}", request.getItemId());
+            throw new IllegalArgumentException("해당 품목의 가격 정보를 찾을 수 없습니다.");
+        }
+
+        // 3) 조회된 price를 DTO에 세팅
+        request.setItemUnitCost(price);
+        log.debug("setItemUnitCost 호출 이후 request.getItemUnitCost() = {}", request.getItemUnitCost());
+
+        // 4) INOUT 테이블에 가출고 정보 삽입
+        int insertResult = orderMapper.insertProvisionalShipmentToInOut(request);
+        if (insertResult == 0) {
+            log.error("INOUT 테이블에 가출고 내역 기록 실패: {}", request);
+            throw new Exception("가출고 내역 저장에 실패했습니다. 다시 시도해주세요.");
+        }
+        log.info("INOUT 테이블에 가출고 내역 기록 성공: OrderDetailID={}, ItemUnitCost={}",
+                request.getOrderDetailId(), request.getItemUnitCost());
+
+        // 5) ORD_DETAIL 상태를 '완료'로 변경
+        int detailUpdateCount = orderMapper.updateOrderDetailStatus(request.getOrderDetailId());
+        if (detailUpdateCount == 0) {
+            log.error("ORD_DETAIL 상태 '완료' 업데이트 실패: ORD_DETAIL_ID={}", request.getOrderDetailId());
+            throw new Exception("주문 상세 상태 변경에 실패했습니다.");
+        }
+        log.info("ORD_DETAIL 상태 '완료' 업데이트 성공: ORD_DETAIL_ID={}", request.getOrderDetailId());
+
+        // 6) 남은 미완료 ORD_DETAIL 수 확인
+        int pendingCount = orderMapper.countPendingDetail(request.getOrdId());
+        if (pendingCount == 0) {
+            // 7-1) 하나도 남아있지 않으면 ORD_HEADER 상태를 '완료'로 변경
+            int headerUpdateCount = orderMapper.updateOrderHeaderStatus(request.getOrdId());
+            if (headerUpdateCount == 0) {
+                log.error("ORD_HEADER 상태 '완료' 업데이트 실패: ORD_ID={}", request.getOrdId());
+                throw new Exception("주문 헤더 상태 변경에 실패했습니다.");
+            }
+            log.info("ORD_HEADER 상태 '완료' 업데이트 성공: ORD_ID={}", request.getOrdId());
         } else {
-            // 6) 남은 상세가 있으면 ORD_HEADER 상태를 '진행중'으로 변경
-            orderMapper.updateOrderHeaderStatusToInProgress(request.getOrdId());
+            log.info("아직 출고되지 않은 ORD_DETAIL({})이 존재하여 ORD_HEADER 상태를 변경하지 않습니다.", pendingCount);
         }
 
-        return true;
+        log.info("가출고 처리 완료: ORD_ID={}, OrderDetailID={}", request.getOrdId(), request.getOrderDetailId());
+    }
+    
+    @Override
+    public int getRealInventoryQty(Long itemId) {
+        if (itemId == null) return 0;
+        Integer qty = orderMapper.selectRealInventoryQty(itemId.intValue());
+        return qty != null ? qty : 0;
+    }
+    
+    @Override
+    public OrderDto.OrderDetailPage getOrderDetail(Long ordId) {
+        // 1) ORD_HEADER에서 헤더 정보만 조회
+        OrderDto.OrderDetailPage header = orderMapper.selectOrderHeaderById(ordId);
+
+        if (header != null) {
+            // 2) ORD_DETAIL에서 아이템 리스트 조회
+            List<OrderDto.OrderItem> items = orderMapper.selectOrderItemsByOrdId(ordId);
+            header.setItems(items);
+        }
+        return header;
     }
 }

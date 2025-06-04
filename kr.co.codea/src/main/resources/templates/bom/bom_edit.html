@@ -395,9 +395,7 @@
                 선택 삭제
               </button>
               <button
-                type="button"
-                class="btn btn-primary btn-add-material btn-sm ms-1"
-              >
+                type="button" class="btn btn-primary btn-add-material btn-sm ms-1">
                 자재 추가
               </button>
             </div>
@@ -422,6 +420,8 @@
               </thead>
               <tbody>
                 <!-- JS로 자재 목록 렌더링 -->
+                <!--  -->
+            
                   <tr th:each="mat: ${select_detail_list}" th:if="${mat.bomCode == bomCode}">
                    <td><input type="checkbox" /></td>
                    <td th:text="${mat.bomCode}">BOM001</td>
@@ -434,7 +434,7 @@
                    <td>
                      <button type="button" class="btn btn-sm btn-secondary">수정</button>
     </td>
-  </tr>
+  </tr>  
               </tbody>
             </table>
           </div>
@@ -485,7 +485,7 @@
                   type="text"
                   class="form-control"
                   name="bomCode"
-                  id="modalBomCode"
+                  id="modalBomCode"                 
                   readonly
                 />
               </div>
@@ -564,6 +564,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/bom_edite.js?v=1"></script>
+    <script src="/js/bom_edit.js?v=2"></script>
   </body>
 </html>

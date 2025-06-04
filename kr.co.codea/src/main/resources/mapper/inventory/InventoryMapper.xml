@@ -46,7 +46,7 @@ ORDER BY A.INVENTORY_CODE DESC
 
 <!-- 상세 페이지 -->
 <select id="inv_detail" resultType="kr.co.codea.inventory.InventoryDTO">
-SELECT A.INVENTORY_ID, A.INVENTORY_CODE, COALESCE(A.UPDATED_AT, A.CREATED_AT) AS UPDATED_AT, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, A.AVERAGE_COST, E.CODE, A.CURRENT_QTY, C.WH_CODE, C.WH_NAME, A.EMP_NO, D.EMP_NAME, D.HP, A.REMARK
+SELECT A.INVENTORY_ID, A.INVENTORY_CODE, COALESCE(A.UPDATED_AT, A.CREATED_AT) AS UPDATED_AT, B.ITEM_ID, B.ITEM_CODE, B.ITEM_NAME, B.ITEM_TYPE, B.SPEC, A.AVERAGE_COST, E.CODE, A.CURRENT_QTY, C.WH_ID, C.WH_CODE, C.WH_NAME, A.EMP_NO, D.EMP_NAME, D.HP, A.REMARK
 FROM INVENTORY A
 JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
 JOIN WAREHOUSE C ON A.WH_ID = C.WH_ID
@@ -219,7 +219,8 @@ UPDATE INVENTORY SET
 CURRENT_QTY = #{currentQty},
 AVERAGE_COST = #{averageCost},
 EMP_NO = #{empNo},
-REMARK = #{remark}
+REMARK = #{remark},
+UPDATED_AT = SYSDATE
 WHERE INVENTORY_ID = #{inventoryId}
 </update>
 
@@ -235,5 +236,21 @@ WHERE ITEM_ID = #{itemId} AND WH_ID = #{whId}
 INSERT INTO INVENTORY_LOG (LOG_ID, INVENTORY_ID, ITEM_ID, WH_ID, LOG_TYPE, BEFORE_QTY, AFTER_QTY, BEFORE_COST, AFTER_COST, REASON, EMP_NO, EDIT_DATE) 
 VALUES (SEQ_INV_LOG.NEXTVAL, #{inventoryId}, #{itemId}, #{whId}, #{logType}, #{beforeQty}, #{afterQty}, #{beforeCost}, #{afterCost}, #{reason}, #{empNo}, SYSDATE)
 </insert>
+
+<!-- 재고 확인 -->
+<select id="get_inv" resultType="kr.co.codea.inventory.InventoryDTO">
+SELECT * FROM INVENTORY
+WHERE ITEM_ID = #{itemId} AND WH_ID = #{whId}
+</select>
+
+<!-- 실시간 재고 업데이트 -->
+<update id="inv_qty_update" parameterType="kr.co.codea.inventory.InventoryDTO">
+UPDATE INVENTORY SET
+CURRENT_QTY = #{currentQty},
+AVERAGE_COST = #{averageCost},
+EMP_NO = #{empNo},
+UPDATED_AT = SYSDATE
+WHERE ITEM_ID = #{itemId} AND WH_ID = #{whId}
+</update>
 
 </mapper>

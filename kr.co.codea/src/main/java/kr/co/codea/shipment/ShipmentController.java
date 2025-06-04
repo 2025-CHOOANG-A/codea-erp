@@ -79,6 +79,15 @@ public class ShipmentController {
 		return sea_emp;
 	}
 	
+	@GetMapping("/curQty")
+	@ResponseBody
+	public int ship_inv(@RequestParam(name="itemId") int itemId,
+			@RequestParam(name="whId") int whId) {	// 보유 수량
+		int currentQty = this.dao.ship_inv(itemId, whId);
+		
+		return currentQty;
+	}
+	
 	@GetMapping("/writeCk")
 	@ResponseBody
 	public String ship_check(@RequestParam("sourceDocType") int sourceDocType, 

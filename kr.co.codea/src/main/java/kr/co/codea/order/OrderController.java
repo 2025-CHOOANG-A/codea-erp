@@ -1,108 +1,143 @@
 package kr.co.codea.order;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Controller
 @RequestMapping("/order")
+@RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
-    private final int DEFAULT_PAGE_SIZE = 10;
 
-    @Autowired
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
-
-    /**
-     * 1) 주문 목록 화면
-     *    GET /order?page={page}&status={status}&keyword={keyword}&startDate={startDate}&endDate={endDate}
-     */
     @GetMapping
-    public String orderList(
-            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
-            @RequestParam(name = "status", required = false, defaultValue = "") String status,
-            @RequestParam(name = "keyword", required = false, defaultValue = "") String keyword,
-            @RequestParam(name = "startDate", required = false)
-                @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-            @RequestParam(name = "endDate", required = false)
-                @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+    public String getOrderList(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "startDate", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(value = "endDate", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+            @RequestParam(value = "page", defaultValue = "0") int page,
             Model model
     ) {
-        // 1. 문자열 파라미터로 변환 (MyBatis XML에서 TO_DATE로 사용)
-        String startDateStr = (startDate != null) ? startDate.toString() : "";
-        String endDateStr   = (endDate   != null) ? endDate.toString()   : "";
+        try {
+            int size = 10;
 
-        // 2. 서비스 호출
-        OrderDto.PagingResult<OrderDto.OrderDetailView> pagedResult =
-                orderService.getOrderList(keyword, status, startDateStr, endDateStr, page, DEFAULT_PAGE_SIZE);
+            if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+                model.addAttribute("errorMessage", "시작일이 종료일보다 늦을 수 없습니다.");
+                startDate = null;
+                endDate = null;
+            }
 
-        // 3. Model에 담아 템플릿에 전달
-        model.addAttribute("pagedOrderDetails", pagedResult);
-        model.addAttribute("param",       Map.of(
-                "keyword", keyword,
-                "status",  status,
-                "startDate", startDateStr,
-                "endDate",   endDateStr
-        ));
-        model.addAttribute("totalCount",      pagedResult.getTotalCount());
-        model.addAttribute("currentPageSize", pagedResult.getCurrentPageSize());
+            List<OrderDto.OrderDetailView> content = orderService.getPagedOrders(
+                    keyword, status, startDate, endDate, page, size
+            );
 
-        return "order/order_list";  // templates/order/order_list.html
-    }
+            // 실시간 재고 계산하여 주입
+            for (OrderDto.OrderDetailView dto : content) {
+                if (dto.getItemId() != null) {
+                    Integer stockQty = orderService.getRealInventoryQty(dto.getItemId());
+                    dto.setStockQty(stockQty);
+                }
+            }
 
-    /**
-     * 2) 주문 상세 보기 페이지
-     *    GET /order/detail/{ordId}
-     */
-    @GetMapping("/detail/{ordId}")
-    public String orderDetail(@PathVariable("ordId") Long ordId, Model model) {
-        // 1) 헤더 정보 조회
-        OrderDto.OrderHeaderDetail header = orderService.getOrderHeaderDetail(ordId);
-        if (header == null) {
-            // 해당 주문이 없으면 목록으로 리다이렉트
-            return "redirect:/order";
+            int totalCount = orderService.getOrderCount(keyword, status, startDate, endDate);
+            int totalPages = (totalCount == 0) ? 0 : (int) Math.ceil((double) totalCount / size);
+
+            if (totalPages > 0 && page >= totalPages) {
+                return "redirect:/order?page=" + (totalPages - 1) + buildQueryString(keyword, status, startDate, endDate);
+            } else if (page < 0) {
+                return "redirect:/order?page=0" + buildQueryString(keyword, status, startDate, endDate);
+            }
+
+            model.addAttribute("pagedOrderDetails", new OrderDto.PagingResult<>(content, page, totalPages));
+            model.addAttribute("param", new OrderDto.SearchParam(keyword, status, startDate, endDate));
+            model.addAttribute("totalCount", totalCount);
+            model.addAttribute("currentPageSize", content.size());
+
+            return "order/order_list";
+
+        } catch (RuntimeException e) {
+            log.error("Error loading order list: {}", e.getMessage(), e);
+            model.addAttribute("errorMessage", "주문 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+            model.addAttribute("pagedOrderDetails", new OrderDto.PagingResult<>(List.of(), 0, 0));
+            model.addAttribute("param", new OrderDto.SearchParam(keyword, status, startDate, endDate));
+            return "order/order_list";
+        } catch (Exception e) {
+            log.error("Unexpected error occurred while loading order list", e);
+            model.addAttribute("errorMessage", "예상치 못한 오류로 주문 목록을 불러올 수 없습니다.");
+            model.addAttribute("pagedOrderDetails", new OrderDto.PagingResult<>(List.of(), 0, 0));
+            model.addAttribute("param", new OrderDto.SearchParam(keyword, status, startDate, endDate));
+            return "order/order_list";
         }
-
-        // 2) 상세 아이템 목록 조회
-        List<OrderDto.OrderItemDetail> items = orderService.getOrderItems(ordId);
-        header.setItems(items);
-
-        // 3) 모델에 담아서 템플릿 호출
-        model.addAttribute("order", header);
-        return "order/order_detail";  // templates/order/order_detail.html
     }
 
-    /**
-     * 3) 가출고 처리 API (AJAX 호출)
-     *    POST /order/api/shipment
-     *    JSON 형태로 결과 반환 { success: true/false, headerStatus: "진행중" or "완료", message: "..." }
-     */
+
     @PostMapping("/api/shipment")
     @ResponseBody
-    public Map<String, Object> apiShipment(@RequestBody OrderDto.ProvisionalShipmentRequest request) {
-        boolean ok = orderService.processShipment(request);
-        Map<String, Object> response = new HashMap<>();
-        if (ok) {
-            // 처리 후 헤더 상태 조회
-            String headerStatus = orderService
-                    .getOrderHeaderDetail(request.getOrdId())
-                    .getStatus();
-            response.put("success", true);
-            response.put("headerStatus", headerStatus);
-        } else {
-            response.put("success", false);
-            response.put("message", "출고 처리에 실패했습니다.");
+    public ResponseEntity<?> handleProvisionalShipment(@RequestBody OrderDto.ProvisionalShipmentRequest request) {
+        try {
+            if (request.getWhId() == null) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "창고 ID(whId)가 필요합니다."));
+            }
+
+            orderService.processProvisionalShipment(request);
+            return ResponseEntity.ok(Map.of("success", true, "message", "가출고 처리 및 주문 완료 처리가 성공적으로 완료되었습니다."));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "가출고 처리 중 오류: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "가출고 처리 중 예상치 못한 오류가 발생했습니다."));
         }
-        return response;
+    }
+
+    private String buildQueryString(String keyword, String status, LocalDate startDate, LocalDate endDate) {
+        StringBuilder query = new StringBuilder();
+        if (keyword != null && !keyword.isBlank()) {
+            query.append("&keyword=").append(keyword);
+        }
+        if (status != null && !status.isBlank()) {
+            query.append("&status=").append(status);
+        }
+        if (startDate != null) {
+            query.append("&startDate=").append(startDate);
+        }
+        if (endDate != null) {
+            query.append("&endDate=").append(endDate);
+        }
+        return query.toString();
+    }
+    
+    @GetMapping("/{ordId}")
+    public String getOrderDetail(@PathVariable("ordId") Long ordId, Model model) {
+        try {
+            OrderDto.OrderDetailPage order = orderService.getOrderDetail(ordId);
+            if (order == null) {
+                model.addAttribute("errorMessage", "해당 주문을 찾을 수 없습니다.");
+                return "order/order_detail";
+            }
+            model.addAttribute("order", order);
+            return "order/order_detail"; // templates/order/order_detail.html
+        } catch (Exception e) {
+            log.error("Error loading order detail: {}", e.getMessage(), e);
+            model.addAttribute("errorMessage", "주문 상세를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+            return "order/order_detail";
+        }
     }
 }

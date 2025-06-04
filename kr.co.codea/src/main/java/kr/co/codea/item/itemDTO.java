@@ -50,8 +50,221 @@ public class itemDTO {
 	    
      private String unitcodeValue;
 	
+     private String bpTel;
+     
+     
      
      //조회용
      private String keyword;
+     
+     
+     private String unitcodeText;
+     
+     // ── Getter / Setter ──
+
+     public String getItemId() {
+         return itemId;
+     }
+     public void setItemId(String itemId) {
+         this.itemId = itemId;
+     }
+
+     public String getItemCode() {
+         return itemCode;
+     }
+     public void setItemCode(String itemCode) {
+         this.itemCode = itemCode;
+     }
+
+     public String getItemName() {
+         return itemName;
+     }
+     public void setItemName(String itemName) {
+         this.itemName = itemName;
+     }
+
+     public String getSpec() {
+         return spec;
+     }
+     public void setSpec(String spec) {
+         this.spec = spec;
+     }
+
+     public int getPrice() {
+         return price;
+     }
+     public void setPrice(int price) {
+         this.price = price;
+     }
+
+     public String getReMark() {
+         return reMark;
+     }
+     public void setReMark(String reMark) {
+         this.reMark = reMark;
+     }
+
+     public String getItemType() {
+         return itemType;
+     }
+     public void setItemType(String itemType) {
+         this.itemType = itemType;
+     }
+
+     public Date getCreatedAt() {
+         return createdAt;
+     }
+     public void setCreatedAt(Date createdAt) {
+         this.createdAt = createdAt;
+     }
+
+     public String getInventoryCode() {
+         return inventoryCode;
+     }
+     public void setInventoryCode(String inventoryCode) {
+         this.inventoryCode = inventoryCode;
+     }
+
+     public int getCurrentQty() {
+         return currentQty;
+     }
+     public void setCurrentQty(int currentQty) {
+         this.currentQty = currentQty;
+     }
+
+     public String getWhId() {
+         return whId;
+     }
+     public void setWhId(String whId) {
+         this.whId = whId;
+     }
+
+     public String getWhCode() {
+         return whCode;
+     }
+     public void setWhCode(String whCode) {
+         this.whCode = whCode;
+     }
+
+     public String getItemCatL() {
+         return itemCatL;
+     }
+     public void setItemCatL(String itemCatL) {
+         this.itemCatL = itemCatL;
+     }
+
+     public String getItemCatS() {
+         return itemCatS;
+     }
+     public void setItemCatS(String itemCatS) {
+         this.itemCatS = itemCatS;
+     }
+
+     public String getCategoryId() {
+         return categoryId;
+     }
+     public void setCategoryId(String categoryId) {
+         this.categoryId = categoryId;
+     }
+
+     public String getCategoryName() {
+         return categoryName;
+     }
+     public void setCategoryName(String categoryName) {
+         this.categoryName = categoryName;
+     }
+
+     public int getCategoryLevel() {
+         return categoryLevel;
+     }
+     public void setCategoryLevel(int categoryLevel) {
+         this.categoryLevel = categoryLevel;
+     }
+
+     public String getParentId() {
+         return parentId;
+     }
+     public void setParentId(String parentId) {
+         this.parentId = parentId;
+     }
+
+     public int getUnitCode() {
+         return unitCode;
+     }
+     public void setUnitCode(int unitCode) {
+         this.unitCode = unitCode;
+     }
+
+     public String getUnitName() {
+         return unitName;
+     }
+     public void setUnitName(String unitName) {
+         this.unitName = unitName;
+     }
+
+     public String getUnitcodeValue() {
+         return unitcodeValue;
+     }
+     public void setUnitcodeValue(String unitcodeValue) {
+         this.unitcodeValue = unitcodeValue;
+     }
+
+     public int getCodeId() {
+         return codeId;
+     }
+     public void setCodeId(int codeId) {
+         this.codeId = codeId;
+     }
+
+     public String getCodeDesc() {
+         return codeDesc;
+     }
+     public void setCodeDesc(String codeDesc) {
+         this.codeDesc = codeDesc;
+     }
+
+     public String getCode() {
+         return Code;
+     }
+     public void setCode(String code) {
+         this.Code = code;
+     }
+
+     public String getBpName() {
+         return bpName;
+     }
+     public void setBpName(String bpName) {
+         this.bpName = bpName;
+     }
+
+     public String getBpCode() {
+         return bpCode;
+     }
+     public void setBpCode(String bpCode) {
+         this.bpCode = bpCode;
+     }
+
+     public String getTel() {
+         return Tel;
+     }
+     public void setTel(String tel) {
+         this.Tel = tel;
+     }
+
+     public int getLeadTime() {
+         return leadTime;
+     }
+     public void setLeadTime(int leadTime) {
+         this.leadTime = leadTime;
+     }
+
+     public String getKeyword() {
+         return keyword;
+     }
+     public void setKeyword(String keyword) {
+         this.keyword = keyword;
+     } 
+     
+     
      
 }

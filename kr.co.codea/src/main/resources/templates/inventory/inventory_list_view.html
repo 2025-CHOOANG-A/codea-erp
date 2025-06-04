@@ -63,7 +63,7 @@
 								<td>[[${n.itemName}]]</td>	<!-- 제품명 -->
 								<td>[[${n.itemType}]]</td>	<!-- 제품 구분 -->
 								<td>[[${n.spec}]]</td>	<!-- 규격 -->
-								<td>[[${n.averageCost}]]</td>	<!-- 평균 단가 -->
+								<td>[[${#numbers.formatInteger(n.averageCost, 0, 'COMMA')} + ' 원']]</td>	<!-- 평균 단가 -->
 								<td>[[${n.currentQty}]]</td>	<!-- 보유 수량 -->
 								<td>[[${n.code}]]</td>	<!-- 단위 -->
 								<td>[[${n.whName}]]</td>	<!-- 창고 명 -->

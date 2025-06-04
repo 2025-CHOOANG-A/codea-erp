@@ -1,6 +1,8 @@
 package kr.co.codea.order;
 
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -8,8 +10,8 @@ import java.util.List;
 public class OrderDto {
 
     /**
-     * 1) 주문 목록 조회 시 사용되는 DTO
-     *    (OrderMapper.selectOrderList 결과와 매핑)
+     * 주문 목록 조회 시 사용되는 DTO
+     * (OrderMapper.xml의 selectOrderList 결과와 매핑)
      */
     @Data
     public static class OrderDetailView {
@@ -19,38 +21,36 @@ public class OrderDto {
         private String ordCode;             // 주문 코드 (ORD_HEADER.ORD_CODE)
         private LocalDate orderDate;        // 주문일 (ORD_HEADER.ORDER_DATE)
         private String remark;              // 주문 헤더 비고 (ORD_HEADER.REMARK)
-        private String orderDetailRemark;   // 주문 상세 비고 (ORD_DETAIL.REMARK)
+        private String orderDetailRemark; 
+        // private String orderDetailRemark; // 주문 상세 비고 (ORD_DETAIL.REMARK) - 필요시 OrderMapper.xml에서 alias 설정 후 추가
         private String status;              // 주문 상태 (ORD_HEADER.STATUS)
+        private String detailStatus;
         private String bpName;              // 거래처명 (BUSINESS_PARTNER.BP_NAME)
         private String productName;         // 제품명 (ITEM.ITEM_NAME)
         private int orderQty;               // 주문 수량 (ORD_DETAIL.ORDER_QTY)
-        private Integer stockQty;           // 보유 수량 (INVENTORY.CURRENT_QTY)
-        private Integer whId;               // 창고 ID (INVENTORY.WH_ID)
+        private Integer stockQty;           // 보유 수량 (INVENTORY.CURRENT_QTY) - Integer로 변경 (NULL 가능성)
+        private Integer whId;
         private LocalDate requiredDate;     // 납기일 (ORD_DETAIL.REQUIRED_DELIVERY_DATE)
     }
 
     /**
-     * 2) 페이징 결과를 담는 DTO
+     * 페이징 결과를 담는 DTO
      */
     @Data
     public static class PagingResult<T> {
         private List<T> content;
         private int currentPage;
         private int totalPages;
-        private long totalCount;
-        private int currentPageSize;
 
-        public PagingResult(List<T> content, int currentPage, int totalPages, long totalCount) {
+        public PagingResult(List<T> content, int currentPage, int totalPages) {
             this.content = content;
             this.currentPage = currentPage;
             this.totalPages = totalPages;
-            this.totalCount = totalCount;
-            this.currentPageSize = content == null ? 0 : content.size();
         }
     }
 
     /**
-     * 3) 검색 파라미터를 담는 DTO
+     * 검색 파라미터를 담는 DTO
      */
     @Data
     public static class SearchParam {
@@ -68,7 +68,7 @@ public class OrderDto {
     }
 
     /**
-     * 4) 주문 등록/수정용 DTO
+     * 주문 등록/수정용 DTO
      */
     @Data
     public static class OrderCreateRequest {
@@ -79,64 +79,70 @@ public class OrderDto {
     }
 
     /**
-     * 5) 주문 상세 등록/수정용 DTO
+     * 주문 상세 등록/수정용 DTO
      */
     @Data
     public static class OrderDetailRequest {
         private Long itemId; // 품목 ID
         private int orderQty; // 주문 수량
-        private double unitPrice; // 단가
+        private BigDecimal itemUnitCost;
         private LocalDate requiredDeliveryDate; // 희망 납기일
         private String remark; // 상세 비고
     }
 
     /**
-     * 6) 가출고 처리 요청 시 사용될 DTO
+     * 가출고 처리 요청 시 사용될 DTO
+     * (OrderMapper.xml의 insertProvisionalShipmentToInOut 파라미터와 매핑)
      */
     @Data
     public static class ProvisionalShipmentRequest {
-        private Long ordId;             // 주문 ID (ORD_HEADER.ORD_ID)
-        private Long orderDetailId;     // 주문 상세 ID (ORD_DETAIL.ORD_DETAIL_ID)
-        private Long itemId;            // 품목 ID (ITEM.ITEM_ID)
-        private int quantity;           // 가출고 수량 (INOUT.QUANTITY)
-        private Long whId;              // 창고 ID (INOUT.WH_ID)
-        private Long empId;             // 직원 ID (INOUT.EMP_ID)
-        private String remark;          // 비고 (INOUT.REMARK)
+        private Long ordId;             // 주문 ID (ORD_HEADER.ORD_ID) - SOURCE_DOC_HEADER_ID 및 ORD_HEADER 상태 업데이트용
+        private Long orderDetailId;     // 주문 상세 ID (ORD_DETAIL.ORD_DETAIL_ID) - SOURCE_DOC_DETAIL_ID 용
+        private Long itemId;            // 품목 ID (ITEM.ITEM_ID) - INOUT.ITEM_ID 용
+        private int quantity;           // 가출고 수량 - INOUT.QUANTITY 용
+        private BigDecimal itemUnitCost;
+        private Long whId;              // 창고 ID - INOUT.WH_ID 용 (필수, 결정 방식 필요)
+        private Long empId;             // 직원 ID - INOUT.EMP_ID 용 (선택 사항, 현재 로그인 사용자 등)
+        private String remark;          // 비고 - INOUT.REMARK 용 (선택 사항)
     }
-
+    
+    @Data
+    public class InventoryDto {
+        private Integer itemId;      // 품목 ID (조회용 파라미터)
+        private Integer realQty;     // 실시간 보유 수량 (조회 결과)
+    }
     /**
-     * 7) 주문 헤더 + 거래처명, 사원명 포함 조회용 DTO
+     * 주문 상세 페이지 렌더링용 DTO
+     * (헤더 정보 + 각 주문 아이템 리스트)
      */
     @Data
-    public static class OrderHeaderDetail {
+    public static class OrderDetailPage {
         private Long ordId;           // ORD_HEADER.ORD_ID
         private String ordCode;       // ORD_HEADER.ORD_CODE
         private LocalDate orderDate;  // ORD_HEADER.ORDER_DATE
-        private Long bpId;            // ORD_HEADER.BP_ID
-        private String status;        // ORD_HEADER.STATUS
-        private Long empId;           // ORD_HEADER.EMP_ID
-        private String remark;        // ORD_HEADER.REMARK
         private String bpName;        // BUSINESS_PARTNER.BP_NAME
-        private String empName;       // EMPLOYEE.EMP_NAME (필요 시)
-        private List<OrderItemDetail> items; // 해당 주문의 상세(아이템) 리스트
+        private String empName;       // EMPLOYEE.EMP_NAME
+        private String status;        // ORD_HEADER.STATUS
+        private String remark;        // ORD_HEADER.REMARK
+
+        private List<OrderItem> items; // ORD_DETAIL 목록
     }
 
     /**
-     * 8) 주문 아이템(상세) 조회용 DTO
+     * 주문 상세 페이지에서 보여줄 개별 아이템 DTO
      */
     @Data
-    public static class OrderItemDetail {
-        private Long ordDetailId;          // ORD_DETAIL.ORD_DETAIL_ID
-        private Long ordId;                // ORD_DETAIL.ORD_ID
-        private Long itemId;               // ORD_DETAIL.ITEM_ID
-        private String productName;        // ITEM.ITEM_NAME
-        private String spec;               // ITEM.SPEC (가정)
-        private String unit;               // ITEM.UNIT (가정)
-        private Integer orderQty;          // ORD_DETAIL.ORDER_QTY
-        private Double unitPrice;          // ORD_DETAIL.UNIT_PRICE
-        private Double totalPrice;         // (orderQty * unitPrice)
-        private LocalDate requiredDate;    // ORD_DETAIL.REQUIRED_DELIVERY_DATE
-        private String remark;             // ORD_DETAIL.REMARK
-        private String detailStatus;       // ORD_DETAIL.STATUS
+    public static class OrderItem {
+        private Long ordDetailId;     // ORD_DETAIL.ORD_DETAIL_ID
+        private Long itemId;          // ORD_DETAIL.ITEM_ID
+        private String productName;   // ITEM.ITEM_NAME
+        private String spec;          // ITEM.SPEC
+        private String unit;          // ITEM.UNIT
+        private int orderQty;         // ORD_DETAIL.ORDER_QTY
+        private BigDecimal unitPrice; // ORD_DETAIL.UNIT_PRICE
+        private BigDecimal totalPrice; // (ORDER_QTY * UNIT_PRICE)
+        private LocalDate requiredDate; // ORD_DETAIL.REQUIRED_DELIVERY_DATE
+        private String remark;        // ORD_DETAIL.REMARK
     }
+    
 }

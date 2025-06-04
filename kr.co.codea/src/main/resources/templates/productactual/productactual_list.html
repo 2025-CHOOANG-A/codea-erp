@@ -10,8 +10,8 @@
             <h2 class="mb-4">생산실적관리</h2>
 
             <div class="flex justify-end gap-2 mb-3">
-                <button type="button" id="workStartButton" class="btn btn-success work-order-btn">작업시작</button>
-                <button type="button" id="workEndButton" class="btn btn-warning work-order-btn">작업종료</button>
+                <button type="button" id="workStartButton" class="btn btn-primary work-order-btn">작업시작</button>
+                <button type="button" id="workEndButton" class="btn btn-primary work-order-btn">작업종료</button>
                 <button type="button" id="actualRegisterButton" class="btn btn-primary work-order-btn" disabled>실적등록</button>
             </div>
             <hr class="mb-4">
@@ -922,7 +922,7 @@
 
             // 실적등록 버튼 (상단) 클릭 이벤트
             actualRegisterButton.addEventListener('click', function() {
-                const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
+                const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');I
                 if (!selectedRadio) {
                     alert('실적을 등록할 생산 계획을 선택해주세요.');
                     return;
@@ -940,4 +940,5 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script th:src="@{/js/productplan_list.js}"></script>
+    <script th:src="@{/js/productactual_list.js}"></script>
 </div>

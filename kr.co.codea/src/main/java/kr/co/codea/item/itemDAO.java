@@ -1,6 +1,7 @@
 package kr.co.codea.item;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,8 +68,8 @@ public class itemDAO implements item_service{
    
    /*제품삭제*/
    @Override
-   public int delete_item(String itemCode) {
-	return mp.delete_item(itemCode);
+   public int delete_item(String itemId) {
+	return mp.delete_item(itemId);
 }
    
    //제품수정
@@ -85,10 +86,35 @@ public class itemDAO implements item_service{
 }
    */
    //수정시 필요한 번호 불러옴 
+   //상세, 수정 같이 사용함
    @Override
    public itemDTO select_item_by_id(String itemId) {
        return this.mp.select_item_by_id(itemId);
    }  
 
+   /*상세 정보 거래처 반영*/
+   /*
+   @Override
+   public itemDTO select_item_by_bp(String bpCode) {
+	return this.mp.select_item_by_bp(bpCode);
+}
+   */
+   
+   
+   /*페이징처리*/
+   /** (1) ROW_NUMBER() 윈도우 함수 방식 페이징 조회 */
+   @Override
+   public List<itemDTO> select_item_page(Map<String, Object> params) {
+	return this.mp.select_item_page(params);
+  }
+   
+  //페이징 카운트
+   /** (2) 페이징용 전체 건수 조회 */
+  @Override
+   public int page_count(Map<String, Object> params) {
+	return this.mp.page_count(params);
+}
+
+   
 
 }

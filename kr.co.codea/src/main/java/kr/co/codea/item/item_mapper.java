@@ -1,7 +1,7 @@
 package kr.co.codea.item;
 
 import java.util.List;
-
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -35,13 +35,25 @@ public interface item_mapper {
 	
     //item_수정 , 삭제	
     int update_item(itemDTO dto);
-    int delete_item(String itemCode);
+    int delete_item(String itemId);
 	
     //수정을 하기위해 item 코드불러오기 
-    itemDTO select_item_by_id(String itemId);
-	
+    itemDTO select_item_by_id(String itemId); //상세 수정, 동시에 사용함
+   // itemDTO select_item_by_bp(String bpCode);
+    
+	//제품삭제
  
+     
+    
+    
+    
+    /*페이징처리*/
    
+    /** (1) ROW_NUMBER() 페이징 쿼리 */
+    List<itemDTO> select_item_page(Map<String, Object> params);
+
+    /** (2) 페이징용 전체 건수 조회 */
+    int page_count(Map<String, Object> params);
     
 	
 	// 조건 검색용

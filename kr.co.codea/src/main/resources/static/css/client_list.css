@@ -1,3 +1,29 @@
+
+/* 모달 포커스 문제 해결 */
+.modal {
+    z-index: 1050;
+}
+
+.modal-backdrop {
+    z-index: 1040;
+}
+
+/* 중첩 모달 처리 */
+.modal.show ~ .modal {
+    z-index: 1060;
+}
+
+.modal.show ~ .modal-backdrop {
+    z-index: 1050;
+}
+
+/* 포커스 트랩 비활성화 */
+.modal input:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+
 /* 업태 검색 드롭다운 스타일 */
 
 .content {

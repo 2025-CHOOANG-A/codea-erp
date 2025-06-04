@@ -10,6 +10,26 @@ DateInput.max = todayStr;
 DateInput.value = todayStr;
 DateInput.readOnly = true;	// 날짜 선택 불가
 
+// 보유 수량 자동 등록
+function load_qty(){
+	const itemId = document.getElementById("itemId").value;
+	const whId = document.getElementById("whId").value;
+	
+	if(itemId && whId){
+		fetch(`/shipment/curQty?itemId=${itemId}&whId=${whId}`)
+		.then(aa => {
+			return aa.json();
+		}).then(bb => {
+			document.getElementById("currentQty").value = bb;
+		}).catch(error => {
+			console.log(error);
+		});
+	}
+}
+
+itemCode.addEventListener("change", load_qty);
+whCode.addEventListener("change", load_qty);
+
 // 출고 총액 자동 계산
 document.getElementById("quantity").addEventListener("input", function(){
 	const quantity = this.value;
