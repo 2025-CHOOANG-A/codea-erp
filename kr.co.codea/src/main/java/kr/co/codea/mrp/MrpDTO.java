@@ -36,4 +36,6 @@ public class MrpDTO {
     LocalDate updatedAt;      // 마지막 수정일
     
     private boolean mrpSaved;
+    
+    private LocalDate endDate;  // ★ 추가!
 }

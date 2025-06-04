@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -46,7 +47,9 @@ public class MrpController {
 		    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
 		    @RequestParam(value = "endDate", required = false)
 		    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+		    @RequestParam(name = "saveStatus", required = false) String saveStatus, 
 			Model m, ProductPlanDTO dto) {
+		System.out.println("여기 진입함! saveStatus=" + saveStatus);
 	    dto.setStartDate(startDate);
 	    dto.setEndDate(endDate);
 	    List<ProductPlanDTO> list = ms.ProductPlanList(dto);
@@ -55,7 +58,35 @@ public class MrpController {
 	        int cnt = ms.countMrpByPlanId(plan.getPlanId());
 	        plan.setMrpSaved(cnt > 0);
 	    }
+	    
+	    if (saveStatus != null && !saveStatus.isEmpty()) {
+	        if ("COMPLETE".equals(saveStatus)) {
+	            list = list.stream()
+	                    .filter(ProductPlanDTO::isMrpSaved) // mrpSaved == true
+	                    .collect(Collectors.toList());
+	        } else if ("INCOMPLETE".equals(saveStatus)) {
+	            list = list.stream()
+	                    .filter(plan -> !plan.isMrpSaved()) // mrpSaved == false
+	                    .collect(Collectors.toList());
+	        }
+	    }
+	    
 	    m.addAttribute("productionPlans", list);
+	    m.addAttribute("saveStatus", saveStatus);
+	    m.addAttribute("startDate", startDate);
+	    m.addAttribute("endDate", endDate);
+	    
+		
+		  // MRP 결과 리스트를 함께 출력 (페이지 하단) 
+	     MrpDTO mrpDTO = new MrpDTO();
+	     mrpDTO.setStartDate(startDate);
+	     mrpDTO.setEndDate(endDate);
+		 List<MrpDTO> mrpResults = ms.selectMrpList(mrpDTO);
+		 System.out.println("MRP 리스트 쿼리 실행 전");
+
+		 System.out.println("MRP 리스트 수: " + mrpResults.size());
+		 m.addAttribute("mrpResults", mrpResults);
+		 
 		return "mrp/mrp_calc";
 	}
 	
@@ -84,5 +115,11 @@ public class MrpController {
 	    result.put("successCount", successCount);
 	    return result;
 	}
-	
+	/*
+	@GetMapping("/detail")
+	@ResponseBody
+	public MrpDetailDTO getDetail(@RequestParam String planId) {
+	    return ms.getMrpDetail(planId); // 내부적으로 여러 테이블 join
+	}
+	*/
 }

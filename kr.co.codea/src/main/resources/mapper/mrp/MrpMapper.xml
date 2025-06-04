@@ -139,6 +139,7 @@ Oracle에 “NULL인데 타입이 뭐임?” 하고 에러
   WHERE PLAN_ID = #{planId}
 </update>
 
+<!-- 
 <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
   SELECT
       PP.PLAN_ID,
@@ -175,52 +176,119 @@ Oracle에 “NULL인데 타입이 뭐임?” 하고 에러
       <if test="empNo != null and empNo != ''">
           AND PP.EMP_NO = #{empNo}
       </if>
+      <if test="saveStatus != null and saveStatus != ''">
+     	  AND SAVE_STATUS = #{saveStatus}
+      </if>
   </where>
   ORDER BY PP.PLAN_ID DESC
 </select>
 
+	<select id="selectProductPlansWithMrpStatus" resultType="ProductPlanDTO">
+	SELECT 
+	    P.*,
+	    CASE WHEN MR.PLAN_ID IS NOT NULL THEN 1 ELSE 0 END AS mrpSaved
+	FROM 
+	    PRODUCTION_PLAN P
+	LEFT OUTER JOIN 
+	    MRP MR ON P.PLAN_ID = MR.PLAN_ID
+	</select>
+ -->
+ 
+ 
+ <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
+  SELECT
+      PP.PLAN_ID,
+      PP.ITEM_CODE,
+      I.ITEM_NAME,
+      PP.START_DATE,
+      PP.DUE_DATE,
+      PP.COMPLETION_DATE,
+      PP.PLAN_QTY,
+      PP.ACTUAL_QTY,
+      PP.STATUS,
+      PP.CREATED_AT,
+      PP.REMARK,
+      PP.EMP_NO,
+      CASE 
+        WHEN EXISTS (
+            SELECT 1 FROM MRP MR WHERE MR.PLAN_ID = PP.PLAN_ID
+        ) THEN 1 ELSE 0 END AS mrpSaved
+  FROM
+      PRODUCTION_PLAN PP
+      JOIN ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
+  <where>
+      <if test="keyword != null and keyword != ''">
+          AND (PP.PLAN_ID LIKE '%' || #{keyword} || '%' OR I.ITEM_NAME LIKE '%' || #{keyword} || '%')
+      </if>
+      <if test="startDate != null">
+          AND PP.START_DATE &gt;= #{startDate}
+      </if>
+      <if test="endDate != null">
+          AND PP.START_DATE &lt;= #{endDate}
+      </if>
+      <if test="status != null and status != ''">
+          AND PP.STATUS = #{status}
+      </if>
+      <if test="empNo != null and empNo != ''">
+          AND PP.EMP_NO = #{empNo}
+      </if>
+      <if test="saveStatus != null and saveStatus != ''">
+          <choose>
+            <when test="saveStatus == 'COMPLETE'">
+              AND EXISTS (SELECT 1 FROM MRP MR WHERE MR.PLAN_ID = PP.PLAN_ID)
+            </when>
+            <when test="saveStatus == 'INCOMPLETE'">
+              AND NOT EXISTS (SELECT 1 FROM MRP MR WHERE MR.PLAN_ID = PP.PLAN_ID)
+            </when>
+          </choose>
+      </if>
+  </where>
+  ORDER BY PP.PLAN_ID DESC
+</select>
 
-<!--  
-    <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
-SELECT
-	    PP.PLAN_ID,
-	    PP.ITEM_CODE,
-	    I.ITEM_NAME,
-	    PP.START_DATE,
-	    PP.DUE_DATE,
-	    PP.COMPLETION_DATE, 
-	    PP.PLAN_QTY,
-	    PP.ACTUAL_QTY,       
-	    PP.STATUS,
-	    PP.CREATED_AT,
-	    PP.REMARK,
-	    PP.EMP_NO
-	FROM
-	    PRODUCTION_PLAN PP
-	JOIN
-	    ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
-    <where>
-        <if test="keyword != null and keyword != ''">
-            AND (
-                PP.PLAN_ID LIKE '%' || #{keyword} || '%'
-                OR I.ITEM_NAME LIKE '%' || #{keyword} || '%'
-            )
-        </if>
-        <if test="startDate != null">
-            AND PP.START_DATE >= #{startDate}
-        </if>
-        <if test="endDate != null">
-            AND PP.DUE_DATE &lt;= #{endDate}
-        </if>
-        <if test="status != null and status != ''">
-            AND PP.STATUS = #{status}
-        </if>
-        <if test="empNo != null and empNo != ''">
-            AND PP.EMP_NO = #{empNo}
-        </if>
-    </where>
-    ORDER BY PP.PLAN_ID DESC
-    </select>
--->
+ 
+
+ <!-- MRP 결과 전체 리스트 조회 -->
+   <select id="selectMrpList" resultType="kr.co.codea.mrp.MrpDTO">
+   SELECT
+    MRP_ID,     
+    PLAN_ID,          
+    ITEM_ID,       
+    ITEM_CODE,        
+    ITEM_NAME,        
+    ITEM_TYPE,       
+    DISPLAY_PRICE,    
+    UNIT,           
+    LEAD_TIME,       
+    CHILD_ID,       
+    QUANTITY,        
+    PRICE,           
+    PLAN_QTY,        
+    REQUIRED_QTY,   
+    EMP_NO,         
+    STATUS,         
+    CURRENT_QTY,     
+    START_DATE,       
+    DUE_DATE,         
+    REQUIRED_DATE,    
+    PLANNED_ORDERDATE, 
+    DDUE_DATE,       
+    EXPECTED_AMOUNT,  
+    SELECT_TIME,      
+    REMARK,         
+    CREATED_AT,      
+    UPDATED_AT  
+  FROM MRP
+  <where>
+    <if test="startDate != null">
+      AND START_DATE &gt;= #{startDate}
+    </if>
+    <if test="endDate != null">
+      AND START_DATE &lt;= #{endDate}
+    </if>
+  </where>
+  ORDER BY MRP_ID DESC
+  </select>
+
 
 </mapper>

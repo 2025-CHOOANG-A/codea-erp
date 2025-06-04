@@ -46,5 +46,9 @@ public class ProductPlanDTO {
 
     //mrp 저장여부 확인
     private boolean mrpSaved;
-
+    public boolean isMrpSaved() { return mrpSaved; }
+    public void setMrpSaved(boolean mrpSaved) { this.mrpSaved = mrpSaved; }
+    private String saveStatus;
+    public String getSaveStatus() { return saveStatus; }
+    public void setSaveStatus(String saveStatus) { this.saveStatus = saveStatus; }
 }
