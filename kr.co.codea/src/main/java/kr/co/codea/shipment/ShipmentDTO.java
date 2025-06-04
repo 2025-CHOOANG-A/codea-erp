@@ -42,4 +42,7 @@ public class ShipmentDTO {
 	
 	// 창고 주소, 창고 상세 주소
 	String address, addressDetail;
+	
+	// 보유 수량
+	int currentQty;
 }

@@ -6,6 +6,7 @@
 		<input type="hidden" id="itemId" name="itemId">
 		<input type="hidden" id="whId" name="whId">
 		<input type="hidden" id="empId" name="empId">
+		<input type="hidden" id="empNo" name="empNo">
 		<input type="hidden" id="itemUnitCost" name="itemUnitCost">
 		<input type="hidden" id="outCost" name="outCost">
 		<input type="hidden" id="inoutType" name="inoutType">
@@ -93,25 +94,6 @@
 			</div>
 		</div>
 		
-		<!-- 출고 정보 -->
-		<div class="mb-4">
-			<div class="form-section-title">출고 정보</div>
-			<div class="row g-2 align-items-center mb-2">
-				<div class="col-md-6">
-					<label class="form-label mb-1" for="qty">가출고 수량</label>
-					<input type="text" id="qty" name="qty" class="form-control" readonly style="background:#e9ecef;">
-				</div>
-				<div class="col-md-6">
-					<label class="form-label mb-1" for="quantity">출고 수량  <span class="text-danger">*</span></label>
-					<input type="text" id="quantity" name="quantity" class="form-control">
-				</div>
-				<div class="col-md-6">
-					<label class="form-label mb-1" for="outCost">출고 총액</label>
-					<input type="text" id="dis_outCost" class="form-control" readonly style="background:#e9ecef;">
-				</div>
-			</div>
-		</div>
-		
 		<!-- 창고 정보 -->
 		<div class="mb-4">
 			<div class="form-section-title">창고 정보 <span class="text-danger">*</span></div>
@@ -128,6 +110,31 @@
 							<i class="bi bi-search"></i> 검색
 						</button>
 					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- 출고 정보 -->
+		<div class="mb-4">
+			<div class="form-section-title">출고 정보</div>
+			<div class="row g-2 align-items-center mb-2">
+				<div class="col-md-6">
+					<label class="form-label mb-1" for="currentQty">보유 수량</label>
+					<input type="text" id="currentQty" name="currentQty" class="form-control" readonly style="background:#e9ecef;">
+				</div>
+				<div class="col-md-6">
+					<label class="form-label mb-1" for="qty">가출고 수량</label>
+					<input type="text" id="qty" name="qty" class="form-control" readonly style="background:#e9ecef;">
+				</div>
+			</div>
+			<div class="row g-2 align-items-center mb-2">
+				<div class="col-md-6">
+					<label class="form-label mb-1" for="quantity">출고 수량  <span class="text-danger">*</span></label>
+					<input type="text" id="quantity" name="quantity" class="form-control">
+				</div>
+				<div class="col-md-6">
+					<label class="form-label mb-1" for="outCost">출고 총액</label>
+					<input type="text" id="dis_outCost" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 			</div>
 		</div>
@@ -203,7 +210,7 @@
 								<th>선택</th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody class="text-center">
 							<!-- 검색 결과 -->
 						</tbody>
 					</table>
@@ -273,7 +280,7 @@
 								<th>선택</th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody class="text-center">
 							<!-- 검색 결과 -->
 						</tbody>
 					</table>

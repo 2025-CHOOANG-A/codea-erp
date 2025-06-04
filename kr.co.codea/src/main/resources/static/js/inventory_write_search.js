@@ -24,12 +24,12 @@ document.getElementById("item_sea_form").addEventListener("submit", function(e){
 				const tr = document.createElement("tr");
 				
 				tr.innerHTML = `
-					<td>${item.itemCode}</td>
-					<td>${item.itemName}</td>
-					<td>${item.itemType}</td>
+					<td class="text-center">${item.itemCode}</td>
+					<td class="text-center">${item.itemName}</td>
+					<td class="text-center">${item.itemType}</td>
 					<td>${item.spec}</td>
-					<td>${item.code}</td>
-					<td>
+					<td class="text-center">${item.code}</td>
+					<td class="text-center">
 						<button type="button" class="btn btn-sm btn-primary select-product">선택</button>
 					</td>
 				`;
@@ -85,10 +85,10 @@ document.getElementById("wh_sea_form").addEventListener("submit", function(e){
 				const tr = document.createElement("tr");
 				
 				tr.innerHTML = `
-					<td>${wh.whCode}</td>
-					<td>${wh.whName}</td>
+					<td class="text-center">${wh.whCode}</td>
+					<td class="text-center">${wh.whName}</td>
 					<td>${wh.address}${wh.addressDetail}</td>
-					<td>
+					<td class="text-center">
 						<button type="button" class="btn btn-sm btn-primary select-wh">선택</button>
 					</td>
 				`;
