@@ -11,6 +11,7 @@ public class MrpDTO {
     String planId;            // 생산계획번호
     Long itemId;              // ITEM 번호 (완제품)
     String itemCode;          // 제품 코드 (표기용)
+    String bomHeaderId;
     String itemName;          // 제품명 (표기용)
     String itemType;          // 제품 타입 (완제품/원자재 등)
     BigDecimal displayPrice;  // 표시 단가 (판매가/매입가)
