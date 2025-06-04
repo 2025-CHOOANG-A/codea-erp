@@ -203,31 +203,31 @@
               -->
               <tr>
                 <th>제품구분</th>
-                <td th:text="${item_detail_list[0].itemType}">제품</td>
+                <td th:text="${item.itemType}">제품</td>
               </tr>
               <tr >
                 <th>제품코드</th>
-                <td th:text="${item_detail_list[0].itemCode}"></td>
+                <td th:text="${item.itemCode}"></td>
               </tr>
               <tr>
                 <th>대분류</th>
-                <td th:text="${item_detail_list[0].itemCatL}"></td>
+                <td th:text="${item.itemCatL}"></td>
               </tr>
               <tr>
                 <th>소분류</th>
-                <td th:text="${item_detail_list[0].itemCatS}"></td>
+                <td th:text="${item.itemCatS}"></td>
               </tr>
               <tr>
                 <th>제품명</th>
-                <td th:text="${item_detail_list[0].itemName}"></td>
+                <td th:text="${item.itemName}"></td>
               </tr>
               <tr>
                 <th>규격</th>
-                <td th:text="${item_detail_list[0].spec}"></td>
+                <td th:text="${item.spec}"></td>
               </tr>
               <tr>
                 <th>단위</th>
-                <td th:text="${item_detail_list[0].unitcodeValue}"></td>
+                <td th:text="${item.unitcodeText}"></td>
               </tr>
               <tr>
                 <th>단가</th>
@@ -242,17 +242,17 @@
           <div class="scroll-area">
             <table class="table table-bordered detail-table align-middle mb-0">
               <tbody>
-                <tr>
+                <tr >
                   <th>거래처</th>
-                  <td th:text="${item_detail_list[0].bpName}"></td>
+                  <td th:text="${item.bpName}"></td>
                 </tr>
                 <tr>
                   <th>거래처 코드</th>
-                  <td th:text="${item_detail_list[0].bpCode}"></td>
+                  <td th:text="${item.bpCode}"></td>
                 </tr>
                 <tr>
                   <th>거래처 전화번호</th>
-                  <td th:text="${item_detail_list[0].Tel}"></td>
+                  <td th:text="${item.Tel}"></td>
                 </tr>
               </tbody>
             </table>
@@ -265,7 +265,7 @@
             <table class="table table-bordered detail-table align-middle mb-0">
               <tbody>
                 <tr>
-                  <td style="height: 80px">
+                  <td style="height: 80px"th:text="${item.reMark}">
                     특이사항 없음. <br />추가 요청 시 담당자에게 문의 바랍니다.
                   </td>
                 </tr>
@@ -275,9 +275,12 @@
         </div>
         <!-- 하단 버튼 -->
         <div class="btn-group-bottom">
-          <a href="/item/item_list"  class="btn btn-outline-secondary">목록</a>
-         <a th:href="@{/item/item_edite(itemId=${item.itemId})}" class="btn btn-outline-primary">수정</a>
-          <a href="/item/item_list" class="btn btn-outline-danger">삭제</a>
+          <a id="btnList" href="/item/item_list"  class="btn btn-outline-secondary" >목록</a>
+         <a  id="btnEdit" th:href="@{/item/item_edite(itemId=${item.itemId})}" class="btn btn-outline-primary" >수정</a>
+     <form id="deleteForm" th:action="@{/item/item_delete}" method="post" style="display: none;">
+     <input type="hidden" name="itemId" id="deleteItemCode" th:value="${item.itemId}"/>
+    </form>
+         <button type="button" id="btnDelete" class="btn btn-outline-danger">삭제</button>
         </div>
       </section>
     </main>

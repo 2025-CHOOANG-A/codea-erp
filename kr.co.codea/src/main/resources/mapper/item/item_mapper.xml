@@ -8,11 +8,11 @@
  <!-- 1. ITEM 테이블 INSERT -->
   <insert id="insert_item" parameterType="kr.co.codea.item.itemDTO">
   INSERT INTO ITEM (
-      ITEM_CODE, ITEM_NAME, ITEM_TYPE,
+      ITEM_ID,ITEM_CODE, ITEM_NAME, ITEM_TYPE,
       ITEM_CAT_L, ITEM_CAT_S, UNIT_CODE,
       SPEC, REMARK, LEAD_TIME, BP_CODE, PRICE
     ) VALUES (
-      #{itemCode}, #{itemName}, #{itemType},
+      "ERP"."ISEQ$$_74178".nextval,#{itemCode}, #{itemName}, #{itemType},
       #{itemCatL}, #{itemCatS}, #{unitCode},
       #{spec}, #{reMark}, #{leadTime}, #{bpCode}, #{price}
     )
@@ -140,27 +140,141 @@ LEFT JOIN ITEM_CATEGORY catS ON .ITEM_CAT_S = catS.CATEGORY_ID
     ITEM_CAT_L = #{itemCatL},
     ITEM_CAT_S = #{itemCatS},
     SPEC = #{spec},
-    UNIT_CODE = #{unitcodeValue},
+    UNIT_CODE = #{unitCode},
     PRICE = #{price},
     BP_CODE = #{bpCode},
-    TEL = #{Tel},
     REMARK = #{reMark}
   WHERE ITEM_CODE = #{itemCode}
 </update>
 
-<!-- 제품 삭제 -->
-<delete id="delete_item" parameterType="String">
-  DELETE FROM ITEM
-  WHERE ITEM_CODE = #{itemCode}
-</delete>
+<!-- 제품 등록삭제 -->
+  <delete id="delete_item" parameterType="String">
+    DELETE FROM ITEM
+    WHERE ITEM_CODE = #{itemId}
+  </delete>
 
-<!-- 제품을 수정하기 위해 불러오는항목  -->
+
+<!-- 제품을 수정하기 위해 불러오는항목-->
+<!--상세정보, 수정 같이 사용  -->
 <select id="select_item_by_id" parameterType="String" resultType="kr.co.codea.item.itemDTO">
-SELECT *
-  FROM ITEM
-  WHERE ITEM_ID = #{itemId}
+  SELECT
+    I.ITEM_ID, 
+    I.ITEM_CODE, 
+    I.ITEM_NAME,
+    I.ITEM_TYPE,
+    I.ITEM_CAT_L,
+    I.ITEM_CAT_S,
+    I.SPEC,
+    C.CODE AS unitCodeText,  
+    I.PRICE,
+    I.REMARK,
+    I.BP_CODE AS bpCode,              
+    BP.BP_NAME AS BP_NAME,    
+    BP.TEL AS Tel          
+  FROM ITEM I
+  LEFT JOIN COMMON_CODE C
+    ON I.UNIT_CODE = C.CODE_ID
+   AND C.CODE_TYPE = 'UNIT_CODE'
+  LEFT JOIN BUSINESS_PARTNER BP
+    ON I.BP_CODE = BP.BP_CODE
+   AND BP.BP_TYPE = '고객사'
+  WHERE I.ITEM_ID = #{itemId}
 </select>
 
+<!-- 거래처 상세정보
+
+<select id="select_item_by_bp" parameterType="String" resultType="kr.co.codea.item.itemDTO">
+   SELECT
+      I.ITEM_ID,
+      I.ITEM_CODE,
+      I.ITEM_NAME,
+      I.ITEM_TYPE,
+      I.ITEM_CAT_L,
+      I.ITEM_CAT_S,
+      I.SPEC,
+      I.PRICE,
+      I.REMARK,
+      I.BP_CODE,
+      BP.BP_NAME,
+      BP.TEL 
+    FROM ITEM I
+    LEFT JOIN BUSINESS_PARTNER BP
+      ON I.BP_CODE  = BP.BP_CODE
+     AND BP.BP_TYPE = '고객사'
+    WHERE I.BP_CODE = #{bpCode}
+</select>
+
+ -->
+
+
+<!-- 페이징 관련 mapper -->
+
+<!--
+  SELECT
+      ITEM_ID,
+      ITEM_CODE,
+      ITEM_NAME,
+      SPEC,
+      UNIT_CODE,
+      PRICE,
+      REMARK,
+      ITEM_TYPE,
+      CREATED_AT
+    FROM ITEM
+
+  -->
+
+ <!-- 검색 + OFFSET … FETCH 페이징 -->
+  <select id="select_item_page" parameterType="map" resultType="kr.co.codea.item.itemDTO">
+  SELECT
+    I.ITEM_ID,
+    I.ITEM_CODE,
+    I.ITEM_TYPE,
+    I.ITEM_NAME,
+    I.ITEM_CAT_L,
+    I.ITEM_CAT_S,
+    I.SPEC,
+    C.CODE AS unitcodeText,
+    I.PRICE,
+    I.REMARK
+  FROM ITEM I
+  LEFT JOIN COMMON_CODE C
+    ON I.UNIT_CODE = C.CODE_ID
+    AND C.CODE_TYPE = 'UNIT_CODE'
+  <where>
+    <!-- 검색어(keyword)가 넘어왔을 때 조건 -->
+    <if test="keyword != null and keyword != ''">
+      <!-- ITEM_NAME 또는 ITEM_CODE에 keyword 포함 탐색 -->
+      AND (
+           I.ITEM_NAME LIKE '%' || #{keyword} || '%'
+           OR I.ITEM_CODE LIKE '%' || #{keyword} || '%'
+          )
+    </if>
+    <!-- itemType(완제품/원자재) 조건이 넘어왔을 때 -->
+    <if test="itemType != null and itemType != ''">
+      AND I.ITEM_TYPE = #{itemType}
+    </if>
+  </where>
+  <!-- 한 번만 ORDER BY 절을 쓰고, DESC 정렬 후 페이징 처리 -->
+  ORDER BY I.ITEM_ID DESC
+  OFFSET #{offset} ROWS
+  FETCH NEXT #{pageSize} ROWS ONLY
+  </select>
+
+  <!-- 검색 조건에 맞는 전체 건수 조회 (페이징 UI에 필요) -->
+  <select id="page_count" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+    FROM ITEM
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND (ITEM_NAME LIKE '%' || #{keyword} || '%'
+             OR ITEM_CODE LIKE '%' || #{keyword} || '%')
+      </if>
+      <if test="itemType != null and itemType != ''">
+        AND ITEM_TYPE = #{itemType}
+      </if>
+    </where>
+  </select>
 
 <!-- resultMap -->
 <resultMap id="itemListResultMap" type="kr.co.codea.item.itemDTO">
@@ -185,6 +299,9 @@ SELECT *
      
     <result property="codeId" column="CODE_ID"/>
     <result property="codeDesc" column="CODE_DESC"/>
+    
+     <result property="unitcodeText" column="UNIT_CODE_TEXT"/>
+
    
     <result property="itemId" column="ITEM_ID"/>
     <result property="itemType" column="ITEM_TYPE"/>

@@ -34,11 +34,22 @@ public class bomDAO implements bom_service{
 		return select_bomList;
 	}
 	
+	//bom 등록시 제품 리스트 불러오기 위한 항목 
+	@Override
+	public List<bomDTO> bom_item_list_y() {
+		 List<bomDTO> item_bomok_List = this.b_mp.bom_item_list_y();
+		return item_bomok_List;
+	}
+	
+	
+	/*BOM수정 파트*/
+	
 	@Override
 	public bomDTO selectBomHeaderByCode(String bomCode) {
 		 return b_mp.selectBomHeaderByCode(bomCode);  
 	}
 	 
+	
 	
 	//제품 상단조회
 	@Override
@@ -74,12 +85,19 @@ public class bomDAO implements bom_service{
     	return b_mp.delete_bom_details(bomCode);
     }   
   
-   //BOM 수정하기위해 BOM 코드전달 
+   //BOM 수정하기위해 BOM 코드 링크 전달 
    @Override
     public bomDTO select_bom_by_bom(String bomCode) {
 	   return b_mp.select_bom_by_bom(bomCode);
+   }
+  
+   @Override
+   public List<bomDTO> edite_bom_detail(String bomCode) {
+	return b_mp.edite_bom_detail(bomCode);
 }
    
+   
+  //BOM 자재 하단 
    
    /*BOM전체삭제(header,detail)*/
  
@@ -94,6 +112,8 @@ public class bomDAO implements bom_service{
 	   return b_mp.delete_bom_detail(bomCode);
     }
    
+   
+   /********************************/
    
    @Override
    public int modify_bom_detail(bomDTO dto) {
@@ -113,9 +133,5 @@ public class bomDAO implements bom_service{
        }
 
        return result; // 총 몇 건 등록됐는지 반환
-   }
-   
-   
-   
-   
+     }
 }

@@ -3,25 +3,44 @@
 <mapper namespace="kr.co.codea.bom.bom_mapper">
 
  <!-- BOM_HEADER 등록 -->
- <!-- 
+ <!--BOM항목을 불러오기 위한 리스트 -->
+ <select id="bom_item_list_y" parameterType="string" resultType="kr.co.codea.bom.bomDTO" resultMap="bomItemResultMap">
+
+ SELECT
+    I.ITEM_ID,
+    I.ITEM_CODE,
+    I.ITEM_NAME,
+    I.SPEC,
+    I.UNIT_CODE,
+    C.CODE AS UNIT_NAME
+FROM ITEM I
+LEFT JOIN COMMON_CODE C
+    ON I.UNIT_CODE = C.CODE_ID
+   AND C.CODE_TYPE = 'UNIT_CODE'
+WHERE I.ITEM_TYPE = '완제품'
+ORDER BY I.ITEM_CODE
+ </select>
+ 
+ <!--BOM 등록파트  -->
+
   <insert id="insert_bom_header" parameterType="kr.co.codea.bom.bomDTO">
     INSERT INTO BOM_HEADER (
       BOM_HEADER_ID,
-      ITEM_ID,VERSION,
+      ITEM_ID,
+      VERSION,
       DESCRIPTION,
       CREATED_AT
     ) VALUES (
-      #{bomHeaderId},
+      #{bomCode},
       #{itemId},
       #{version},
       #{description},
       SYSDATE
     )
   </insert>
-   -->
+
    
   <!-- BOM_DETAIL 등록 --> 
-  <!--
   <insert id="insert_bom_detail" parameterType="kr.co.codea.bom.bomDTO">
     INSERT INTO BOM_DETAIL (
       DETAIL_ID,
@@ -32,15 +51,14 @@
       LOSS_RATE
     ) VALUES (
       BOM_DETAIL_SEQ.NEXTVAL,
-      #{bomHeaderId},
+      #{bomCode},
       #{childId},
       #{quantity},
       #{price},
       #{lossRate}
     )
   </insert>
-   -->
-   
+  
  <!--BOM 전체삭제 -->  
 
  <!-- 2. BOM_HEADER 삭제 -->
@@ -58,7 +76,6 @@
 
    
 <!-- 조회항목  -->
-
 <!-- 완재품 항목조회  -->
 <select id="bom_item_type_y" parameterType="string" resultType="kr.co.codea.bom.bomDTO" resultMap="bomItemResultMap">
 SELECT 
@@ -163,7 +180,7 @@ SELECT
     CC.CODE_DESC           AS unitName2,     
     D.PRICE                AS price,
     D.QUANTITY             AS quantity,
-    h.REMARK                AS reMark
+    h. DESCRIPTION         AS reMark
 FROM BOM_HEADER H
 JOIN ITEM I ON H.ITEM_ID = I.ITEM_ID        
 JOIN BOM_DETAIL D ON H.BOM_HEADER_ID = D.BOM_HEADER_ID
@@ -178,7 +195,6 @@ ORDER BY H.BOM_HEADER_ID, D.DETAIL_ID
 <!-- bom 수정파트 -->
 <!-- 수정파트는 자재삭제 , 수정 같이 필요함  -->
 <!-- 기존 자재 삭제 -->
-
 <delete id="delete_bom_details" parameterType="String">
   DELETE FROM BOM_DETAIL
   WHERE BOM_HEADER_ID = #{bomCode}
@@ -239,7 +255,7 @@ ORDER BY H.BOM_HEADER_ID, D.DETAIL_ID
   WHERE H.BOM_HEADER_ID = #{bomCode}
 </select> 
 
-<select id="selectBomDetailByBomCode" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
+<select id="edite_bom_detail" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
   SELECT
     B.BOM_HEADER_ID AS bomCode,
     C.ITEM_CODE     AS materialCode,
@@ -254,13 +270,24 @@ ORDER BY H.BOM_HEADER_ID, D.DETAIL_ID
   WHERE B.BOM_HEADER_ID = #{bomCode}
 </select>
 
+
+<!-- BOM edit -->
+
 <!-- BOM을 수정하기 위해 불러오는 항목 -->
+<!-- 제품목록 -->
 <select id="select_bom_by_bom" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
 SELECT *
 FROM BOM_HEADER
 WHERE BOM_HEADER_ID =#{bomCode}
 </select>
-
+<!-- 자재목록 -->
+<!--
+<select id="select_bom_by_bom_j" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
+SELECT *
+FROM BOM_HEADER
+WHERE BOM_HEADER_ID =#{bomCode}
+</select>
+  -->
 
 <!-- resultMap -->
 <resultMap id="bomItemResultMap" type="kr.co.codea.bom.bomDTO" >

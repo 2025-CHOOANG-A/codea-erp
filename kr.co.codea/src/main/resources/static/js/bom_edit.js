@@ -81,9 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
     form.editIdx.value = index;
     modal.show();
   };
+  
+  document.getElementById("btnList").addEventListener("click", () => {
+    // Thymeleaf를 쓰는 경우라면 다음처럼 경로를 바인딩해도 되고,
+    // window.location.href = "/bom/bom_list"; 로 해도 됩니다.
+    alert("목록 페이지로 이동합니다.");
+    window.location.href = /*[@{/bom/bom_list}]*/ "/bom/bom_list";
+  });
 
   // 저장 버튼 눌렀을 때 전체 materialList를 form에 추가
-  /*
+
   document.getElementById('btnSave').addEventListener('click', (e) => {
     const form = document.getElementById('bomForm');
     // 기존 input 삭제
@@ -107,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
       chk.checked = this.checked;
     });
   });
-*/
+
 
 document.getElementById('btnSave').addEventListener('click', (e) => {
   const form = document.getElementById('bomForm');
