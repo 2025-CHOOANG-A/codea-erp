@@ -1,46 +1,105 @@
 <!-- templates/index.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CodeA | 물류 · 생산 관리 ERP 시스템</title>
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/css/sidebar.css" th:href="@{/css/sidebar.css}"/>
-    <style>
-        body {
-            min-height: 100vh;
-            background: #f8f9fa;
-            padding-top: 64px;
-        }
-
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CodeA | 물류 · 생산 관리 ERP 시스템</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+	rel="stylesheet" />
+<link rel="stylesheet" href="/css/sidebar.css"
+	th:href="@{/css/sidebar.css}" />
+<style>
+body {
+	min-height: 100vh;
+	background: #f8f9fa;
+	padding-top: 64px;
+}
+</style>
 </head>
 <body>
-    <!-- 사이드바 + 헤더 -->
-   <div th:replace="~{fragments/sidebar :: layout}"></div>
+	<!-- 사이드바 + 헤더 -->
+	<div th:replace="~{fragments/sidebar :: layout}"></div>
 
-    <div class="main-content">
-        <h1>메인 페이지에 오신 것을 환영합니다!</h1>
+	<div class="main-content">
+		<div class="container mt-4">
+			<div class="row">
+				<!-- 입고 리스트 -->
+				<div class="col-md-6 mb-4">
+					<div class="card h-100 shadow">
+						<div class="card-header bg-primary text-white">최근 입고</div>
+						<div class="card-body p-2">
+							<table class="table table-sm table-hover mb-0">
+								<thead>
+									<tr>
+										<th>입고번호</th>
+										<th>일자</th>
+										<th>제품명</th>
+										<th>수량</th>
+										<th>창고</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr th:each="item : ${recentReceivingList}">
+										<td th:text="${item.inoutId}"></td>
+										<td th:text="${item.inoutTime.substring(0, 10)}"></td>
+										<td th:text="${item.itemName}"></td>
+										<td th:text="${item.quantity}"></td>
+										<td th:text="${item.whName}"></td>
+									</tr>
+									<tr th:if="${#lists.isEmpty(recentReceivingList)}">
+										<td colspan="5" class="text-center text-muted">최근 입고 내역이
+											없습니다.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<!-- 출고 리스트 -->
+				<div class="col-md-6 mb-4">
+					<div class="card h-100 shadow">
+						<div class="card-header bg-success text-white">최근 출고</div>
+						<div class="card-body p-2">
+							<table class="table table-sm table-hover mb-0">
+								<thead>
+									<tr>
+										<th>출고번호</th>
+										<th>일자</th>
+										<th>제품명</th>
+										<th>수량</th>
+										<th>창고</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr th:each="item : ${recentShipmentList}">
+										<td th:text="${item.inoutId}"></td>
+										<td th:text="${item.inoutTime.substring(0, 10)}"></td>
+										<td th:text="${item.itemName}"></td>
+										<td th:text="${item.quantity}"></td>
+										<td th:text="${item.whName}"></td>
+									</tr>
+									<tr th:if="${#lists.isEmpty(recentShipmentList)}">
+										<td colspan="5" class="text-center text-muted">최근 출고 내역이
+											없습니다.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        <div th:if="${userRealName}"> <p>안녕하세요, <span th:text="${userRealName}">사용자 이름</span>님
-               (EMP_ID: <span th:if="${empId}" th:text="${empId}">ID 없음</span>)!
-            </p>
-        </div>
-        <div th:unless="${userRealName}" sec:authorize="!isAuthenticated()">
-            <p>로그인되지 않았습니다.</p>
-        </div>
+	</div>
 
-        <p>테스트 내용입니다.</p>
-        </div>
-
-    <script>
+	<script>
 
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-     <script th:src="@{/js/sidebar.js}"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script th:src="@{/js/sidebar.js}"></script>
 </body>
 </html>

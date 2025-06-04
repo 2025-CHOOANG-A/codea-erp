@@ -21,6 +21,9 @@ public class ShipmentDAO implements ShipmentService {
 	@Autowired
 	private InventoryService inv_se;
 	
+	@Autowired
+	private ShipmentMapper shipmentMapper;
+	
 	@Override
 	public List<ShipmentDTO> ship_list(Integer sourceDocType, String field, String keyword) {	// 목록 페이지
 		List<ShipmentDTO> list = this.mp.ship_list(sourceDocType, field, keyword);
@@ -103,5 +106,10 @@ public class ShipmentDAO implements ShipmentService {
 		}
 		
 		return result;
+	}
+	
+	@Override
+	public List<ShipmentDTO> getRecentShipmentList(int size) {
+	    return shipmentMapper.selectRecentShipmentList(size);
 	}
 }

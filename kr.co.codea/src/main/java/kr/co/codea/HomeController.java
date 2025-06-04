@@ -6,19 +6,34 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import kr.co.codea.auth.dto.UserDetailsDto;
+import kr.co.codea.receiving.ReceivingService;
+import kr.co.codea.shipment.ShipmentService;
 
 @Controller
 public class HomeController {
 
+    private final ShipmentService shipmentService;
+    private final ReceivingService receivingService;
+
+    // 생성자 주입
+    public HomeController(ShipmentService shipmentService, ReceivingService receivingService) {
+        this.shipmentService = shipmentService;
+        this.receivingService = receivingService;
+    }
+
     @GetMapping("/index")
     public String indexPage(@AuthenticationPrincipal UserDetailsDto userDetails, Model model) {
         if (userDetails != null) {
-            // 로그인된 사용자 정보 모델에 전달
-            model.addAttribute("userLoginId", userDetails.getUsername());  // 사용자 ID (EMP_USER_ID)
-            model.addAttribute("userRealName", userDetails.getEmpName());  // 사용자 이름 (EMP_NAME)
-            model.addAttribute("empId", userDetails.getEmpId());           // 사원 고유 ID (EMP_ID)
+            model.addAttribute("userLoginId", userDetails.getUsername());
+            model.addAttribute("userRealName", userDetails.getEmpName());
+            model.addAttribute("empId", userDetails.getEmpId());
         }
 
-        return "index"; // templates/index.html 렌더링
+        // 최신 입고/출고 각각 5건 조회
+        model.addAttribute("recentReceivingList", receivingService.getRecentReceivingList(5));
+        model.addAttribute("recentShipmentList", shipmentService.getRecentShipmentList(5));
+
+        return "index";
     }
 }
+
