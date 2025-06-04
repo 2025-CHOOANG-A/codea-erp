@@ -120,6 +120,7 @@ ORDER BY PP.PLAN_ID DESC
 <select id="getProductionPlanForReceiving" resultType="kr.co.codea.productactual.ProductActualDTO">
     SELECT 
         PP.PLAN_ID,
+        PP.PLAN_NO,  
         PP.ITEM_CODE,
         I.ITEM_ID,
         I.ITEM_NAME,
