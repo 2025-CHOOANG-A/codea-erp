@@ -14,4 +14,5 @@ public interface MrpMapper {
     int countMrpByPlanId(@Param("planId") String planId);
     int updateMrpStatusToDone(@Param("planId") String planId);
     int insertMrpAndUpdateStatus(MrpDTO dto);
+    List<MrpDTO> selectMrpList(MrpDTO dto);
 }

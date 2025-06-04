@@ -62,6 +62,10 @@ public class MrpDAO implements MrpService {
 	        throw new RuntimeException("MRP 저장 혹은 상태 변경 실패");
 	    }
 	}
-	
+	@Override
+	public List<MrpDTO> selectMrpList(MrpDTO dto) {
+		List<MrpDTO> result = this.mp.selectMrpList(dto);
+		return result;
+	}
 }
 
