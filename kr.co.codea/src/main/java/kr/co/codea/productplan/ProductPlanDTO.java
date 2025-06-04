@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 public class ProductPlanDTO {
     private String planId;
+    private Integer planNo;
     private String itemCode;
     private LocalDate startDate;
     private LocalDate dueDate;
@@ -29,6 +30,10 @@ public class ProductPlanDTO {
     
     //검색관련
     private String keyword;
+    private LocalDate searchStartDate;
+    private LocalDate searchEndDate;
+    private String searchStatus;
+    private String searchEmpNo;
     
     //ui
     private String empName;
