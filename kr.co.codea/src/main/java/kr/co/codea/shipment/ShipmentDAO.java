@@ -5,11 +5,21 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import kr.co.codea.inventory.InventoryDTO;
+import kr.co.codea.inventory.InventoryMapper;
+import kr.co.codea.inventory.InventoryService;
+
 @Service
 public class ShipmentDAO implements ShipmentService {
 	
 	@Autowired
 	private ShipmentMapper mp;
+	
+	@Autowired
+	private InventoryMapper inv_mp;
+	
+	@Autowired
+	private InventoryService inv_se;
 	
 	@Override
 	public List<ShipmentDTO> ship_list(Integer sourceDocType, String field, String keyword) {	// 목록 페이지
@@ -47,6 +57,17 @@ public class ShipmentDAO implements ShipmentService {
 	}
 	
 	@Override
+	public Integer ship_inv(int itemId, int whId) {	// 보유 수량
+		Integer currentQty = this.mp.ship_inv(itemId, whId);
+		
+		if(currentQty == null) {
+			currentQty = 0;
+		}
+		
+		return currentQty;
+	}
+	
+	@Override
 	public String check(int sourceDocType, int sourceDocHeaderId, int itemId) {	// 출고 중복 체크
 		String msg = "";
 		
@@ -65,6 +86,21 @@ public class ShipmentDAO implements ShipmentService {
 	@Override
 	public Integer ship_insert(ShipmentDTO dto) {	// 출고 등록
 		int result = this.mp.ship_insert(dto);
+		
+		InventoryDTO before = this.inv_mp.get_inv(dto.getItemId(), dto.getWhId());
+		
+		if(before != null) {
+			int newQty = before.getCurrentQty() - dto.getQuantity();
+			
+			InventoryDTO update = new InventoryDTO();
+			update.setItemId(dto.getItemId());
+			update.setWhId(dto.getWhId());
+			update.setCurrentQty(newQty);
+			update.setAverageCost(before.getAverageCost());
+			update.setEmpNo(dto.getEmpNo());
+			
+			this.inv_mp.inv_qty_update(update);
+		}
 		
 		return result;
 	}

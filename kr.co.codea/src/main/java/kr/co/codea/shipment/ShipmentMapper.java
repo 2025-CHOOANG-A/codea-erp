@@ -16,6 +16,8 @@ public interface ShipmentMapper {
 	public List<ShipmentDTO> ship_sea_wh(@Param("whName") String whName);	// 등록 페이지 창고 검색
 	
 	public List<ShipmentDTO> ship_sea_emp(@Param("empName") String empName);	// 등록 페이지 담당자 검색
+	
+	public Integer ship_inv(@Param("itemId") int itemId, @Param("whId") int whId);	// 보유 수량
 
 	public Integer ship_check(@Param("sourceDocType") int sourceDocType, @Param("sourceDocHeaderId") int sourceDocHeaderId, @Param("itemId") int itemId);	// 출고 중복 체크
 	

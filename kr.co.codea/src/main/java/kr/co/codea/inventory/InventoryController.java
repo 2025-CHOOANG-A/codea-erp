@@ -127,7 +127,9 @@ public class InventoryController {
 	}
 	
 	@GetMapping("/modify")
-	public String modifyPage(@RequestParam(name="inventoryId") int inventoryId, Model m) {	// 재고 수정 페이지
+	public String modifyPage(@RequestParam(name="inventoryId") int inventoryId, 
+			@RequestParam(name="itemId") int itemId,
+			@RequestParam(name="whId") int whId, Model m) {	// 재고 수정 페이지
 		InventoryDTO mod = this.dao.inv_mod(inventoryId);
 		m.addAttribute("mod", mod);
 		
@@ -144,7 +146,7 @@ public class InventoryController {
 		if(result > 0) {
 			this.pw.print("<script>"
 					+ "alert('재고 수정이 완료되었습니다.');"
-					+ "location.href='/inventory/detail?inventoryId=" + dto.getInventoryId() + "';"
+					+ "location.href='/inventory/detail?inventoryId=" + dto.getInventoryId() + "&itemId=" + dto.getItemId() + "&whId=" + dto.getWhId() + "';"
 					+ "</script>");
 		}
 		else {

@@ -57,7 +57,7 @@ document.getElementById("ship_sea_form").addEventListener("submit", function(e){
 				
 				tr.innerHTML = `
 					<td>${item.docNo}</td>
-					<td>${item.docDate.substring(0, 10)}</td>
+					<td>${item.docDate}</td>
 					<td>${item.itemCode}</td>
 					<td>${item.itemName}</td>
 					<td>${item.docQty}</td>
@@ -109,6 +109,8 @@ document.getElementById("ship_sea_form").addEventListener("submit", function(e){
 						inoutType.value = "26";
 					}
 					
+					load_qty();
+					
 					// 닫기
 					bootstrap.Modal.getInstance(document.getElementById("ship_sea")).hide();
 				});
@@ -147,10 +149,10 @@ document.getElementById("wh_sea_form").addEventListener("submit", function(e){
 				const tr = document.createElement("tr");
 				
 				tr.innerHTML = `
-					<td>${wh.whCode}</td>
-					<td>${wh.whName}</td>
+					<td class="text-center">${wh.whCode}</td>
+					<td class="text-center">${wh.whName}</td>
 					<td>${wh.address}${wh.addressDetail}</td>
-					<td>
+					<td class="text-center">
 						<button type="button" class="btn btn-sm btn-primary select-wh">선택</button>
 					</td>
 				`;
@@ -161,6 +163,8 @@ document.getElementById("wh_sea_form").addEventListener("submit", function(e){
 					document.getElementById("whName").value = wh.whName;
 					
 					document.getElementById("whId").value = wh.whId;	// whId 저장
+					
+					load_qty();
 
 					// 닫기
 					bootstrap.Modal.getInstance(document.getElementById("wh_sea")).hide();
@@ -214,6 +218,7 @@ document.getElementById("emp_sea_form").addEventListener("submit", function(e){
 					document.getElementById("hp").value = emp.hp;
 					
 					document.getElementById("empId").value = emp.empId;	// empId 저장
+					document.getElementById("empNo").value = emp.empNo;	// empNo 저장
 					
 					// 닫기
 					bootstrap.Modal.getInstance(document.getElementById("emp_sea")).hide();

@@ -52,4 +52,8 @@ public interface InventoryMapper {
 	public InventoryDTO inv_before(@Param("itemId") int itemId, @Param("whId") int whId);	// 기존 재고 및 평균 단가 조회
 	
 	public int inv_log_update(InventoryDTO dto);	// 재고 로그 수정
+	
+	public InventoryDTO get_inv(@Param("itemId") int itemId, @Param("whId") int whId);	// 재고 확인
+	
+	public int inv_qty_update(InventoryDTO dto);	// 실시간 재고 업데이트
 }

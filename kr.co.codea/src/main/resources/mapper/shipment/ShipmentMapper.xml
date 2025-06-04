@@ -140,9 +140,6 @@ JOIN COMMON_CODE C ON B.UNIT_CODE = C.CODE_ID
 	JOIN PRODUCTION_PLAN F ON TO_CHAR(A.SOURCE_DOC_HEADER_ID) = F.PLAN_ID
 </if>
 
-JOIN WAREHOUSE G ON A.WH_ID = G.WH_ID
-JOIN EMPLOYEE H ON A.EMP_ID = H.EMP_ID
-
 <where>
 A.INOUT_TYPE = 24
 	<if test="sourceDocType == 42">
@@ -166,6 +163,13 @@ WHERE WH_NAME LIKE '%' || #{whName} || '%'
 SELECT EMP_ID, EMP_NO, EMP_NAME, HP
 FROM EMPLOYEE
 WHERE EMP_NAME LIKE '%' || #{empName} || '%'
+</select>
+
+<!-- 보유 수량 -->
+<select id="ship_inv" resultType="int">
+SELECT COALESCE(CURRENT_QTY, 0)
+FROM INVENTORY
+WHERE ITEM_ID = #{itemId} AND WH_ID = #{whId}
 </select>
 
 <!-- 출고 중복 체크 -->

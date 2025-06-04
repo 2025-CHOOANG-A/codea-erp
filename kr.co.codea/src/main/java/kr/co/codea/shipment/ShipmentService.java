@@ -12,6 +12,8 @@ public interface ShipmentService {
 	public List<ShipmentDTO> ship_sea_wh(String whName);	// 등록 페이지 창고 검색
 	
 	public List<ShipmentDTO> ship_sea_emp(String empName);	// 등록 페이지 담당자 검색
+	
+	public Integer ship_inv(int itemId, int whId);	// 보유 수량
 
 	public String check(int sourceDocType, int sourceDocHeaderId, int itemId);	// 출고 중복 체크
 	
