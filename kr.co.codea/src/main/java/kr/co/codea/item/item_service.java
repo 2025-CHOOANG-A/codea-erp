@@ -1,6 +1,7 @@
 package kr.co.codea.item;
 
 import java.util.List;
+import java.util.Map;
 
 public interface item_service {
 	
@@ -27,12 +28,20 @@ public interface item_service {
 	 
 	    /*제품 수정, 삭제*/
 	   int update_item(itemDTO dto);
-	   int delete_item(String itemCode);
+	   int delete_item(String itemId);// 삭제 
 	   
 	   /*수정, 삭제를 위해 불러옴*/
-	   public itemDTO select_item_by_id(String itemId);
+	   public itemDTO select_item_by_id(String itemId);//상세, 수정 동시에 사용
+	  // public itemDTO select_item_by_bp(String bpCode);
 	   
 	   
+	   /*페이징처리*/
+	   
+	    /** (1) ROW_NUMBER() 페이징 쿼리 */
+	   public List<itemDTO> select_item_page(Map<String, Object> params);
+
+	    /** (2) 페이징용 전체 건수 조회 */
+	    int page_count(Map<String, Object> params);
 	
 	   
 }

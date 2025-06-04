@@ -170,6 +170,72 @@
      }
 
      // 자재 추가 폼 제출
+	 // --------------------------------------------
+	 // 1) 전역 배열 혹은 객체 없이도, 테이블에 바로 추가만 하는 간단 예시입니다.
+	 //    필요하다면 데이터를 배열에 보관하도록 확장할 수 있습니다.
+	 // --------------------------------------------
+
+	 // --------------------------------------------
+	 // 2) 자재 추가 모달 내의 “추가” 버튼 클릭 이벤트 연결
+	 // --------------------------------------------
+	 document.addEventListener("DOMContentLoaded", function() {
+	   // (A) 모달 내 “추가” 버튼을 선택합니다.
+	   //     모달의 .modal-footer에 있는 .btn-primary 버튼을 가리킵니다.
+	   const modalAddBtn = document.querySelector("#materialAddModal .modal-footer .btn-primary");
+
+	   // (B) 클릭 이벤트 리스너 등록
+	   modalAddBtn.addEventListener("click", function() {
+	     // 1) 모달 폼(form) 요소 가져오기
+	     const form = document.getElementById("materialAddForm");
+
+	     // 2) 폼 내 각 입력값을 읽어 옵니다.
+	     //    name 속성 기준으로 접근할 수 있습니다.
+	     const bomCodeValue      = form.elements["bomCode"].value.trim();
+	     const materialCodeValue = form.elements["materialCode"].value.trim();
+	     const materialNameValue = form.elements["materialName"].value.trim();
+	     const specValue         = form.elements["spec"].value.trim();
+	     const unitValue         = form.elements["unit"].value;
+	     const priceValue        = form.elements["price"].value;
+	     const qtyValue          = form.elements["qty"].value;
+
+	     // 3) 필수값 유효성 검사 (자재 코드, 자재 명, 규격이 비어 있으면 안 됨)
+	     if (!materialCodeValue || !materialNameValue || !specValue) {
+	       alert("자재 코드, 자재 명, 규격은 필수 입력 항목입니다.");
+	       return;
+	     }
+
+	     // 4) 테이블(#materialTable) <tbody> 요소를 가져옵니다.
+	     const tbody = document.querySelector("#materialTable tbody");
+
+	     // 5) 새로운 <tr> 요소를 생성하여, 안에 <td>를 채웁니다.
+	     const tr = document.createElement("tr");
+	     tr.innerHTML = `
+	       <td><input type="checkbox" /></td>
+	       <td>${bomCodeValue}</td>
+	       <td>${materialCodeValue}</td>
+	       <td>${materialNameValue}</td>
+	       <td>${specValue}</td>
+	       <td>${unitValue}</td>
+	       <td>${Number(priceValue).toLocaleString()}</td>
+	       <td>${qtyValue}</td>
+	     `;
+
+	     // 6) 생성한 <tr>을 <tbody>에 append
+	     tbody.appendChild(tr);
+
+	     // 7) 모달 안 폼 내용 초기화 (다시 열었을 때 이전 값 남지 않게)
+	     form.reset();
+
+	     // 8) 모달 창 닫기 (Bootstrap 5 API 사용)
+	     const modalEl = document.getElementById("materialAddModal");
+	     bootstrap.Modal.getInstance(modalEl).hide();
+	   });
+	 });
+	 
+	 
+	 
+	 
+	 /*
      document
        .getElementById("materialAddForm")
        .addEventListener("submit", function (e) {
@@ -194,7 +260,7 @@
            document.getElementById("materialAddModal")
          ).hide();
        });
-
+*/
      // 자재 선택 삭제
      document
        .querySelector(".btn-delete-material")

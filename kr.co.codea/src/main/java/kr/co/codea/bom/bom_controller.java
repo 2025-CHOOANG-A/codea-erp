@@ -77,15 +77,27 @@ public class bom_controller {
   
    @GetMapping("/bom_edit")
    public String editBomForm(@RequestParam("bomCode") String bomCode, Model m) {
+	   
 	  //detail, edit 링크 전송
 	  bomDTO bom= this.b_dao.select_bom_by_bom(bomCode);
-	m.addAttribute("bomCode", bomCode);
+	  m.addAttribute("bomCode", bomCode);
 	  
-	  // ⛳️ 이 부분 추가! 단일 BOM 헤더만 조회
+	  // BOM 헤더만 조회
 	    bomDTO header = this.b_dao.selectBomHeaderByCode(bomCode);
 	   m.addAttribute("header", header); 
-	   System.out.println(header);
-	  	  
+	   // BOM 디테일 조회(원자재)
+	   List<bomDTO> detail = this.b_dao.edite_bom_detail(bomCode);//원자재 리스트는 여러개이므로 list
+	    m.addAttribute("detail", detail);
+	   
+	 // System.out.println(detail);
+	  	 
+	   //bom 디테일 (자재)
+	   
+	   
+	   
+	   
+	   //bom 같은 경우는 코드 번호를 따로 불러오기 때문에 bom 코드 기준으로 불려와줘야함ㄴ
+	  /* 
 	  List<bomDTO> select_header_list = this.b_dao.bom_item_type_y(); //완제품 
 		m.addAttribute("select_header_list", select_header_list);
 		//System.out.println(select_header_list);
@@ -93,17 +105,7 @@ public class bom_controller {
 		List<bomDTO> select_detail_list = this.b_dao.bom_item_type_j(); //원자재		
 		m.addAttribute("select_detail_list", select_detail_list);
 		//System.out.println(select_detail_list);
-	/*
-      List<bomDTO> headerList = b_dao.selectBomHeaderByBomCode(bomCode);
-      List<bomDTO> detailList = b_dao.selectBomDetailByBomCode(bomCode);
-
-      m.addAttribute("headerList", headerList);
-      m.addAttribute("detailList", detailList);
-      // m.addAttribute("bomCode", bomCode); // 필요 시 추가
-      ///
-       */
-   //System.out.println(bomCode);
-
+		*/
        return "bom/bom_edit"; // 수정화면 (HTML or Thymeleaf)
        
    }
@@ -172,17 +174,24 @@ public class bom_controller {
   
   //등록할떄 값을 가져올 리스트 
   @GetMapping("/bom_write")
-  public String bom_write(Model m) {	  
+  public String bom_write(Model m) {	
+	  
+	  
+	  List<bomDTO> item_bomok_List = this.b_dao.bom_item_list_y();
+	  m.addAttribute("bom_item_y_list", item_bomok_List);
 	  //완제품, 원자재 리스트 조회
+	  /*
 	  List<bomDTO> bom_item_y_list= this.b_dao.bom_item_type_y();
 	  List<bomDTO> bom_item_j_list= this.b_dao.bom_item_type_j();
-	  
-	  m.addAttribute("bom_item_y_list", bom_item_y_list);//완제품 , 워낮제
+
+	  m.addAttribute("bom_item_y_list", bom_item_y_list);//완제품 
       m.addAttribute("bom_item_j_list", bom_item_j_list);//원자재 조회
- 	  System.out.println(bom_item_j_list);
+      	  */
+ 	  System.out.println(item_bomok_List);
 	  
   return "bom/bom_write";   
      }
+  
   
   @PostMapping("/bom_writeok")
   public String bom_writeok(@ModelAttribute itemDTO dto, Model m) {

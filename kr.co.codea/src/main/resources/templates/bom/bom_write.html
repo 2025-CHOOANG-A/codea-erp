@@ -199,6 +199,24 @@
       .example-box strong {
         color: #495057;
       }
+      
+      
+      
+        /* 필요하다면 테이블 헤더만 있는 테이블 높이/스크롤 조정 */
+    /* 아래는 예시이므로, 실제 레이아웃에 맞춰 조절하세요. */
+    .left-header-table {
+      /* 헤더만 있으므로 높이를 줄이기 위해 min-height 지정 */
+      min-height: 56px;
+      /* 오른쪽 데이터 테이블에 스크롤이 생기더라도 고정하도록 sticky */
+      position: sticky;
+      top: 0;
+      /* 배경색이 흰색이라 하면, 스크롤 시 밑 배경을 가릴 수 있게 설정 */
+      background: #fff;
+      z-index: 5;
+      /* 테두리만 표시 */
+      border: 1px solid #dee2e6;
+      border-bottom: none; /* 아래쪽 테두리는 오른쪽 테이블과 이어지게 없음 */
+    }
     </style>
   </head>
   <body>
@@ -272,22 +290,20 @@
             </li>
           </ul>
         </div>
-       
-        <!-- BOM 등록 폼 --> 
+        <!-- BOM 등록 폼 -->
         <form id="bomForm" autocomplete="off">
           <div class="table-responsive mb-4">
             <table class="table table-bordered align-middle mb-0">
               <thead class="table-light">
                 <tr>
                   <th style="width: 120px">BOM 코드</th>
-                  <th style="width: 220px">완제품 선택</th>               
+                  <th style="width: 220px">완제품 선택</th>
                   <th>제품 명</th>
                   <th>규격</th>
                   <th>단위(EA)</th>
                   <th>비고</th>
                 </tr>
-              </thead> 
-                   
+              </thead>
               <tbody>
                 <tr>
                   <td>
@@ -313,7 +329,6 @@
                         required
                         value="P001"
                       />
-                      
                       <button
                         class="btn btn-outline-secondary"
                         type="button"
@@ -377,10 +392,12 @@
                     />
                   </td>
                 </tr>
-              </tbody>
-          
+            </tbody>
+            </table>
+          </div>
         </form>
-<!-- 완제품 검색 모달 -->
+
+<!-- 완제품 검색 모달 -->    
 <div class="modal fade" id="productSearchModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
@@ -407,8 +424,10 @@
                 <th>단위</th>
               </tr>
             </thead>
+            <!--  -->
             <tbody id="modalProductResult">
               <!-- Thymeleaf 예시 -->
+    
               <tr th:each="bom_y : ${bom_item_y_list}"
                th:data-code="${bom_y.itemCode}" 
                th:data-name="${bom_y.itemName}" 
@@ -420,6 +439,7 @@
                <td th:text="${bom_y.spec}"></td>
              <td th:text="${bom_y.unitCode}"></td>
              </tr>
+             
             </tbody>
           </table>
         </div>
@@ -428,6 +448,7 @@
     </div>
   </div>
 </div>
+       
         <!-- Material List Table -->
         <div>
           <div class="d-flex justify-content-between align-items-center mb-2">
@@ -447,8 +468,8 @@
               </button>
             </div>
           </div>
-          <div class="table-responsive">
-          <!--  -->
+          
+           <div class="table-responsive">
             <table
               class="table table-hover align-middle mb-0"
               id="materialTable"
@@ -456,7 +477,7 @@
               <thead class="table-light">
                 <tr>
                   <th><input type="checkbox" id="selectAllMaterial" /></th>
-                  <th>BOM 코드</th>                  
+                  <th>BOM 코드</th>
                   <th>자재 코드</th>
                   <th>자재 명</th>
                   <th>규격</th>
@@ -465,18 +486,32 @@
                   <th>자재소요량</th>
                 </tr>
               </thead>
-              <tbody th:each="bom_j : ${bom_item_j_list}">
-              <td>
-              <input type="checkbox" name="selectedBom" th:value="${bom_j.bomCode}" />
-               </td>
-               <td th:text="${bom_j.bomCode}"></td>
-               <td th:text="${bom_j.materialCode}"></td>
-               <td th:text="${bom_j.materialName}"></td>
-               <td th:text="${bom_j.unitName}"></td>
-                 <td th:text="${bom_j.spec}"></td>
-                 <td th:text="${bom_j.unitName}"></td>
-               <td th:text="${bom_j.price}"></td>
-               <td th:text="${bom_j.quantity}"></td>
+              <tbody>
+                <!-- JS로 자재 목록 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+                 
+          <div class="table-responsive">
+            <table
+              class="table table-hover align-middle mb-0"
+              id="materialTable"
+            >
+              <thead class="table-light">
+                <tr>
+                  <th><input type="checkbox" id="selectAllMaterial" /></th>
+                  <th>BOM 코드</th>
+                  <th>자재 코드</th>
+                  <th>자재 명</th>
+                  <th>규격</th>
+                  <th>단위(EA)</th>
+                  <th>단가</th>
+                  <th>자재소요량</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- JS로 자재 목록 렌더링 -->
               </tbody>
             </table>
           </div>
@@ -525,8 +560,8 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="bomHeaderId"
-                  id="bomHeaderId"
+                  name="bomCode"
+                  id="modalBomCode"
                   readonly
                 />
               </div>
@@ -535,8 +570,8 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="bomHeaderId"
-                  id="bomHeaderId"
+                  name="childId"
+                  id="childId"
                   maxlength="20"
                   required
                 />
@@ -546,8 +581,8 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="itemId"
-                  id="bomHeaderId"
+                  name="childId"
+                  id="childId"
                   maxlength="20"
                   required
                 />
@@ -599,16 +634,15 @@
               >
                 취소
               </button>
-              <button type="button" class="btn btn-primary">추가</button>
+              <button type="button" class="btn btn-primary" >추가</button>
             </div>
           </form>
         </div>
       </div>
     </div>
 
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/bom_write.js?v=2"></script>
   
 </html>

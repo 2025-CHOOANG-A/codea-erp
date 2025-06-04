@@ -14,12 +14,31 @@ public interface bom_service {
 	//public List<bomDTO> insert_bom_detail();
 	  int insert_bom_header(bomDTO dto);
 	  int insert_bom_detail(bomDTO dto);
+	  
+	  public List<bomDTO> bom_item_list_y();//완제품 조회
+	  
+	  
+	  
+	  
+	  
 	
     // 2. 완제품 항목 조회
     public List<bomDTO> bom_item_type_y(); // itemType = "완제품"
 
     // 3. 자재 항목 조회
     public List<bomDTO> bom_item_type_j(); // itemType = "자재"
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 	
 	//BOM 주문목록
     public List<bomDTO> selectBomList(); 
@@ -37,14 +56,17 @@ public interface bom_service {
 	 int delete_bom_details(@Param("bomCode") String bomCode);
 	//bom (원자재 수정)	
 	 int modify_bom_detail(bomDTO dto);
-    
-    
+        
 	 //bom 헤더 단일 상세 정보전달 
-	 bomDTO selectBomHeaderByCode(String bomCode);
-	
-	
+	 bomDTO selectBomHeaderByCode(String bomCode);//제품
+	 List<bomDTO> edite_bom_detail(String bomCode);
+	 
+	  /*BOM edit 파트*/
 	 //bom 헤더 단일 상세 정보전달 
-      public bomDTO select_bom_by_bom(String bomCode);
+      public bomDTO select_bom_by_bom(String bomCode); //제품
+     
+      
+      
      
      /*BOM 전체 삭제 */
 	   int delete_bom_header(String bomCode);
