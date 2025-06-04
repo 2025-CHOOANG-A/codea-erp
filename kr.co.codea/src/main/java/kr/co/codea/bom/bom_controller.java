@@ -1,5 +1,6 @@
 package kr.co.codea.bom;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,26 +56,84 @@ public class bom_controller {
 		List<bomDTO> select_detail_list = this.b_dao.bom_item_type_j(); //원자재		
 		m.addAttribute("select_detail_list", select_detail_list);
 		
-		//System.out.println(select_header_list);
+		System.out.println(select_header_list);
 		//System.out.println(select_detail_list);
 	    return "bom/bom_detail"; 
 	}
 		
 	
   //BOM 목록
-   @GetMapping("/bom_list")
-   public String bom_list( Model m ){
-	    //bom 코드번호 기준으로 조회하게 하기 
-	  // m.addAttribute("selectedBomCode", bomCode);
-	   
-       List<bomDTO> select_bomList = this.b_dao.selectBomList();
-       m.addAttribute("select_bomList", select_bomList); // 단순 리스트
-       //m.addAttribute("header", bomCode);
-       //System.out.println(select_bomList);
-       return "bom/bom_list";
-   }
-   
-  
+	
+
+    /**
+     *  /bom_list 요청 시 
+     *  • keyword: 검색어 (BOM 코드, 제품 코드, 제품명 중 하나를 LIKE 조회)
+     *  • page   : 현재 페이지 번호 (기본값 1)
+     *  • size   : 한 페이지당 보여줄 건수 (기본값 10)
+     *  • sortField: 정렬 대상 컬럼명 (예: "H.BOM_HEADER_ID", "I.ITEM_NAME" 등)
+     *  • sortOrder: 정렬 방향 ("ASC" 또는 "DESC")
+     */
+	
+	@GetMapping("/bom_list")
+	public String bom_list(
+			
+	        @RequestParam(value = "keyword",   required = false, defaultValue = "")   String keyword,
+	        @RequestParam(value = "page",      required = false, defaultValue = "1")  String pageStr,
+	        @RequestParam(value = "size",      required = false, defaultValue = "3") String sizeStr,
+	        @RequestParam(value = "sortField", required = false, defaultValue = "bomCode") String sortField,
+	        @RequestParam(value = "sortOrder", required = false, defaultValue = "ASC") String sortOrder,
+	        Model m
+	) {
+	    // 1) pageStr, sizeStr → int 변환 및 기본값 처리
+	    int page;
+	    int size;
+	    try {
+	        page = Integer.parseInt(pageStr);
+	        if (page < 1) page = 1;
+	    } catch (NumberFormatException e) {
+	        page = 1;
+	    }
+	    try {
+	        size = Integer.parseInt(sizeStr);
+	        if (size < 1) size = 3;
+	    } catch (NumberFormatException e) {
+	        size = 10;
+	    }
+
+	    // 2) offset 계산
+	    int offset = (page - 1) * size;
+
+	    // 3) DAO에 넘길 파라미터 맵 준비
+	    Map<String, Object> params = new HashMap<>();
+	    params.put("keyword",   keyword);    // 검색어 (빈 문자열 허용)
+	    params.put("sortField", sortField);  // ex) "H.BOM_HEADER_ID" or "I.ITEM_NAME"
+	    params.put("sortOrder", sortOrder);  // "ASC" or "DESC"
+	    params.put("offset",    offset);     // int
+	    params.put("limit",     size);       // int
+
+	    // 4) DAO 호출
+	    List<bomDTO> select_bomList = b_dao.select_bomList(params);
+	    int totalCount = b_dao.select_bomCount(params);
+
+	    // 5) 전체 페이지 수 계산
+	    int totalPages = (int) Math.ceil(totalCount / (double) size);
+
+	    // 6) View로 보낼 값 세팅
+	    m.addAttribute("select_bomList", select_bomList);
+	    m.addAttribute("currentPage",    page);
+	    m.addAttribute("pageSize",       size);
+	    m.addAttribute("totalCount",     totalCount);
+	    m.addAttribute("totalPages",     totalPages);
+	    m.addAttribute("keyword",        keyword);
+	    m.addAttribute("sortField",      sortField);
+	    m.addAttribute("sortOrder",      sortOrder);
+	    
+	    //System.out.println(select_bomList);
+
+	    return "bom/bom_list";
+	}
+	
+	
    @GetMapping("/bom_edit")
    public String editBomForm(@RequestParam("bomCode") String bomCode, Model m) {
 	   
@@ -129,6 +188,21 @@ public class bom_controller {
        return "bom/bom_detail"; // → View Resolver가 이 경로의 JSP or Thymeleaf 찾아감
    }
   
+   
+   @PostMapping("/bom_deleteok")
+   public String deleteBom(@RequestParam("bomCode") String bomCode, Model m) {
+       // 1. 상세부터 삭제
+       int deletedDetail = this.b_dao.delete_bom_detail(bomCode);
+
+       // 2. 그 다음 헤더 삭제
+       int deletedHeader = this.b_dao.delete_bom_header(bomCode);
+
+       // 🔥 추가: 삭제 후 /bom_list로 리다이렉트
+       return "redirect:/bom_list";
+   }
+   
+   
+   /*
  
    @PostMapping("/bom_deleteok")
    public String deleteBom(@RequestParam("bomCode") String bomCode, Model m) {
@@ -154,7 +228,7 @@ public class bom_controller {
            return "bom/bom_list";
    }
  
-   
+   */
  
    
   //BOM 삭제 

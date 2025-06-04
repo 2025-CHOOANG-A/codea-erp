@@ -1,6 +1,7 @@
 package kr.co.codea.bom;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -30,16 +31,7 @@ public interface bom_service {
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-	
+ 
 	//BOM 주문목록
     public List<bomDTO> selectBomList(); 
     
@@ -59,7 +51,7 @@ public interface bom_service {
         
 	 //bom 헤더 단일 상세 정보전달 
 	 bomDTO selectBomHeaderByCode(String bomCode);//제품
-	 List<bomDTO> edite_bom_detail(String bomCode);
+	public List<bomDTO> edite_bom_detail(String bomCode);
 	 
 	  /*BOM edit 파트*/
 	 //bom 헤더 단일 상세 정보전달 
@@ -72,6 +64,11 @@ public interface bom_service {
 	   int delete_bom_header(String bomCode);
 	   int delete_bom_detail(String bomCode);
 	   
-	 
+	   
+	 /*BOM 페이징, 검색어, 오름차순, 내림차순*/  
+	   
+	   public List<bomDTO> select_bomList(Map<String, Object> params);
+	   
+	   int select_bomCount(Map<String, Object> params); //페이지 카운트
 	 
 }

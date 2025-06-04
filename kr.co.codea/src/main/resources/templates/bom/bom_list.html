@@ -204,6 +204,47 @@
       <div class="container">
         <h2 class="mb-4">BOM 목록</h2>
         <!-- Filter/Search Bar -->
+           <!-- Filter/Search Bar -->
+ <!-- ================== ① 검색·정렬용 폼 ================== -->
+   <form id="filterForm" class="filter-bar"  th:action="@{/bom/bom_list}" method="get" >
+         <!-- 1) 검색어 -->
+      <input
+        type="text"
+        name="keyword"
+        class="form-control"
+        placeholder="검색어 입력"
+        th:value="${keyword}"
+      />
+
+      <!-- 2) 숨겨진 필드: sortField, sortOrder, page, size -->
+      <input type="hidden" name="sortField" th:value="${sortField}" />
+      <input type="hidden" name="sortOrder" th:value="${sortOrder}" />
+      <input type="hidden" name="page" th:value="${currentPage}" />
+      <input type="hidden" name="size" th:value="${pageSize}" />
+
+      <!-- 3) 검색 버튼 -->
+      <button type="submit" class="btn btn-primary">검색</button>
+
+      <!-- 4) 정렬 토글 버튼 (별도 JS 없이 링크로 처리) -->
+      <a
+        th:href="@{/bom/bom_list(
+                   keyword=${keyword},
+                   page=1,
+                   size=${pageSize},
+                   sortField='bomCode',
+                   sortOrder=${(sortField=='bomCode' and sortOrder=='ASC') ? 'DESC' : 'ASC'}
+                 )}"
+        class="btn btn-outline-secondary"
+      >
+        <span th:text="${
+          (sortField=='bomCode' and sortOrder=='ASC')
+            ? 'BOM코드 내림차순'
+            : 'BOM코드 오름차순'
+        }">정렬</span>
+      </a>
+    </form>
+        
+        <!--  
         <form id="filterForm" class="filter-bar">
           <input
             type="text"
@@ -221,41 +262,45 @@
             BOM코드 오름차순
           </button>
         </form>
-
+-->
         <!-- Table -->
         <!--  -->
         <div class="table-responsive">
           <table id="bomTable" class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
-                <th scope="col"><input type="checkbox" id="selectAll" /></th>
-                <th scope="col">BOM 코드</th>
+                <th scope="col"><input type="checkbox" id="selectAll" /></th>               
+                <th scope="col">
+                 <!-- BOM코드 컬럼 클릭 시에도 정렬 토글 가능 (선택사항) -->
+                 
+                BOM 코드</th>              
+                </th>
                 <th scope="col">제품 코드</th>
                 <th scope="col">제품 명</th>
                 <th scope="col">자재 현황</th>
                 <th scope="col">내용 확인</th>
               </tr>
   </thead>
-<tbody>
-  <tr th:each="bom : ${select_bomList}">
-    <td><input type="checkbox" name="selected" th:value="${bom.bomCode}" /></td>
-    <td th:text="${bom.bomCode}">BOM_CODE</td>
-    <td>
-      <a th:href="@{/bom/bom_detail(bomCode=${bom.bomCode})}" th:text="${bom.productCode}">제품코드</a>
-    </td>
-    <td th:text="${bom.productName}">제품명</td>
-    <td>
-   <table class="table align-middle mb-0">
-   <thead class="table-light">
-   <tr align="center">
-   <th scope="col">자재 코드</th>
-   <th scope="col">자재 명</th>
-   <th scope="col">규격</th>
-   <th scope="col">단위(EA)</th>
-   <th scope="col">단가</th>
-   <th scope="col">자재소요량</th>
-   </tr>
-   </thead>
+  <tbody>
+     <tr th:each="bom : ${select_bomList}">
+      <td><input type="checkbox" name="selected" th:value="${bom.bomCode}" /></td>
+      <td th:text="${bom.bomCode}">BOM_CODE</td>
+      <td>
+      <a th:text="${bom.productCode}">제품코드</a>
+      </td>
+     <td th:text="${bom.productName}">제품명</td>
+     <td>
+    <table class="table align-middle mb-0">
+    <thead class="table-light">
+    <tr align="center">
+    <th scope="col">자재 코드</th>
+    <th scope="col">자재 명</th>
+    <th scope="col">규격</th>
+    <th scope="col">단위(EA)</th>
+    <th scope="col">단가</th>
+    <th scope="col">자재소요량</th>
+    </tr>
+    </thead>
    <tbody>
    <!-- 반복문 -->
    <tr align="center">
@@ -271,12 +316,93 @@
     </table>
     </td>
     <td>
-      <a th:href="@{/bom_detail(bomCode=${bom.bomCode})}" class="btn btn-outline-primary btn-sm">
+      <a th:href="@{/bom/bom_detail(bomCode=${bom.bomCode})}"  class="btn btn-outline-primary btn-sm">
         확인
-      </a>
-    </td>
-  </tr>
-</tbody>
+        </a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+ </div>
+
+      <!-- Pagination -->
+        <div class="table-footer-row">
+          <div>
+            현재 페이지:
+            <strong th:text="${currentPage}">1</strong> /
+            <strong th:text="${totalPages}">1</strong>
+            (전체 게시물: <span th:text="${totalCount}">0</span>)
+          </div>
+          <nav aria-label="Page navigation">
+            <ul class="pagination mb-0">
+              <!-- 이전 페이지 버튼 -->
+              <li
+                class="page-item"
+                th:classappend="${currentPage == 1} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/bom/bom_list(
+                            page=${currentPage > 1 ? currentPage - 1 : 1},
+                            size=${pageSize},
+                            keyword=${keyword},
+                            sortField=${sortField},
+                            sortOrder=${sortOrder}
+                          )}"
+                  aria-label="Previous"
+                >
+                  <span aria-hidden="true">◀</span>
+                </a>
+              </li>
+
+              <!-- 페이지 번호 반복 -->
+              <li
+                class="page-item"
+                th:each="i : ${#numbers.sequence(1, totalPages)}"
+                th:classappend="${i == currentPage} ? 'active'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/bom/bom_list(
+                            page=${i},
+                            size=${pageSize},
+                            keyword=${keyword},
+                            sortField=${sortField},
+                            sortOrder=${sortOrder}
+                          )}"
+                  th:text="${i}"
+                >
+                  1
+                </a>
+              </li>
+
+              <!-- 다음 페이지 버튼 -->
+              <li
+                class="page-item"
+                th:classappend="${currentPage == totalPages} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/bom/bom_list(
+                            page=${currentPage < totalPages
+                              ? currentPage + 1
+                              : totalPages},
+                            size=${pageSize},
+                            keyword=${keyword},
+                            sortField=${sortField},
+                            sortOrder=${sortOrder}
+                          )}"
+                  aria-label="Next"
+                >
+                  <span aria-hidden="true">▶</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </main>
+
     <!-- Modal for Detail View -->
     <div
       class="modal fade"
@@ -308,6 +434,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-       <script src="/js/bom_list.js?v=3"></script>
+       <script src="/js/bom_list.js?v=4"></script>
   </body>
 </html>
+

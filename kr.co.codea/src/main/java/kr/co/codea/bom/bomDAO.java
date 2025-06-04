@@ -1,6 +1,7 @@
 package kr.co.codea.bom;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -134,4 +135,28 @@ public class bomDAO implements bom_service{
 
        return result; // 총 몇 건 등록됐는지 반환
      }
+   
+   
+   /*페이징 처리*/  
+   @Override 
+    public List<bomDTO> select_bomList(Map<String, Object> params) {
+	return this.b_mp.select_bomList(params);
+    }
+   
+   //page 카운트  
+    @Override
+   public int select_bomCount(Map<String, Object> params) {
+	return this.b_mp.select_bomCount(params);
+   }  
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
 }

@@ -89,7 +89,7 @@ SELECT
     I.UNIT_CODE,
     C.CODE  AS UNIT_NAME,  
     I.SPEC,
-    I.REMARK
+    H.DESCRIPTION
 FROM BOM_HEADER H
 JOIN ITEM I 
     ON H.ITEM_ID = I.ITEM_ID
@@ -247,7 +247,7 @@ ORDER BY H.BOM_HEADER_ID, D.DETAIL_ID
     I.ITEM_NAME        AS productName,
     I.SPEC             AS spec,
     CC.CODE            AS unitName,
-    H.REMARK           AS reMark
+    H.DESCRIPTION           AS reMark
   FROM BOM_HEADER H
   JOIN ITEM I ON H.ITEM_ID = I.ITEM_ID
   LEFT JOIN COMMON_CODE CC 
@@ -288,6 +288,116 @@ FROM BOM_HEADER
 WHERE BOM_HEADER_ID =#{bomCode}
 </select>
   -->
+
+
+
+ <!-- 
+    1) 공통 SELECT 절 (Fragment) 
+       - AS alias는 DTO 필드명과 정확히 일치해야 합니다.
+       - 예시: bomCode, productCode, productName, materialId, materialCode,
+         materialName, quantity, spec, unitUnicode, price
+  -->
+  <sql id="BaseSelect"> 
+     SELECT
+      H.BOM_HEADER_ID      AS bomCode,
+      I.ITEM_CODE          AS productCode,
+      I.ITEM_NAME          AS productName,
+      C.ITEM_CODE          AS materialCode,
+      C.ITEM_NAME          AS materialName,
+      C.SPEC               AS spec,
+      CC.CODE              AS unitUnicode,
+      CC.CODE_DESC         AS unitName2,
+      D.PRICE              AS price,
+      D.QUANTITY           AS quantity,
+      H.DESCRIPTION        AS reMark
+    FROM BOM_HEADER H
+    JOIN ITEM I
+      ON H.ITEM_ID = I.ITEM_ID
+    JOIN BOM_DETAIL D
+      ON H.BOM_HEADER_ID = D.BOM_HEADER_ID
+    JOIN ITEM C
+      ON D.CHILD_ID = C.ITEM_ID
+    LEFT JOIN COMMON_CODE CC
+      ON C.UNIT_CODE = CC.CODE_ID
+     AND CC.CODE_TYPE = 'UNIT_CODE'
+  </sql>
+
+
+  <!--
+    2) 검색(keyword) + 정렬(sortField, sortOrder) + 페이징(offset, limit) 처리
+       → Oracle 12c 이상에서 지원하는 OFFSET ... FETCH 방식
+
+    • parameterType="map" 으로 받는 파라미터:
+      - keyword    : 검색어 (String; 빈 문자열이 넘어오면 검색절 생략)
+      - sortField  : 정렬할 컬럼명 (예: "H.BOM_HEADER_ID", "I.ITEM_CODE" 등)
+      - sortOrder  : "ASC" 또는 "DESC"
+      - offset     : ( page - 1 ) * size   (int)
+      - limit      : 한 페이지당 조회할 개수 (int)
+
+    • resultType 경로는 실제 DTO 클래스 위치에 맞춰 수정하세요.
+      예: DTO가 `kr.co.codea.bom.bomDTO` 패키지에 있으면 그대로 사용,
+          다른 패키지에 있으면 `kr.co.codea.dto.bomDTO` 등으로 변경해야 합니다.
+  -->
+  <select id="select_bomList"
+          parameterType="map"
+          resultType="kr.co.codea.bom.bomDTO">
+
+    <!-- (B) 실제 데이터 조회 절 -->
+    <include refid="BaseSelect"/>
+
+    <!-- (A) 검색 조건 -->
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND (
+          TO_CHAR(H.BOM_HEADER_ID) LIKE '%' || #{keyword} || '%'
+          OR I.ITEM_CODE        LIKE '%' || #{keyword} || '%'
+          OR I.ITEM_NAME        LIKE '%' || #{keyword} || '%'
+        )
+      </if>
+    </where>
+
+
+    <!-- (C) 동적 정렬 -->
+    <choose>
+      <when test="sortField != null and sortField != ''">
+        ORDER BY ${sortField} ${sortOrder}
+      </when>
+      <otherwise>
+        ORDER BY H.BOM_HEADER_ID DESC
+      </otherwise>
+    </choose>
+
+    <!-- (D) OFFSET 페이징 (Oracle 12c 이상) -->
+    OFFSET #{offset} ROWS
+    FETCH NEXT #{limit} ROWS ONLY
+  </select>
+
+
+  <!--
+    3) 검색조건(keyword)만 적용하여 전체 건수를 조회
+       → 페이징 UI에서 “총 페이지 수”를 계산할 때 사용
+  -->
+  <select id="select_bomCount"
+          parameterType="map"
+          resultType="int">
+    SELECT COUNT(*)
+    FROM BOM_HEADER H
+    JOIN ITEM I
+      ON H.ITEM_ID = I.ITEM_ID
+    JOIN BOM_DETAIL D
+      ON H.BOM_HEADER_ID = D.BOM_HEADER_ID
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND (
+          TO_CHAR(H.BOM_HEADER_ID) LIKE '%' || #{keyword} || '%'
+          OR I.ITEM_CODE        LIKE '%' || #{keyword} || '%'
+          OR I.ITEM_NAME        LIKE '%' || #{keyword} || '%'
+        )
+      </if>
+    </where>
+  </select>
+
+
 
 <!-- resultMap -->
 <resultMap id="bomItemResultMap" type="kr.co.codea.bom.bomDTO" >
