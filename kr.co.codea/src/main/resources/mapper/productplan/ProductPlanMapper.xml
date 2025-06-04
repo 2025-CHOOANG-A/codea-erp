@@ -127,36 +127,35 @@
         </where>
         ORDER BY ITEM_NAME ASC
     </select>
+    
+    
+    
+ <!--        pp.EMP_NO as empId -->
 
     <!-- MRP 데이터에서 자재 소요량 조회 (순수한 자재 정보만) -->
-    <select id="getMaterialRequirements" parameterType="String" resultType="kr.co.codea.productplan.MaterialRequirementDTO">
-        SELECT 
-            m.PLAN_ID as planId,
-            m.ITEM_ID as itemId,
-            i.ITEM_CODE as itemCode,
-            i.ITEM_NAME as itemName,
-            m.REQUIRED_QTY as requiredQty,
-            cc.CODE as unit,
-            COALESCE(i.PRICE, 0) as unitCost,
-            COALESCE(inv.WH_ID, 1) as whId,
-            COALESCE(w.WH_NAME, '기본창고') as whName,
-            e.EMP_ID as empId  <!-- 담당자 ID -->
-        FROM MRP m
-        JOIN ITEM i ON m.ITEM_ID = i.ITEM_ID
-        JOIN COMMON_CODE cc ON i.UNIT_CODE = cc.CODE_ID
-        JOIN PRODUCTION_PLAN pp ON m.PLAN_ID = pp.PLAN_ID
-        JOIN EMPLOYEE e ON pp.EMP_NO = e.EMP_NO
-        LEFT JOIN (
-            SELECT ITEM_ID, WH_ID, 
-                   ROW_NUMBER() OVER (PARTITION BY ITEM_ID ORDER BY CURRENT_QTY DESC) as rn
-            FROM INVENTORY 
-            WHERE CURRENT_QTY > 0
-        ) inv ON m.ITEM_ID = inv.ITEM_ID AND inv.rn = 1
-        LEFT JOIN WAREHOUSE w ON inv.WH_ID = w.WH_ID
-        WHERE m.PLAN_ID = #{planId}
-        AND i.ITEM_TYPE = '원자재'
-        ORDER BY i.ITEM_CODE
-    </select>
+<select id="getMaterialRequirements" parameterType="String" resultType="kr.co.codea.productplan.MaterialRequirementDTO">
+    SELECT
+        m.PLAN_ID as planId,
+        m.CHILD_ID as materialId,        -- 자재 ID
+        i.ITEM_CODE as itemCode,
+        i.ITEM_NAME as itemName,
+        m.REQUIRED_QTY as requiredQty,
+        COALESCE(cc.CODE, 'EA') as unit,
+        COALESCE(i.PRICE, 0) as unitCost,
+        COALESCE(inv.WH_ID, 1) as whId
+    FROM MRP m
+    JOIN ITEM i ON m.CHILD_ID = i.ITEM_ID    -- 조인 조건 변경
+    LEFT JOIN COMMON_CODE cc ON i.UNIT_CODE = cc.CODE_ID
+    JOIN PRODUCTION_PLAN pp ON m.PLAN_ID = pp.PLAN_ID
+    LEFT JOIN (
+        SELECT ITEM_ID, WH_ID,
+               ROW_NUMBER() OVER (PARTITION BY ITEM_ID ORDER BY CURRENT_QTY DESC) as rn
+        FROM INVENTORY
+        WHERE CURRENT_QTY > 0
+    ) inv ON m.CHILD_ID = inv.ITEM_ID AND inv.rn = 1    -- 조인 조건 변경
+    WHERE m.PLAN_ID = #{planId}
+    ORDER BY i.ITEM_CODE
+</select>
 
     <!-- 가용 재고 수량 조회 (여러 창고 합계) -->
     <select id="getAvailableInventory" parameterType="int" resultType="int">

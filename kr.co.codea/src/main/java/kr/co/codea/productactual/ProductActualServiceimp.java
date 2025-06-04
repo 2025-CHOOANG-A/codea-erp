@@ -121,16 +121,17 @@ public class ProductActualServiceimp implements ProductActualService {
         
         // 입고 데이터 생성
         ReceivingDTO receivingDto = new ReceivingDTO();
-        receivingDto.setInoutType(22); // 생산입고
+        receivingDto.setInoutType(21); // 생산입고
         receivingDto.setItemId(planInfo.getItemId()); // Item ID
         receivingDto.setWhId(81); // 완제품창고 ID
         receivingDto.setQuantity(planInfo.getActualQty()); // 실제 생산수량
         receivingDto.setItemUnitCost(planInfo.getPrice() != null ? planInfo.getPrice() : 0); // 품목 단가
-        receivingDto.setSourceDocType(44); // 재고이동
+        receivingDto.setSourceDocType(43); // 재고이동
         receivingDto.setSourceDocHeaderId(planInfo.getPlanNo()); // 생산계획 ID (숫자만)
         receivingDto.setSourceDocDetailId(0); // 상세 ID (없음)
         receivingDto.setEmpId(1); // 시스템 자동 처리 담당자 (실제로는 현재 로그인 사용자)
         receivingDto.setRemark("생산완료 자동입고 - " + planId);
+        receivingDto.setDocDate(planInfo.getCompletionDate().toString());
         
         // 입고 등록
         Integer insertResult = receivingDAO.rec_insert(receivingDto);

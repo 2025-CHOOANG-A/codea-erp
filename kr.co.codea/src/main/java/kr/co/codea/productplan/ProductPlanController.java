@@ -153,7 +153,7 @@ public class ProductPlanController {
             boolean hasInsufficientMaterials = false;
             
             for (MaterialRequirementDTO material : materials) {
-                int availableQty = service.getAvailableInventory(material.getItemId());
+                int availableQty = service.getAvailableInventory(material.getMaterialId());
                 
                 Map<String, Object> materialInfo = new HashMap<>();
                 materialInfo.put("itemCode", material.getItemCode());
