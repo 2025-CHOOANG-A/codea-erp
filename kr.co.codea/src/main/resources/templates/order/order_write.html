@@ -385,7 +385,7 @@
       reindexRows(); // 행 인덱스 재정렬
     }
 
-    // 행 인덱스 재정렬 (삭제 후 name 속성 업데이트)
+    //   행 인덱스 재정렬 (삭제 후 name 속성 업데이트)
     function reindexRows() {
       const tbody = document.getElementById("itemTableBody");
       Array.from(tbody.rows).forEach((row, index) => {
