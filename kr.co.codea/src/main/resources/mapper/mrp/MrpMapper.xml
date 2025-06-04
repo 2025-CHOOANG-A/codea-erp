@@ -41,7 +41,7 @@ Oracle에 “NULL인데 타입이 뭐임?” 하고 에러
     ) VALUES (
       #{planId},
       #{itemId},
-      #{itemCode},
+      #{itemCode, jdbcType=VARCHAR},
       #{itemName},
       #{itemType},
       #{displayPrice, jdbcType=NUMERIC},
@@ -68,13 +68,14 @@ Oracle에 “NULL인데 타입이 뭐임?” 하고 에러
   </insert>
 
 <!-- 생산계획에서 출력한 계산결과 select -->
+   <!--   P1.ITEM_CODE,-->
 <select id="SelectCalcData" resultType="kr.co.codea.mrp.MrpDTO">
   SELECT
     P1.PLAN_ID,
     I1.ITEM_ID,
-    P1.ITEM_CODE,
+   bh.BOM_HEADER_ID,
     I1.ITEM_NAME,
-    I1.ITEM_TYPE,
+    I2.ITEM_TYPE,
     CASE
       WHEN I1.ITEM_TYPE = '완제품' THEN msp.HIGHEST_SALES_PRICE
       WHEN I1.ITEM_TYPE = '원자재' THEN mp.LOWEST_PURCHASE_PRICE
@@ -125,6 +126,7 @@ Oracle에 “NULL인데 타입이 뭐임?” 하고 에러
     ) I ON I.ITEM_ID = I1.ITEM_ID
     JOIN BOM_HEADER bh ON bh.ITEM_ID = I1.ITEM_ID
     JOIN BOM_DETAIL bd ON bd.BOM_HEADER_ID = bh.BOM_HEADER_ID
+    JOIN ITEM I2 ON I2.ITEM_ID = bd.CHILD_ID
   WHERE
     <foreach collection="planIds" item="planId" open="P1.PLAN_ID IN (" separator="," close=")">
       #{planId}

@@ -106,7 +106,6 @@
             <td><span th:text="${row.status != null ? row.status : '-'}" class="text-secondary fw-bold"></span></td>
             <td th:text="${row.empNo != null ? row.empNo : '-'}"></td>
             <td th:text="${row.createdAt != null ? #temporals.format(row.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
-		    <!-- 재고 확인 컬럼 추가 -->
 		    <td>
 		      <span th:if="${row.planQty != null && row.actualQty != null}">
 		        <span th:if="${row.planQty > row.actualQty}"
@@ -138,7 +137,7 @@
       </table>
     </div>
 
-    <!-- 소요량 계산 결과 테이블 (날짜필터 완전삭제) -->
+    <!-- 소요량 계산 결과 테이블  -->
     <div id="requirementResult">
       <h5>소요량 계산 결과</h5>
       <div class="requirement-footer" style="margin-bottom:8px;">
@@ -187,7 +186,7 @@
       </div>
     </div>
 
-    <!-- MRP 결과 리스트 테이블 (날짜 필터 추가) -->
+    <!-- MRP 결과 리스트 테이블 -->
     <div id="mrpResult">
       <h5>MRP 결과 리스트</h5>
       <form class="mrp-filter-bar d-flex align-items-center" id="mrpFilterForm" autocomplete="off" onsubmit="return false;">
@@ -308,33 +307,6 @@
       </div>
     </div>
   </div>
-  
-  <!-- 상세 모달 -->
-<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="detailModalLabel">상세 정보</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-      </div>
-      <div class="modal-body" id="detailModalBody">
-        <!-- 여기에 상세 정보가 들어갑니다 -->
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-//상세 버튼 클릭 시 모달 오픈 (임시 내용 출력)
-document.body.addEventListener("click", function (e) {
-  if (e.target.classList.contains("detail-btn")) {
-    // 임시 데이터. 실제 구현 시 ajax 등으로 상세 데이터 받아서 넣으면 됨
-    const detailInfo = e.target.getAttribute("data-detail") || "상세 정보 표시 (임시)";
-    document.getElementById("detailModalBody").textContent = detailInfo;
-    var detailModal = new bootstrap.Modal(document.getElementById("detailModal"));
-    detailModal.show();
-  }
-});
-</script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
@@ -355,7 +327,7 @@ document.body.addEventListener("click", function (e) {
             <input type="checkbox" class="requirement-row-check"
               data-planid="${row.planId ?? ''}"
               data-itemid="${row.itemId ?? ''}"
-              data-itemcode="${row.itemCode ?? ''}"
+           	  data-bomheaderid="${row.bomHeaderId ?? ''}"
               data-itemname="${row.itemName ?? ''}"
               data-itemtype="${row.itemType ?? ''}"
               data-displayprice="${row.displayPrice ?? ''}"
@@ -383,7 +355,7 @@ document.body.addEventListener("click", function (e) {
           <td>${requirementAllData.length - i}</td>
           <td>${row.planId ?? '-'}</td>
           <td>${row.itemId ?? '-'}</td>
-          <td>${row.itemCode ?? '-'}</td>
+          <td>${row.bomHeaderId ?? '-'}</td>
           <td>${row.itemName ?? '-'}</td>
           <td>${row.itemType ?? '-'}</td>
           <td>${row.displayPrice != null ? numberFormat(row.displayPrice) : '-'}</td>
@@ -499,7 +471,7 @@ document.body.addEventListener("click", function (e) {
         const rows = checked.map(cb => ({
           planId: cb.dataset.planid,
           itemId: cb.dataset.itemid,
-          itemCode: cb.dataset.itemcode,
+          itemCode: cb.dataset.bomheaderid,
           itemName: cb.dataset.itemname,
           itemType: cb.dataset.itemtype,
           displayPrice: cb.dataset.displayprice ? Number(cb.dataset.displayprice) : null,
