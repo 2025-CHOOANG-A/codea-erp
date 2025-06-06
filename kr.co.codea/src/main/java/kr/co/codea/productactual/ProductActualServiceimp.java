@@ -123,7 +123,7 @@ public class ProductActualServiceimp implements ProductActualService {
         ReceivingDTO receivingDto = new ReceivingDTO();
         receivingDto.setInoutType(21); // 생산입고
         receivingDto.setItemId(planInfo.getItemId()); // Item ID
-        receivingDto.setWhId(81); // 완제품창고 ID
+        receivingDto.setWhId(163); // 완제품창고 ID
         receivingDto.setQuantity(planInfo.getActualQty()); // 실제 생산수량
         receivingDto.setItemUnitCost(planInfo.getPrice() != null ? planInfo.getPrice() : 0); // 품목 단가
         receivingDto.setSourceDocType(43); // 재고이동

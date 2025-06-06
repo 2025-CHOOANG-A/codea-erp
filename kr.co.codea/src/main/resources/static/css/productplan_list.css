@@ -13,12 +13,7 @@ body {
     width: 100vw;
   }
 }
-.content {
-	margin-top: 64px;
-  margin-left: 250px;
-  padding: 2rem 1rem;
-  transition: margin-left 0.3s;
-}
+
 .sidebar.collapsed ~ .content {
   margin-left: 0;
 }
