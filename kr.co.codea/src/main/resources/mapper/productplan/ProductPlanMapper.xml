@@ -73,6 +73,8 @@
         WHERE PP.PLAN_ID = #{planId}
     </select>
 
+
+<!--생산계획 조회  -->
     <select id="ProductPlanList" parameterType="kr.co.codea.productplan.ProductPlanDTO" resultType="kr.co.codea.productplan.ProductPlanDTO">
         SELECT
             PP.PLAN_ID as planId,
@@ -86,9 +88,11 @@
             PP.ACTUAL_QTY as actualQty,       
             PP.STATUS as status,
             PP.REMARK as remark,
-            PP.EMP_NO as empNo
+            PP.EMP_NO as empNo,
+            E.EMP_NAME as empName
         FROM PRODUCTION_PLAN PP
         JOIN ITEM I ON PP.ITEM_CODE = I.ITEM_CODE
+        LEFT JOIN EMPLOYEE E ON PP.EMP_NO = E.EMP_NO
         <where>
             <if test="keyword != null and keyword != ''">
                 AND (

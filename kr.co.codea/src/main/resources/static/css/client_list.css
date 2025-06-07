@@ -1,3 +1,4 @@
+/* 기존 .content 클래스를 .main-content로 변경하거나 제거 */
 /* 모달 포커스 문제 해결 */
 .modal {
     z-index: 1050;
@@ -22,12 +23,11 @@
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
 }
 
-/* 콘텐츠 영역 */
-.content {
-    margin-top: 64px;
-    margin-left: 250px;
-    padding: 2rem 1rem;
-    transition: margin-left 0.3s;
+
+/* 대신 sidebar.css의 .main-content를 사용하거나, 다른 클래스명 사용 */
+.client-content {
+    /* 필요한 경우에만 추가 스타일 적용 */
+    padding: 1rem;
 }
 
 /* 업태 검색 드롭다운만 (거래처 등록용) */
