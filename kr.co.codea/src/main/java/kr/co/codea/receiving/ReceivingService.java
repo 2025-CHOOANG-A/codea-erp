@@ -16,4 +16,7 @@ public interface ReceivingService {
 	public String check(int sourceDocType, int sourceDocHeaderId, int itemId);	// 입고 중복 체크
 	
 	public Integer rec_insert(ReceivingDTO dto);	// 입고 등록
+	
+	List<ReceivingDTO> getRecentReceivingList(int size);
+
 }

@@ -185,4 +185,16 @@ INSERT INTO INOUT(INOUT_TIME, INOUT_TYPE, ITEM_ID, WH_ID, QUANTITY, ITEM_UNIT_CO
 VALUES (SYSDATE, #{inoutType}, #{itemId}, #{whId}, #{quantity}, #{itemUnitCost}, #{sourceDocType}, #{sourceDocHeaderId}, #{sourceDocDetailId}, #{empId}, #{remark}, SYSDATE)
 </insert>
 
+<select id="selectRecentShipmentList" resultType="kr.co.codea.shipment.ShipmentDTO">
+  SELECT * FROM (
+    SELECT A.INOUT_ID, A.INOUT_TIME, B.ITEM_NAME, A.QUANTITY, E.WH_NAME
+    FROM INOUT A
+    JOIN ITEM B ON A.ITEM_ID = B.ITEM_ID
+    JOIN WAREHOUSE E ON A.WH_ID = E.WH_ID
+    WHERE A.INOUT_TYPE IN (25, 26)
+    ORDER BY A.INOUT_ID DESC
+  )
+  WHERE ROWNUM &lt;= #{size}
+</select>
+
 </mapper>
