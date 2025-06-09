@@ -8,192 +8,9 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <style>
-      body {
-        background: #f8f9fa;
-        min-height: 100vh;
-      }
-      .header {
-        height: 56px;
-        background: #fff;
-        border-bottom: 1px solid #dee2e6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: sticky;
-        top: 0;
-        z-index: 1050;
-      }
-      .header .logo {
-        font-size: 1.5rem;
-        font-weight: bold;
-        letter-spacing: 2px;
-        color: #343a40;
-        flex: 1;
-        text-align: center;
-      }
-      .sidebar-toggle-btn {
-        background: #23272b;
-        border: none;
-        color: #fff;
-        padding: 0.5rem 0.8rem;
-        border-radius: 0 0.5rem 0.5rem 0;
-        margin-right: 1rem;
-        font-size: 1.25rem;
-        display: flex;
-        align-items: center;
-        position: absolute;
-        left: 0.5rem;
-        top: 50%;
-        transform: translateY(-50%);
-        transition: background 0.2s;
-        z-index: 1100;
-      }
-      .sidebar-toggle-btn:hover {
-        background: #495057;
-      }
-      .sidebar {
-        width: 250px;
-        min-height: 100vh;
-        background: #23272b;
-        color: #fff;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 1040;
-        transition: transform 0.3s;
-        display: flex;
-        flex-direction: column;
-      }
-      .sidebar.collapsed {
-        transform: translateX(-100%);
-      }
-      .sidebar .sidebar-header {
-        padding: 1rem;
-        font-weight: bold;
-        font-size: 1.2rem;
-        background: #1a1d20;
-        text-align: center;
-        letter-spacing: 1px;
-      }
-      .sidebar .menu-title {
-        padding: 0.75rem 1.5rem 0.25rem 1.5rem;
-        font-size: 0.95rem;
-        color: #ced4da;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-      }
-      .sidebar .nav-link {
-        color: #adb5bd;
-        padding: 0.7rem 1.5rem;
-        transition: background 0.2s, color 0.2s;
-        border-radius: 0;
-        font-size: 1rem;
-      }
-      .sidebar .nav-link.active,
-      .sidebar .nav-link:hover {
-        background: #495057;
-        color: #fff;
-        text-decoration: none;
-      }
-      @media (max-width: 991.98px) {
-        .sidebar {
-          width: 200px;
-        }
-      }
-      @media (max-width: 767.98px) {
-        .sidebar {
-          width: 100vw;
-        }
-      }
-      .content {
-        margin-left: 250px;
-        padding: 2rem 1rem;
-        transition: margin-left 0.3s;
-      }
-      .sidebar.collapsed ~ .content {
-        margin-left: 0;
-      }
-      @media (max-width: 991.98px) {
-        .content {
-          margin-left: 200px;
-        }
-        .sidebar.collapsed ~ .content {
-          margin-left: 0;
-        }
-      }
-      @media (max-width: 767.98px) {
-        .content {
-          margin-left: 0;
-        }
-      }
-      .filter-bar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1rem;
-        align-items: center;
-        margin-bottom: 1.2rem;
-        background: #fff;
-        padding: 1rem 1.2rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-      }
-      .filter-bar .form-select,
-      .filter-bar .form-control {
-        min-width: 120px;
-        max-width: 200px;
-      }
-      .filter-bar .form-control {
-        width: 200px;
-      }
-      .filter-bar .btn {
-        min-width: 80px;
-      }
-      .table-responsive {
-        min-height: 350px;
-        background: #fff;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-        margin-bottom: 1.5rem;
-        overflow-x: auto;
-      }
-      .table a.name-link {
-        text-decoration: underline;
-        color: inherit;
-        cursor: pointer;
-      }
-      .table-footer-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 0.5rem;
-        gap: 1rem;
-      }
-      .pagination {
-        margin-bottom: 0;
-      }
-      .add-btn,
-      .delete-btn {
-        min-width: 90px;
-      }
-      .delete-btn {
-        margin-left: 0.5rem;
-      }
-      .modal-content {
-        border-radius: 0.6rem;
-      }
-      @media (max-width: 767.98px) {
-        .filter-bar {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .table-footer-row {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 0.5rem;
-        }
-      }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}" />
+   	<link rel="stylesheet" th:href="@{/css/bom_list.css}" />
+   	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />      
   </head>
   <body>
     <!-- Sidebar -->
@@ -201,240 +18,303 @@
 
     <!-- Main Content -->
     <main class="content">
-      <div class="container">
+      <div class="container"x>
         <h2 class="mb-4">BOM 목록</h2>
         <!-- Filter/Search Bar -->
            <!-- Filter/Search Bar -->
- <!-- ================== ① 검색·정렬용 폼 ================== -->
-   <form id="filterForm" class="filter-bar"  th:action="@{/bom/bom_list}" method="get" >
-         <!-- 1) 검색어 -->
-      <input
-        type="text"
-        name="keyword"
-        class="form-control"
-        placeholder="검색어 입력"
-        th:value="${keyword}"
-      />
+<!-- ================== ① 검색·정렬용 폼 ================== -->
+<form id="filterForm" class="filter-bar" th:action="@{/bom/bom_list}" method="get">
+  <!-- 1) 검색어 -->
+  <input
+    type="text"
+    name="keyword"
+    class="form-control"
+    placeholder="검색어 입력"
+    th:value="${keyword}"
+  />
 
-      <!-- 2) 숨겨진 필드: sortField, sortOrder, page, size -->
-      <input type="hidden" name="sortField" th:value="${sortField}" />
-      <input type="hidden" name="sortOrder" th:value="${sortOrder}" />
-      <input type="hidden" name="page" th:value="${currentPage}" />
-      <input type="hidden" name="size" th:value="${pageSize}" />
+  <!-- 2) 숨겨진 필드: sortField, sortOrder, page, size -->
+  <input type="hidden" name="sortField" th:value="${sortField}" />
+  <input type="hidden" name="sortOrder" th:value="${sortOrder}" />
+  <input type="hidden" name="page" th:value="${currentPage}" />
+  <input type="hidden" name="size" th:value="${pageSize}" />
 
-      <!-- 3) 검색 버튼 -->
-      <button type="submit" class="btn btn-primary">검색</button>
+  <!-- 3) 검색 버튼 -->
+  <button type="submit" class="btn btn-primary">검색</button>
 
-      <!-- 4) 정렬 토글 버튼 (별도 JS 없이 링크로 처리) -->
-      <a
-        th:href="@{/bom/bom_list(
-                   keyword=${keyword},
-                   page=1,
-                   size=${pageSize},
-                   sortField='bomCode',
-                   sortOrder=${(sortField=='bomCode' and sortOrder=='ASC') ? 'DESC' : 'ASC'}
-                 )}"
-        class="btn btn-outline-secondary"
-      >
-        <span th:text="${
-          (sortField=='bomCode' and sortOrder=='ASC')
-            ? 'BOM코드 내림차순'
-            : 'BOM코드 오름차순'
-        }">정렬</span>
-      </a>
-    </form>
-        
-        <!--  
-        <form id="filterForm" class="filter-bar">
-          <input
-            type="text"
-            id="bomCodeInput"
-            class="form-control"
-            placeholder="BOM코드 검색"
-            maxlength="20"
-          />
-          <button type="submit" class="btn btn-primary">검색</button>
-          <button
-            type="button"
-            id="sortBtn"
-            class="btn btn-outline-secondary ms-2"
-           >
-            BOM코드 오름차순
-          </button>
-        </form>
--->
-        <!-- Table -->
-        <!--  -->
-        <div class="table-responsive">
-          <table id="bomTable" class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th scope="col"><input type="checkbox" id="selectAll" /></th>               
-                <th scope="col">
-                 <!-- BOM코드 컬럼 클릭 시에도 정렬 토글 가능 (선택사항) -->
-                 
-                BOM 코드</th>              
-                </th>
-                <th scope="col">제품 코드</th>
-                <th scope="col">제품 명</th>
-                <th scope="col">자재 현황</th>
-                <th scope="col">내용 확인</th>
-              </tr>
-  </thead>
-  <tbody>
-     <tr th:each="bom : ${select_bomList}">
-      <td><input type="checkbox" name="selected" th:value="${bom.bomCode}" /></td>
-      <td th:text="${bom.bomCode}">BOM_CODE</td>
-      <td>
-      <a th:text="${bom.productCode}">제품코드</a>
-      </td>
-     <td th:text="${bom.productName}">제품명</td>
-     <td>
-    <table class="table align-middle mb-0">
+  <!-- 4) 정렬 토글 버튼 -->
+  <a
+    th:href="@{/bom/bom_list(
+               keyword=${keyword},
+               page=1,
+               size=${pageSize},
+               sortField='bomCode',
+               sortOrder=${(sortField=='bomCode' and sortOrder=='ASC') ? 'DESC' : 'ASC'}
+             )}"
+    class="btn btn-outline-secondary"
+  >
+    <span th:text="${
+      (sortField=='bomCode' and sortOrder=='ASC')
+        ? 'BOM코드 내림차순'
+        : 'BOM코드 오름차순'
+    }">정렬</span>
+  </a>
+</form>
+
+<!-- Table -->
+<div class="table-responsive">
+  <table id="bomTable" class="table table-hover align-middle mb-0">
     <thead class="table-light">
-    <tr align="center">
-    <th scope="col">자재 코드</th>
-    <th scope="col">자재 명</th>
-    <th scope="col">규격</th>
-    <th scope="col">단위(EA)</th>
-    <th scope="col">단가</th>
-    <th scope="col">자재소요량</th>
-    </tr>
+      <tr>
+        <th scope="col"><input type="checkbox" id="selectAll" /></th>
+        <th scope="col">BOM 코드</th>
+        <th scope="col">제품 코드</th>
+        <th scope="col">제품 명</th>
+        <th scope="col">자재 현황</th>
+        <th scope="col">내용 확인</th>
+      </tr>
     </thead>
-   <tbody>
-   <!-- 반복문 -->
-   <tr align="center">
-    <td th:text="${bom.materialCode}">자재코드</td>
-    <td th:text="${bom.materialName}">자재명</td>
-    <td th:text="${bom.spec}">규격</td>
-    <td th:text="${bom.unitUnicode}">단위</td>
-    <td th:text="${#numbers.formatInteger(bom.price, 3, 'COMMA')}">단가</td>
-    <td th:text="${bom.quantity}">수량</td>
-   </tr>
-   <!-- 반복문 -->
-   </tbody>
-    </table>
-    </td>
-    <td>
-      <a th:href="@{/bom/bom_detail(bomCode=${bom.bomCode})}"  class="btn btn-outline-primary btn-sm">
-        확인
-        </a>
-      </td>
-    </tr>
+    <tbody id="bomTableBody">
+      <!-- 기존 BOM 항목들 - JavaScript로 그룹화 후 숨김 처리 -->
+      <tr class="original-row" th:each="bom : ${select_bomList}" style="display: none;">
+        <td><input type="checkbox" name="selected" th:value="${bom.bomCode}" /></td>
+        <td th:text="${bom.bomCode}">BOM_CODE</td>
+        <td th:text="${bom.productCode}">제품코드</td>
+        <td th:text="${bom.productName}">제품명</td>
+        <td th:text="${bom.materialCode}">자재코드</td>
+        <td th:text="${bom.materialName}">자재명</td>
+        <td th:text="${bom.spec}">규격</td>
+        <td th:text="${bom.unitUnicode}">단위</td>
+        <td th:text="${bom.price}">단가</td>
+        <td th:text="${bom.quantity}">수량</td>
+        <td>
+          <a th:href="@{/bom/bom_detail(bomCode=${bom.bomCode})}" class="btn btn-outline-primary btn-sm">
+            확인
+          </a>
+        </td>
+      </tr>
     </tbody>
   </table>
- </div>
+</div>
 
-      <!-- Pagination -->
-        <div class="table-footer-row">
-          <div>
-            현재 페이지:
-            <strong th:text="${currentPage}">1</strong> /
-            <strong th:text="${totalPages}">1</strong>
-            (전체 게시물: <span th:text="${totalCount}">0</span>)
-          </div>
-          <nav aria-label="Page navigation">
-            <ul class="pagination mb-0">
-              <!-- 이전 페이지 버튼 -->
-              <li
-                class="page-item"
-                th:classappend="${currentPage == 1} ? 'disabled'"
-              >
-                <a
-                  class="page-link"
-                  th:href="@{/bom/bom_list(
-                            page=${currentPage > 1 ? currentPage - 1 : 1},
-                            size=${pageSize},
-                            keyword=${keyword},
-                            sortField=${sortField},
-                            sortOrder=${sortOrder}
-                          )}"
-                  aria-label="Previous"
-                >
-                  <span aria-hidden="true">◀</span>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 원본 데이터 수집
+    const originalRows = document.querySelectorAll('.original-row');
+    const bomData = [];
+    
+    originalRows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        bomData.push({
+            bomCode: cells[1].textContent.trim(),
+            productCode: cells[2].textContent.trim(),
+            productName: cells[3].textContent.trim(),
+            materialCode: cells[4].textContent.trim(),
+            materialName: cells[5].textContent.trim(),
+            spec: cells[6].textContent.trim(),
+            unitUnicode: cells[7].textContent.trim(),
+            price: cells[8].textContent.trim(),
+            quantity: cells[9].textContent.trim(),
+            detailLink: cells[10].querySelector('a').href
+        });
+    });
+    
+    // BOM 코드별로 그룹화
+    const groupedData = {};
+    bomData.forEach(item => {
+        const key = item.bomCode + '_' + item.productCode;
+        if (!groupedData[key]) {
+            groupedData[key] = {
+                bomCode: item.bomCode,
+                productCode: item.productCode,
+                productName: item.productName,
+                detailLink: item.detailLink,
+                materials: []
+            };
+        }
+        groupedData[key].materials.push({
+            materialCode: item.materialCode,
+            materialName: item.materialName,
+            spec: item.spec,
+            unitUnicode: item.unitUnicode,
+            price: item.price,
+            quantity: item.quantity
+        });
+    });
+    
+    // 새로운 테이블 바디 생성
+    const tbody = document.getElementById('bomTableBody');
+    tbody.innerHTML = '';
+    
+    Object.values(groupedData).forEach(group => {
+        const row = document.createElement('tr');
+        
+        // 자재 현황 테이블 HTML 생성
+        let materialsTableHtml = `
+            <div class="material-info">
+                <table class="table table-sm table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th scope="col">자재 코드</th>
+                            <th scope="col">자재 명</th>
+                            <th scope="col">규격</th>
+                            <th scope="col">단위(EA)</th>
+                            <th scope="col">단가</th>
+                            <th scope="col">자재소요량</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        group.materials.forEach(material => {
+            // 단가 포맷팅 (콤마 추가)
+            const formattedPrice = parseInt(material.price).toLocaleString();
+            materialsTableHtml += `
+                <tr class="text-center">
+                    <td>${material.materialCode}</td>
+                    <td>${material.materialName}</td>
+                    <td>${material.spec}</td>
+                    <td>${material.unitUnicode}</td>
+                    <td>${formattedPrice}</td>
+                    <td>${material.quantity}</td>
+                </tr>
+            `;
+        });
+        
+        materialsTableHtml += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        row.innerHTML = `
+            <td><input type="checkbox" name="selected" value="${group.bomCode}" /></td>
+            <td>${group.bomCode}</td>
+            <td><a href="#">${group.productCode}</a></td>
+            <td>${group.productName}</td>
+            <td>${materialsTableHtml}</td>
+            <td>
+                <a href="${group.detailLink}" class="btn btn-outline-primary btn-sm">
+                    확인
                 </a>
-              </li>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+});
+</script>
 
-              <!-- 페이지 번호 반복 -->
-              <li
-                class="page-item"
-                th:each="i : ${#numbers.sequence(1, totalPages)}"
-                th:classappend="${i == currentPage} ? 'active'"
-              >
-                <a
-                  class="page-link"
-                  th:href="@{/bom/bom_list(
-                            page=${i},
-                            size=${pageSize},
-                            keyword=${keyword},
-                            sortField=${sortField},
-                            sortOrder=${sortOrder}
-                          )}"
-                  th:text="${i}"
-                >
-                  1
-                </a>
-              </li>
+<!-- Pagination -->
+<div class="table-footer-row">
+  <div>
+    현재 페이지:
+    <strong th:text="${currentPage}">1</strong> /
+    <strong th:text="${totalPages}">1</strong>
+    (전체 게시물: <span th:text="${totalCount}">0</span>)
+  </div>
+  <nav aria-label="Page navigation">
+    <ul class="pagination mb-0">
+      <!-- 이전 페이지 버튼 -->
+      <li
+        class="page-item"
+        th:classappend="${currentPage == 1} ? 'disabled'"
+      >
+        <a
+          class="page-link"
+          th:href="@{/bom/bom_list(
+                    page=${currentPage > 1 ? currentPage - 1 : 1},
+                    size=${pageSize},
+                    keyword=${keyword},
+                    sortField=${sortField},
+                    sortOrder=${sortOrder}
+                  )}"
+          aria-label="Previous"
+        >
+          <span aria-hidden="true">◀</span>
+        </a>
+      </li>
 
-              <!-- 다음 페이지 버튼 -->
-              <li
-                class="page-item"
-                th:classappend="${currentPage == totalPages} ? 'disabled'"
-              >
-                <a
-                  class="page-link"
-                  th:href="@{/bom/bom_list(
-                            page=${currentPage < totalPages
-                              ? currentPage + 1
-                              : totalPages},
-                            size=${pageSize},
-                            keyword=${keyword},
-                            sortField=${sortField},
-                            sortOrder=${sortOrder}
-                          )}"
-                  aria-label="Next"
-                >
-                  <span aria-hidden="true">▶</span>
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
+      <!-- 페이지 번호 반복 -->
+      <li
+        class="page-item"
+        th:each="i : ${#numbers.sequence(1, totalPages)}"
+        th:classappend="${i == currentPage} ? 'active'"
+      >
+        <a
+          class="page-link"
+          th:href="@{/bom/bom_list(
+                    page=${i},
+                    size=${pageSize},
+                    keyword=${keyword},
+                    sortField=${sortField},
+                    sortOrder=${sortOrder}
+                  )}"
+          th:text="${i}"
+        >
+          1
+        </a>
+      </li>
+
+      <!-- 다음 페이지 버튼 -->
+      <li
+        class="page-item"
+        th:classappend="${currentPage == totalPages} ? 'disabled'"
+      >
+        <a
+          class="page-link"
+          th:href="@{/bom/bom_list(
+                    page=${currentPage < totalPages
+                      ? currentPage + 1
+                      : totalPages},
+                    size=${pageSize},
+                    keyword=${keyword},
+                    sortField=${sortField},
+                    sortOrder=${sortOrder}
+                  )}"
+          aria-label="Next"
+        >
+          <span aria-hidden="true">▶</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <div>
+    <a href="/bom/bom_write" class="btn btn-success add-btn" onclick="alert('BOM 등록페이지로 이동합니다.');">추가</a>
+  </div>
+</div>
+
+<!-- Modal for Detail View -->
+<div
+  class="modal fade"
+  id="detailModal"
+  tabindex="-1"
+  aria-labelledby="detailModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailModalLabel">BOM 상세 정보</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="닫기"
+        ></button>
       </div>
-    </main>
-
-    <!-- Modal for Detail View -->
-    <div
-      class="modal fade"
-      id="detailModal"
-      tabindex="-1"
-      aria-labelledby="detailModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="detailModalLabel">BOM 상세 정보</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="닫기"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <table class="table table-bordered">
-              <tbody id="modalDetailBody">
-                <!-- JS로 상세 정보 렌더링 -->
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <tbody id="modalDetailBody">
+            <!-- JS로 상세 정보 렌더링 -->
+          </tbody>
+        </table>
       </div>
     </div>
-
+  </div>
+</div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
        <script src="/js/bom_list.js?v=4"></script>
+        	<script th:src="@{/js/sidebar.js}"></script>
   </body>
 </html>
-

@@ -1,0 +1,75 @@
+ body {
+        background: #f8f9fa;
+        min-height: 100vh;
+      }
+      .content {
+        margin-left: 250px;
+        padding: 2rem 1rem;
+        transition: margin-left 0.3s;
+      }
+      .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        align-items: center;
+        margin-bottom: 1.2rem;
+        background: #fff;
+        padding: 1rem 1.2rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+      }
+      .filter-bar .form-select,
+      .filter-bar .form-control {
+        min-width: 120px;
+        max-width: 200px;
+      }
+      .filter-bar .form-control {
+        width: 200px;
+      }
+      .filter-bar .btn {
+        min-width: 80px;
+      }
+      .table-responsive {
+        min-height: 350px;
+        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+      }
+      .table a.name-link {
+        text-decoration: underline;
+        color: inherit;
+        cursor: pointer;
+      }
+      .table-footer-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        gap: 1rem;
+      }
+      .pagination {
+        margin-bottom: 0;
+      }
+      .add-btn,
+      .delete-btn {
+        min-width: 90px;
+      }
+      .delete-btn {
+        margin-left: 0.5rem;
+      }
+      .modal-content {
+        border-radius: 0.6rem;
+      }
+      @media (max-width: 767.98px) {
+        .filter-bar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .table-footer-row {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.5rem;
+        }
+      }

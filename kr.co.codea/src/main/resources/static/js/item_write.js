@@ -1,25 +1,3 @@
-// 사이드바 토글 (모바일)
-const sidebar = document.getElementById("sidebar");
-document.getElementById("sidebarOpenBtn").onclick = () =>
-  sidebar.classList.remove("closed");
-document.getElementById("sidebarCloseBtn").onclick = () =>
-  sidebar.classList.add("closed");
-
-function handleSidebar() {
-  if (window.innerWidth >= 992) sidebar.classList.remove("closed");
-  else sidebar.classList.add("closed");
-}
-window.addEventListener("resize", handleSidebar);
-window.addEventListener("DOMContentLoaded", handleSidebar);
-
-// 거래처 검색 모달
-const clientModal = new bootstrap.Modal(
-  document.getElementById("clientSearchModal")
-);
-document.getElementById("searchClientBtn").onclick = () => {
-  clientModal.show();
-};
-
 // 거래처 선택 시 input에 반영
 document.querySelectorAll("#clientSearchResult tr").forEach((row) => {
   row.addEventListener("click", () => {
@@ -37,7 +15,7 @@ document.querySelectorAll("#clientSearchResult tr").forEach((row) => {
 
 // 제품 등록 폼 유효성 검사
 document.getElementById("productForm").onsubmit = function (e) {
-  const itemCode = document.getElementById("itemCode").value.trim();
+  //const itemCode = document.getElementById("itemCode").value.trim();
   const itemName = document.getElementById("itemName").value.trim();
   const price = document.getElementById("price").value.trim();
   const bpCode = document.getElementById("bpCode").value.trim();

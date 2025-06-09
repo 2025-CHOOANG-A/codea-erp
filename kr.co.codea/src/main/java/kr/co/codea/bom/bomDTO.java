@@ -21,8 +21,7 @@ public class bomDTO {
 	private String unitName; // ← 조인으로 붙는 필드
 	private String spec;    // 규격
 	private String reMark; // 비고
-	
-	
+
 
 	private String bomCode;         // BOM_HEADER_ID
     private String productCode;     // 완제품 코드
@@ -32,6 +31,8 @@ public class bomDTO {
    // private String spec;            // 규격
    // private String unitName;        // 단위 설명
     private String unitName2;
+    private String j_unitName;
+    
     private String unitUnicode;      //단위
     private int price;              // 단가
     private int quantity;           // 자재 소요량
@@ -41,6 +42,7 @@ public class bomDTO {
     private String bomHeaderId;    // BOM_HEADER_ID (등록용 PK)
     private String version;        // 버전
     private String description;    // 비고
+    private String descRiption;
     private String createdAt;      // 생성일시 (조회용)
 
     /* === BOM_DETAIL 등록용 === */
@@ -55,7 +57,38 @@ public class bomDTO {
 	/*BOM 등록 (선택 자제 추가)*/
 	
 	
-	
+	  private List<bomDTO> detailList;
+	  
+	  
+	  // ==========================================
+	    // 수정 기능을 위해 꼭 필요한 필드만 추가
+	    // ==========================================
+	    
+	    /* 수정 시 원본 자재 코드 (UPDATE WHERE 조건용) */
+	    private String originalMaterialCode;
+	    
+	    /* BOM_DETAIL의 DETAIL_ID (필요시) */
+	    private String detailId;
+
+	    // ==========================================
+	    // 기존 getter/setter 메서드들 유지
+	    // ==========================================
+	  
+	  
+	  
+	  
+	  
+	  
+
+    // getter, setter 메소드들...
+    public List<bomDTO> getDetailList() {
+        return detailList;
+    }
+    
+    public void setDetailList(List<bomDTO> detailList) {
+        this.detailList = detailList;
+    }
+    
 	
 	
 	// ──────────────────────────────────────────────────────────────────────────
@@ -143,7 +176,25 @@ public class bomDTO {
     }
 	
 	
-	
+    // ==========================================
+    // 새로 추가된 필수 필드들의 getter/setter
+    // ==========================================
+    
+    public String getOriginalMaterialCode() {
+        return originalMaterialCode;
+    }
+
+    public void setOriginalMaterialCode(String originalMaterialCode) {
+        this.originalMaterialCode = originalMaterialCode;
+    }
+
+    public String getDetailId() {
+        return detailId;
+    }
+
+    public void setDetailId(String detailId) {
+        this.detailId = detailId;
+    }
 	
 	
 	

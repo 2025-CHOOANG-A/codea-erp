@@ -150,7 +150,7 @@ LEFT JOIN ITEM_CATEGORY catS ON .ITEM_CAT_S = catS.CATEGORY_ID
 <!-- 제품 등록삭제 -->
   <delete id="delete_item" parameterType="String">
     DELETE FROM ITEM
-    WHERE ITEM_CODE = #{itemId}
+    WHERE ITEM_ID = #{itemId}
   </delete>
 
 

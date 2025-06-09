@@ -1,32 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-     // ── 1. 사이드바 토글 초기화 ──
-     const sidebar = document.getElementById("sidebar");
-     const sidebarOpenBtn = document.getElementById("sidebarOpenBtn");
-     const sidebarCloseBtn = document.getElementById("sidebarCloseBtn");
-
-     function openSidebar() {
-       sidebar.classList.remove("closed");
-       document.body.style.overflowY = "hidden";
-     }
-     function closeSidebar() {
-       sidebar.classList.add("closed");
-       document.body.style.overflowY = "";
-     }
-
-     if (sidebarOpenBtn) sidebarOpenBtn.addEventListener("click", openSidebar);
-     if (sidebarCloseBtn) sidebarCloseBtn.addEventListener("click", closeSidebar);
-
-     document.addEventListener("mousedown", function (e) {
-       if (
-         window.innerWidth < 992 &&
-         !sidebar.classList.contains("closed") &&
-         !sidebar.contains(e.target) &&
-         !sidebarOpenBtn.contains(e.target)
-       ) {
-         closeSidebar();
-       }
-     });
-
      // ── 2. “추가” 버튼 클릭 리스너 ──
      const addBtn = document.getElementById("addBtn");
      if (addBtn) {
