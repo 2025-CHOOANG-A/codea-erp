@@ -17,6 +17,7 @@ public class ProductActualDTO {
     
     // PRODUCTION_PLAN 테이블 관련
     private String planId;
+    private Integer planNo; 
     private String itemCode;
     private Integer itemId;       // 입고 처리용 Item ID
     private LocalDate startDate;  // 계획 시작일

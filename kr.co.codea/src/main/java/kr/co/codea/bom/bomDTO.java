@@ -50,6 +50,7 @@ public class bomDTO {
 	private List<bomDTO> materials;
 	
 	
+	public String materialId;
 	
 	/*BOM 등록 (선택 자제 추가)*/
 	
@@ -57,7 +58,89 @@ public class bomDTO {
 	
 	
 	
-	
+	// ──────────────────────────────────────────────────────────────────────────
+    // 아래부터는 getter / setter 메서드
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public String getBomCode() {
+        return bomCode;
+    }
+
+    public void setBomCode(String bomCode) {
+        this.bomCode = bomCode;
+    }
+
+    public String getProductCode() {
+        return productCode;
+    }
+
+    public void setProductCode(String productCode) {
+        this.productCode = productCode;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getMaterialId() {
+        return materialId;
+    }
+
+    public void setMaterialId(String materialId) {
+        this.materialId = materialId;
+    }
+
+    public String getMaterialCode() {
+        return materialCode;
+    }
+
+    public void setMaterialCode(String materialCode) {
+        this.materialCode = materialCode;
+    }
+
+    public String getMaterialName() {
+        return materialName;
+    }
+
+    public void setMaterialName(String materialName) {
+        this.materialName = materialName;
+    }
+
+    public String getSpec() {
+        return spec;
+    }
+
+    public void setSpec(String spec) {
+        this.spec = spec;
+    }
+
+    public String getUnitUnicode() {
+        return unitUnicode;
+    }
+
+    public void setUnitUnicode(String unitUnicode) {
+        this.unitUnicode = unitUnicode;
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
 	
 	
 	

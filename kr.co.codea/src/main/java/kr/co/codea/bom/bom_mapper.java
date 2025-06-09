@@ -1,6 +1,7 @@
 package kr.co.codea.bom;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -73,6 +74,31 @@ public interface bom_mapper {
       int delete_bom_header(String bomCode);
       int delete_bom_detail(String bomCode);
       
+      
+      /* 페이지 정렬 */
+      
+      /**
+       * 페이징(pagination), 검색(keyword), 정렬(sort)을 적용하여 BOM 목록을 조회한다.
+       * 
+       * @param params 
+       *   - "keyword"   : 검색어 (BOM 코드, 제품 코드, 제품명 중 하나를 LIKE 검색)
+       *   - "offset"    : 페이징 시작 위치 (예: (page-1)*pageSize)
+       *   - "limit"     : 한 페이지당 조회할 건수
+       *   - "sortField" : 정렬할 컬럼명 (예: "H.BOM_HEADER_ID", "I.ITEM_NAME" 등)
+       *   - "sortOrder" : 정렬 방향 ("ASC" 또는 "DESC")
+       * @return 페이징, 검색, 정렬이 적용된 bomDTO 리스트
+       */
+      public List<bomDTO> select_bomList(Map<String, Object> params);
+
+      /**
+       * 검색(keyword)이 적용된 전체 건수를 조회한다. 
+       * 페이징 UI 에서 총 페이지 수를 계산할 때 사용한다.
+       *
+       * @param params 
+       *   - "keyword" : 검색어 (BOM 코드, 제품 코드, 제품명 중 하나를 LIKE 검색)
+       * @return 검색된 전체 건수 
+       */
+      int select_bomCount(Map<String, Object> params);
       
       
 	

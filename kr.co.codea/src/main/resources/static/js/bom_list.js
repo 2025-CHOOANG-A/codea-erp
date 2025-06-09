@@ -381,6 +381,38 @@
              applyFilter();
            }
          });
-     });/**
- * 
- */
+     });
+	 
+	 
+	 /*
+	 document.addEventListener("DOMContentLoaded", function () {
+	    const sortBtn = document.getElementById("sortBtn");
+	    const sortOrderInput = document.getElementById("sortOrderInput");
+
+	    if (sortBtn && sortOrderInput) {
+	      sortBtn.addEventListener("click", function () {
+	        // 1) 현재 sortOrder 값을 읽어온다 (ASC 아니면 DESC로 간주)
+	        let current = sortOrderInput.value === "ASC" ? "ASC" : "DESC";
+
+	        // 2) 토글: ASC → DESC, DESC → ASC
+	        let next = current === "ASC" ? "DESC" : "ASC";
+	        sortOrderInput.value = next;
+
+	        // 3) 버튼 레이블도 토글 후 바꿔준다
+	        //    (현재 설정된 next 값이 'ASC'라면, 버튼에는 'BOM코드 내림차순'을 표시
+	        //     next 값이 'DESC'라면, 버튼에는 'BOM코드 오름차순'을 표시)
+	        if (next === "ASC") {
+	          sortBtn.innerText = "BOM코드 내림차순";
+	        } else {
+	          sortBtn.innerText = "BOM코드 오름차순";
+	        }
+
+	        // 4) (선택) 정렬 기준이 바뀌었으니 항상 1페이지로 돌아가고 싶다면:
+	        // document.querySelector("input[name='page']").value = 1;
+
+	        // 5) 폼을 submit() 해서 서버에 GET 요청 보내기
+	        document.getElementById("filterForm").submit();
+	      });
+	    }
+	  });
+	  */

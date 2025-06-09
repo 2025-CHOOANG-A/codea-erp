@@ -49,7 +49,7 @@ public class MrpController {
 		    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 		    @RequestParam(name = "saveStatus", required = false) String saveStatus, 
 			Model m, ProductPlanDTO dto) {
-		System.out.println("여기 진입함! saveStatus=" + saveStatus);
+		System.out.println("여기 진입! saveStatus=" + saveStatus);
 	    dto.setStartDate(startDate);
 	    dto.setEndDate(endDate);
 	    List<ProductPlanDTO> list = ms.ProductPlanList(dto);
@@ -100,7 +100,12 @@ public class MrpController {
 	@PostMapping("/saveAll")
 	@ResponseBody
 	public Map<String, Object> saveMrps(@RequestBody List<MrpDTO> dtoList) {
-	    int successCount = 0;
+	    /*
+		for (MrpDTO dto : dtoList) {
+	        System.out.println("itemCode: " + dto.getItemCode());
+	    }
+	    */
+		int successCount = 0;
 	    for (MrpDTO dto : dtoList) {
 	        // insert와 update를 트랜잭션으로 처리
 	        try {
@@ -108,6 +113,7 @@ public class MrpController {
 	        } catch (Exception e) {
 	            // 실패한 경우 개별로 에러처리 필요하면 이쪽에서
 	            // 예시: 로그 남기거나, 실패 count 등 추가 가능
+	        	System.out.println(e);
 	        }
 	    }
 	    Map<String, Object> result = new HashMap<>();
