@@ -4,7 +4,7 @@
     <link rel="stylesheet" th:href="@{/css/storage_list.css}" />
 </th:block>
 
-    <main class="content">
+    <main class="main-content">
       <div class="container">
         <h2 class="mb-4">창고 목록</h2>
         <form id="filterForm" class="filter-bar">
@@ -76,7 +76,7 @@
               </ul>
           </nav>
           <div>
-            <a th:href="@{/storage/write}" class="btn btn-success add-btn">등록</a>
+            <a th:href="@{/storage/write}" class="btn btn-primary add-btn">등록</a>
             <button type="button" class="btn btn-outline-danger delete-btn">
               삭제
             </button>

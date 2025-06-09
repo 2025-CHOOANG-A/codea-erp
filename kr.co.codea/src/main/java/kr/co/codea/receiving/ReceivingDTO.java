@@ -1,5 +1,7 @@
 package kr.co.codea.receiving;
 
+import java.sql.Date;
+
 import org.springframework.stereotype.Repository;
 
 import lombok.Data;

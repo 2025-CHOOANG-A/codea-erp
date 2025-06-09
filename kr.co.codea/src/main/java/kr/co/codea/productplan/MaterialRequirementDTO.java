@@ -6,7 +6,8 @@ import lombok.Data;
 public class MaterialRequirementDTO {
 	
     private String planId;           // 생산계획 ID
-    private int itemId;              // 자재 품목 ID
+    private int itemId;              // 완제품 ID
+    private int materialId; //MRP계산 결과로 가져온 ID
     private String itemCode;         // 자재 품목 코드
     private String itemName;         // 자재 품목명
     private int requiredQty;         // 필요 수량
