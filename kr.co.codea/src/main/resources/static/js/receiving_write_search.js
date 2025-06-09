@@ -105,7 +105,7 @@ document.getElementById("rec_sea_form").addEventListener("submit", function(e){
 							inoutType.value = "22";
 						}
 					}
-					if(item.sourceDocType == "43"){
+					else if(item.sourceDocType == "43"){
 						docNoLabel.textContent = "생산 계획 번호";
 						docDateLabel.textContent = "생산 일자";
 						docQtyLabel.textContent = "생산 수량";
