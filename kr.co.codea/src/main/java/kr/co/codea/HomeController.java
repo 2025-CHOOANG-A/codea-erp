@@ -30,8 +30,8 @@ public class HomeController {
         }
 
         // 최신 입고/출고 각각 5건 조회
-        model.addAttribute("recentReceivingList", receivingService.getRecentReceivingList(5));
-        model.addAttribute("recentShipmentList", shipmentService.getRecentShipmentList(5));
+//        model.addAttribute("recentReceivingList", receivingService.getRecentReceivingList(5));
+//        model.addAttribute("recentShipmentList", shipmentService.getRecentShipmentList(5));
 
         return "index";
     }

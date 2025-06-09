@@ -203,8 +203,8 @@
 		REMARK
 		) VALUES (
 		SYSDATE, 21,
-		#{itemId}, #{whId}, #{orderQty}, #{unitPrice},
-		41, #{purchaseId}, #{purchaseDetailId}, #{empId}, '발주 완료에 따른 자동 입고'
+		#{itemId}, 161, #{orderQty}, #{unitPrice},
+		41, #{purchaseId}, #{purchaseDetailId}, 22, '발주 완료에 따른 자동 입고'
 		)
 	</insert>
 
