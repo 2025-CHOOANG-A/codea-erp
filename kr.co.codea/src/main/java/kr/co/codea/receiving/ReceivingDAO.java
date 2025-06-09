@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import kr.co.codea.inventory.InventoryDAO;
 import kr.co.codea.inventory.InventoryDTO;
 import kr.co.codea.inventory.InventoryMapper;
 import kr.co.codea.inventory.InventoryService;
@@ -78,6 +79,8 @@ public class ReceivingDAO implements ReceivingService {
 
 		InventoryDTO before = this.inv_mp.get_inv(dto.getItemId(), dto.getWhId());
 		
+		InventoryDTO qtyDTO = this.inv_se.inv_dto(dto.getItemId(), dto.getWhId());
+		
 		if(before != null) {
 			InventoryDTO avg = this.inv_se.avg_cost(before.getCurrentQty(), before.getAverageCost(), dto.getItemId(), dto.getWhId(), dto.getItemType());
 			
@@ -87,6 +90,8 @@ public class ReceivingDAO implements ReceivingService {
 			update.setItemId(dto.getItemId());
 			update.setWhId(dto.getWhId());
 			update.setCurrentQty(newQty);
+			update.setExpectedQty(qtyDTO.getExpectedQty());
+			update.setAllocatedQty(qtyDTO.getAllocatedQty());
 			update.setAverageCost(avg.getAverageCost());
 			update.setEmpNo(dto.getEmpNo());
 			

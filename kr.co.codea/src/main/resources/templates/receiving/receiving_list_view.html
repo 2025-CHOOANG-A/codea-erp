@@ -99,17 +99,10 @@
 			</div>
 		</div>
 
-		<!-- Pagination & Register Button -->
+		<!-- Register Button -->
 		<div class="row align-items-center">
 			<div th:if="${!#strings.isEmpty(keyword)}" class="col-auto">
 				<a th:href="@{/receiving/list}" class="btn btn-secondary">전체 목록</a>
-			</div>
-			<div class="col text-center">
-				<nav>
-					<ul class="pagination justify-content-center my-2" id="pagination">
-						<!-- JS로 페이지네이션 렌더링 -->
-					</ul>
-				</nav>
 			</div>
 			<div class="col-auto ms-auto">
 				<a href="/receiving/write" class="btn btn-success" id="rec_add">등록</a>

@@ -89,6 +89,8 @@ public class ShipmentDAO implements ShipmentService {
 		
 		InventoryDTO before = this.inv_mp.get_inv(dto.getItemId(), dto.getWhId());
 		
+		InventoryDTO qtyDTO = this.inv_se.inv_dto(dto.getItemId(), dto.getWhId());
+		
 		if(before != null) {
 			int newQty = before.getCurrentQty() - dto.getQuantity();
 			
@@ -96,6 +98,8 @@ public class ShipmentDAO implements ShipmentService {
 			update.setItemId(dto.getItemId());
 			update.setWhId(dto.getWhId());
 			update.setCurrentQty(newQty);
+			update.setExpectedQty(qtyDTO.getExpectedQty());
+			update.setAllocatedQty(qtyDTO.getAllocatedQty());
 			update.setAverageCost(before.getAverageCost());
 			update.setEmpNo(dto.getEmpNo());
 			

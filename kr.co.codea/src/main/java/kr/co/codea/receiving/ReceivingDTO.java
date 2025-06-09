@@ -42,4 +42,7 @@ public class ReceivingDTO {
 	
 	// 창고 주소, 창고 상세 주소
 	String address, addressDetail;
+	
+	// 생산 계획 번호
+	int planNo;
 }

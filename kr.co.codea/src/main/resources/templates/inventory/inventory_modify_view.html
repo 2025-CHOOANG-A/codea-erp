@@ -90,20 +90,15 @@
 		
 		<!-- 담당자 정보 -->
 		<div class="mb-4">
-			<div class="form-section-title">담당자 정보 <span class="text-danger">*</span></div>
+			<div class="form-section-title">담당자 정보</div>
 			<div class="row g-2 align-items-center">
 				<div class="col-md-6">
 					<label class="form-label mb-1" for="empName">담당자명</label>
-					<div class="input-group">
-						<input type="text" id="empName" class="form-control" readonly style="background:#e9ecef;">
-						<button class="btn btn-outline-secondary" type="button" id="searchManagerBtn">
-							<i class="bi bi-search"></i> 검색
-						</button>
-					</div>
+					<input type="text" id="empName" th:value="${mod.empName}" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 				<div class="col-md-6">
 					<label class="form-label mb-1" for="hp">담당자 전화번호</label>
-					<input type="text" id="hp" class="form-control" readonly style="background:#e9ecef;">
+					<input type="text" id="hp" th:value="${mod.hp}" class="form-control" readonly style="background:#e9ecef;">
 				</div>
 			</div>
 		</div>
@@ -127,40 +122,5 @@
 		</div>
 	</form>
 </main>
-
-<!-- 담당자 검색 모달 -->
-<div class="modal fade" id="emp_sea" tabindex="-1" aria-labelledby="managerSearchModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered modal-wide">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="emp_sea_label">담당자 검색</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-			</div>
-			<div class="modal-body">
-				<form class="mb-3" id="emp_sea_form" autocomplete="off">
-					<div class="input-group" style="max-width:400px;">
-						<input type="text" class="form-control" id="emp_sea_in" placeholder="담당자명을 입력하세요.">
-						<button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> 검색</button>
-					</div>
-				</form>
-				<div class="table-responsive">
-					<table class="table table-bordered table-hover table-nowrap align-middle mb-0" id="emp_sea_table">
-						<thead class="table-light">
-							<tr class="text-center">
-								<th>담당자 코드</th>
-								<th>담당자명</th>
-								<th>전화번호</th>
-								<th>선택</th>
-							</tr>
-						</thead>
-						<tbody class="text-center">
-							<!-- 검색 결과 -->
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
 
 </div>

@@ -45,4 +45,7 @@ public class ShipmentDTO {
 	
 	// 보유 수량
 	int currentQty;
+	
+	// 생산 계획 번호
+	int planNo;
 }
