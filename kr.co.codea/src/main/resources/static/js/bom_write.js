@@ -346,7 +346,7 @@
 	     } else {
 	       console.error("materialPriceInput을 찾을 수 없습니다!");
 	     }
-
+		 
 	     // 자재 모달 닫기
 	     try {
 	       const modalElement = document.getElementById('materialSearchModal');
