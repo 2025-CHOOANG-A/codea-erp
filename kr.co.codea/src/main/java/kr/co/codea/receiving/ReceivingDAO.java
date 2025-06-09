@@ -21,10 +21,7 @@ public class ReceivingDAO implements ReceivingService {
 	
 	@Autowired
 	private InventoryService inv_se;
-	
-	@Autowired
-	private ReceivingMapper receivingMapper;
-	
+
 	@Override
 	public List<ReceivingDTO> rec_list(Integer sourceDocType, String field, String keyword) {	// 목록 페이지
 		List<ReceivingDTO> list = this.mp.rec_list(sourceDocType, field, keyword);
@@ -103,10 +100,4 @@ public class ReceivingDAO implements ReceivingService {
 		
 		return result;
 	}
-
-	@Override
-	public List<ReceivingDTO> getRecentReceivingList(int size) {
-	    return receivingMapper.selectRecentReceivingList(size);
-	}
-
 }
