@@ -1,465 +1,361 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org"
-	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-<meta charset="UTF-8" />
-<title>사원 목록 - CodeA</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-	rel="stylesheet" />
-<style>
-body {
-	min-height: 100vh;
-	background: #f8f9fa;
-}
-
-.sidebar {
-	width: 260px;
-	min-width: 200px;
-	max-width: 300px;
-	background: #343a40;
-	color: #fff;
-	position: fixed;
-	top: 0;
-	left: 0;
-	height: 100vh;
-	z-index: 1040;
-	transition: transform 0.2s;
-	display: flex;
-	flex-direction: column;
-}
-
-.sidebar.collapsed {
-	transform: translateX(-100%);
-}
-
-.sidebar .sidebar-header {
-	padding: 1.2rem 1.5rem;
-	font-size: 1.2rem;
-	font-weight: 600;
-	background: #23272b;
-	border-bottom: 1px solid #222;
-	letter-spacing: 1px;
-}
-
-.sidebar .nav-link {
-	color: #adb5bd;
-	padding: 0.7rem 1.5rem;
-	font-size: 1rem;
-	border-radius: 0.3rem;
-	transition: background 0.15s;
-}
-
-.sidebar .nav-link.active, .sidebar .nav-link:hover {
-	background: #495057;
-	color: #fff;
-}
-
-.sidebar .menu-title {
-	padding: 0.8rem 1.5rem 0.3rem 1.5rem;
-	font-size: 0.95rem;
-	color: #ced4da;
-	font-weight: 500;
-	letter-spacing: 0.5px;
-}
-
-.sidebar .nav {
-	flex-direction: column;
-	gap: 0.1rem;
-}
-
-.sidebar .nav-item {
-	width: 100%;
-}
-
-.sidebar-toggle-btn {
-	background: #343a40;
-	border: none;
-	color: #fff;
-	padding: 0.65rem 0.9rem;
-	border-radius: 0 0.5rem 0.5rem 0;
-	font-size: 1.3rem;
-	display: flex;
-	align-items: center;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-	position: fixed;
-	top: 1.1rem;
-	left: 0.2rem;
-	z-index: 1100;
-	transition: left 0.2s;
-}
-
-.sidebar.collapsed ~ .sidebar-toggle-btn {
-	left: 0.2rem;
-}
-
-.sidebar:not(.collapsed) ~ .sidebar-toggle-btn {
-	left: 260px;
-}
-
-.header {
-	height: 64px;
-	background: #fff;
-	border-bottom: 1px solid #dee2e6;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	position: sticky;
-	top: 0;
-	z-index: 1020;
-	padding: 0 1rem;
-}
-
-.header .logo {
-	font-size: 1.7rem;
-	font-weight: 700;
-	letter-spacing: 2px;
-	color: #343a40;
-	user-select: none;
-}
-
-.main-content-wrapper {
-	padding: 2rem 1.5rem;
-}
-
-.main-content-wrapper.with-sidebar {
-	margin-left: 260px;
-}
-
-@media ( max-width : 991.98px) {
-	.sidebar {
-		transform: translateX(-100%);
-	}
-	.sidebar:not(.collapsed) {
-		transform: translateX(0);
-	}
-	.main-content-wrapper.with-sidebar {
-		margin-left: 0;
-	}
-	.sidebar:not(.collapsed) ~ .main-content-wrapper.with-sidebar {
-		margin-left: 260px;
-	}
-	.sidebar-toggle-btn {
-		left: 0.2rem !important;
-	}
-	.sidebar:not(.collapsed) ~ .sidebar-toggle-btn {
-		left: 260px !important;
-	}
-}
-
-.table-link {
-	text-decoration: underline;
-	color: inherit;
-	cursor: pointer;
-}
-
-.table-responsive {
-	max-height: 520px;
-	min-height: 350px;
-	overflow-y: auto;
-}
-
-.pagination {
-	margin-bottom: 0;
-}
-
-.filter-bar {
-	gap: 0.7rem;
-	flex-wrap: wrap;
-}
-
-.filter-bar .form-select, .filter-bar .form-control {
-	min-width: 120px;
-	max-width: 220px;
-}
-
-.filter-bar .form-control[name="search"] {
-	min-width: 220px;
-	max-width: 320px;
-}
-
-@media ( max-width : 575.98px) {
-	.main-content-wrapper {
-		padding: 1rem 0.5rem;
-	}
-	.filter-bar .form-select, .filter-bar .form-control, .filter-bar .form-control[name="search"]
-		{
-		min-width: 100px;
-		max-width: 100%;
-	}
-}
-</style>
+    <meta charset="UTF-8" />
+    <title>사원 목록 - CodeA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+      body {
+        min-height: 100vh;
+        background: #f8f9fa;
+      }
+      .sidebar {
+        width: 260px;
+        min-width: 200px;
+        max-width: 300px;
+        background: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1040;
+        transition: transform 0.2s;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar.collapsed {
+        transform: translateX(-100%);
+      }
+      .sidebar .sidebar-header {
+        padding: 1.2rem 1.5rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        background: #23272b;
+        border-bottom: 1px solid #222;
+        letter-spacing: 1px;
+      }
+      .sidebar .nav-link {
+        color: #adb5bd;
+        padding: 0.7rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 0.3rem;
+        transition: background 0.15s;
+      }
+      .sidebar .nav-link.active,
+      .sidebar .nav-link:hover {
+        background: #495057;
+        color: #fff;
+      }
+      .sidebar .menu-title {
+        padding: 0.8rem 1.5rem 0.3rem 1.5rem;
+        font-size: 0.95rem;
+        color: #ced4da;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+      }
+      .sidebar .nav {
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+      .sidebar .nav-item {
+        width: 100%;
+      }
+      .sidebar-toggle-btn {
+        background: #343a40;
+        border: none;
+        color: #fff;
+        padding: 0.65rem 0.9rem;
+        border-radius: 0 0.5rem 0.5rem 0;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        position: fixed;
+        top: 1.1rem;
+        left: 0.2rem;
+        z-index: 1100;
+        transition: left 0.2s;
+      }
+      .sidebar.collapsed ~ .sidebar-toggle-btn {
+        left: 0.2rem;
+      }
+      .sidebar:not(.collapsed) ~ .sidebar-toggle-btn {
+        left: 260px;
+      }
+      .header {
+        height: 64px;
+        background: #fff;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: sticky;
+        top: 0;
+        z-index: 1020;
+        padding: 0 1rem;
+      }
+      .header .logo {
+        font-size: 1.7rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #343a40;
+        user-select: none;
+      }
+      .main-content {
+        margin-left: 260px;
+        padding: 2.5rem 2rem 2rem 2rem;
+        transition: margin-left 0.2s;
+      }
+      .sidebar.collapsed ~ .main-content {
+        margin-left: 0;
+      }
+      @media (max-width: 991.98px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+        .sidebar:not(.collapsed) {
+          transform: translateX(0);
+        }
+        .main-content {
+          margin-left: 0;
+        }
+        .sidebar:not(.collapsed) ~ .main-content {
+          margin-left: 260px; 
+        }
+        .sidebar-toggle-btn {
+          left: 0.2rem !important; 
+        }
+         .sidebar:not(.collapsed) ~ .sidebar-toggle-btn {
+          left: 260px !important; 
+        }
+      }
+      .table-link {
+        text-decoration: underline;
+        color: inherit;
+        cursor: pointer;
+      }
+      .table-responsive {
+        max-height: 520px; 
+        min-height: 350px; 
+        overflow-y: auto;
+      }
+      .pagination { margin-bottom: 0; }
+      .filter-bar { gap: 0.7rem; flex-wrap: wrap; }
+      .filter-bar .form-select, .filter-bar .form-control { min-width: 120px; max-width: 220px; }
+      .filter-bar .form-control[name="search"] { min-width: 220px; max-width: 320px;}
+      @media (max-width: 575.98px) {
+        .main-content { padding: 1rem 0.5rem; }
+        .filter-bar .form-select, .filter-bar .form-control, .filter-bar .form-control[name="search"] {
+            min-width: 100px; max-width: 100%;
+        }
+      }
+    </style>
 </head>
 <body>
+    <div th:replace="~{fragments/sidebar :: layout}"></div>
 
-	<nav id="sidebar" class="sidebar">
-		<div class="sidebar-heading">기준정보관리</div>
-		<ul class="nav flex-column mb-2">
-			<li class="nav-item"><a class="nav-link"
-				th:href="@{/company/detail}">사업장관리</a></li>
-			<li class="nav-item"><a class="nav-link" th:href="@{/client}">거래처관리</a></li>
-			<li class="nav-item"><a class="nav-link" th:href="@{/storage}">창고관리</a></li>
-			<li class="nav-item"><a class="nav-link"
-				th:href="@{/item/item_list}">제품관리</a></li>
-			<li class="nav-item"><a class="nav-link"
-				th:href="@{/bom/bom_list}">품목관리</a></li>
-			<li class="nav-item"><a class="nav-link" th:href="@{/employee}">사원관리</a></li>
-			<li class="nav-item"><a class="nav-link"
-				th:href="@{/notice/list}">공지사항</a></li>
-		</ul>
+    <div class="main-content" id="mainContent">
+      <div class="container-fluid">
+        <h2 class="mb-4" th:text="${pageTitle ?: '사원 목록'}">사원 목록</h2>
 
-		<div class="sidebar-heading">구매영업관리</div>
-		<ul class="nav flex-column mb-2">
-			<li class="nav-item"><a class="nav-link" th:href="@{/purchase}">발주관리</a></li>
-			<li class="nav-item"><a class="nav-link" th:href="@{/order}">주문관리</a></li>
-			<li class="nav-item"><a class="nav-link"
-				th:href="@{/shipment/list}">출고관리</a></li>
-			<li class="nav-item"><a class="nav-link" th:href="@{/mrp}">자재소요량계산</a></li>
-		</ul>
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
 
-		<div class="sidebar-heading">자재관리</div>
-		<ul class="nav flex-column mb-2">
-			<li class="nav-item"><a class="nav-link"
-				th:href="@{/receiving/list}">입고관리</a></li>
-			<li class="nav-item"><a class="nav-link"
-				th:href="@{/inventory/list}">재고관리</a></li>
-		</ul>
+        <form class="d-flex align-items-center mb-3 filter-bar" id="filterForm" autocomplete="off" onsubmit="return false;">
+          <select class="form-select" name="category" id="categoryFilter" style="width: auto;">
+            <option value="전체">전체</option>
+            <option value="영업부">영업부</option>
+            <option value="생산부">생산부</option>
+            <option value="구매부">구매부</option>
+            <option value="자재부">자재부</option>
+            <option value="관리부">관리부</option>
+          </select>
+          <input type="text" class="form-control" name="search" id="searchInput" placeholder="사원 이름 검색" maxlength="20" style="width: auto;" />
+          <button type="button" class="btn btn-outline-secondary" id="searchBtn">검색</button>
+        </form>
 
-		<div class="sidebar-heading">생산관리</div>
-		<ul class="nav flex-column mb-4">
-			<li class="nav-item"><a class="nav-link"
-				th:href="@{/productplan}">생산계획</a></li>
-			<li class="nav-item"><a class="nav-link"
-				th:href="@{/productactual}">생산실적관리</a></li>
+        <div class="table-responsive mb-3">
+          <table class="table table-bordered table-hover align-middle mb-0" id="employeeTable">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 90px;">사번</th>
+                <th style="width: 120px;">이름</th>
+                <th style="width: 120px;">부서</th>
+                <th style="width: 120px;">직책</th>
+                <th style="width: 220px;">이메일</th>
+                <th style="width: 110px;">내선번호</th>
+                </tr>
+            </thead>
+            <tbody>
+              </tbody>
+          </table>
+        </div>
 
-		</ul>
-	</nav>
+        <div class="d-flex align-items-center justify-content-between">
+          <div></div> <nav>
+            <ul class="pagination mb-0" id="pagination">
+              </ul>
+          </nav>
+          <a  th:href="@{/employee/new}" sec:authorize="hasRole('ADMIN')" class="btn btn-primary ms-2" id="addBtn">추가</a>
+          
+        </div>
+      </div>
+    </div>
 
-	<button id="sidebarToggle" class="sidebar-toggle-btn"
-		aria-label="사이드바 열기/닫기">
-		<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
-			fill="currentColor" viewBox="0 0 16 16">
-    <rect width="16" height="2" y="2" rx="1" />
-    <rect width="16" height="2" y="7" rx="1" />
-    <rect width="16" height="2" y="12" rx="1" />
-  </svg>
-	</button>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-	<header class="header">
-		<div class="header-center">
-			<a class="nav-link" th:href="@{/index}">CodeA</a>
-		</div>
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const initialEmployees = /*[[${employees}]]*/ [];
+      const employeeDetailBaseUrl = /*[[@{/employee/}]]*/ '';
+      /*]]>*/
+    </script>
 
-		<div id="authArea" class="header-right">
-			<th:block sec:authorize="isAuthenticated()">
-				<span class="fw-bold text-dark me-3"
-					th:text="${#authentication.principal.empName} + '님'"> </span>
-				<button class="btn btn-outline-secondary btn-sm" id="logoutButton">로그아웃</button>
-			</th:block>
-	</header>
+    <script>
+      let currentPage = 1;
+      const pageSize = 10;
+      let filteredEmployees = [...initialEmployees];
 
-	<div class="main-content-wrapper with-sidebar" id="mainContent">
-		<div class="container-fluid">
-			<h2 class="mb-4" th:text="${pageTitle ?: '사원 목록'}">사원 목록</h2>
-
-			<div th:if="${successMessage}"
-				class="alert alert-success alert-dismissible fade show" role="alert">
-				<span th:text="${successMessage}"></span>
-				<button type="button" class="btn-close" data-bs-dismiss="alert"
-					aria-label="Close"></button>
-			</div>
-			<div th:if="${errorMessage}"
-				class="alert alert-danger alert-dismissible fade show" role="alert">
-				<span th:text="${errorMessage}"></span>
-				<button type="button" class="btn-close" data-bs-dismiss="alert"
-					aria-label="Close"></button>
-			</div>
-
-			<form class="d-flex align-items-center mb-3 filter-bar"
-				id="filterForm" autocomplete="off" onsubmit="return false;">
-				<select class="form-select" name="category" id="categoryFilter">
-					<option value="전체">전체</option>
-					<option value="영업부">영업부</option>
-					<option value="생산부">생산부</option>
-					<option value="구매부">구매부</option>
-					<option value="자재부">자재부</option>
-					<option value="관리부">관리부</option>
-				</select> <input type="text" class="form-control" name="search"
-					id="searchInput" placeholder="사원 이름 검색" maxlength="20" />
-				<button type="button" class="btn btn-outline-secondary"
-					id="searchBtn">검색</button>
-			</form>
-
-			<div class="table-responsive mb-3">
-				<table class="table table-bordered table-hover align-middle mb-0"
-					id="employeeTable">
-					<thead class="table-light">
-						<tr>
-							<th style="width: 90px;">사번</th>
-							<th style="width: 120px;">이름</th>
-							<th style="width: 120px;">부서</th>
-							<th style="width: 120px;">직책</th>
-							<th style="width: 220px;">이메일</th>
-							<th style="width: 110px;">내선번호</th>
-						</tr>
-					</thead>
-					<tbody></tbody>
-				</table>
-			</div>
-
-			<div class="d-flex align-items-center justify-content-between">
-				<div></div>
-				<nav>
-					<ul class="pagination mb-0" id="pagination"></ul>
-				</nav>
-				<a th:href="@{/employee/new}" sec:authorize="hasRole('ADMIN')"
-					class="btn btn-primary ms-2" id="addBtn">추가</a>
-			</div>
-		</div>
-	</div>
-
-	<script
-		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-	<script th:inline="javascript">
-/*<![CDATA[*/
-const initialEmployees = /*[[${employees}]]*/ [];
-const employeeDetailBaseUrl = /*[[@{/employee/}]]*/ '';
-/*]]>*/
-</script>
-
-	<script>
-  let currentPage = 1;
-  const pageSize = 10;
-  let filteredEmployees = [...initialEmployees];
-
-  function applyFiltersAndSearch() {
-    const categoryValue = document.getElementById("categoryFilter").value;
-    const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
-
-    filteredEmployees = initialEmployees.filter(emp => {
-      const matchesCategory = categoryValue === "전체" || (emp.empDept && emp.empDept === categoryValue);
-      const matchesSearch = !searchValue || (emp.empName && emp.empName.toLowerCase().includes(searchValue));
-      return matchesCategory && matchesSearch;
-    });
-    currentPage = 1;
-    renderTable();
-    renderPagination();
-  }
-
-  document.getElementById("categoryFilter").addEventListener("change", applyFiltersAndSearch);
-  document.getElementById("searchBtn").addEventListener("click", applyFiltersAndSearch);
-  document.getElementById("searchInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      applyFiltersAndSearch();
-    }
-  });
-
-  function renderTable() {
-    const tbody = document.querySelector("#employeeTable tbody");
-    tbody.innerHTML = "";
-    const pageData = filteredEmployees.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-    if (pageData.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-secondary py-4">검색 결과가 없습니다.</td></tr>`;
-      return;
-    }
-
-    pageData.forEach(emp => {
-      const detailUrl = `${employeeDetailBaseUrl}${emp.empId}`;
-      const row = `
-        <tr>
-          <td>${emp.empNo || ''}</td>
-          <td><a href="${detailUrl}" class="table-link">${emp.empName || ''}</a></td>
-          <td>${emp.empDept || ''}</td>
-          <td>${emp.empPosition || ''}</td>
-          <td>${emp.email || ''}</td>
-          <td>${emp.tel || ''}</td>
-        </tr>
-      `;
-      tbody.insertAdjacentHTML('beforeend', row);
-    });
-  }
-
-  function renderPagination() {
-    const totalItems = filteredEmployees.length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-    const paginationUl = document.getElementById("pagination");
-    paginationUl.innerHTML = "";
-    if (totalPages <= 1) return;
-
-    let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(totalPages, currentPage + 2);
-
-    if (totalPages > 5) {
-      if (currentPage <= 3) endPage = 5;
-      else if (currentPage >= totalPages - 2) startPage = totalPages - 4;
-    } else {
-      startPage = 1;
-      endPage = totalPages;
-    }
-
-    if (currentPage > 1) paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}">&laquo;</a></li>`);
-    if (startPage > 1) {
-      paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`);
-      if (startPage > 2) paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item disabled"><span class="page-link">...</span></li>`);
-    }
-    for (let i = startPage; i <= endPage; i++) {
-      paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`);
-    }
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item disabled"><span class="page-link">...</span></li>`);
-      paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`);
-    }
-    if (currentPage < totalPages) paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}">&raquo;</a></li>`);
-  }
-
-  document.getElementById("pagination").addEventListener("click", (e) => {
-    if (e.target.tagName === "A" && e.target.dataset.page) {
-      e.preventDefault();
-      currentPage = parseInt(e.target.dataset.page);
-      renderTable();
-      renderPagination();
-    }
-  });
-
-  applyFiltersAndSearch();
-
-  // 사이드바 반응형 스크립트
-  const sidebar = document.getElementById("sidebar");
-  const sidebarToggle = document.getElementById("sidebarToggle");
-  const mainContentWrapper = document.querySelector(".main-content-wrapper");
-
-  function updateSidebarAndContentMargin() {
-    if (!sidebar || !mainContentWrapper) return;
-    const isMobile = window.innerWidth < 992;
-    const isSidebarCollapsed = sidebar.classList.contains("collapsed");
-    mainContentWrapper.classList.toggle("with-sidebar", !isMobile && !isSidebarCollapsed);
-  }
-
-  sidebarToggle?.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-    updateSidebarAndContentMargin();
-  });
-
-  document.addEventListener("click", (e) => {
-    if (window.innerWidth < 992 && !sidebar.classList.contains("collapsed")) {
-      if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-        sidebar.classList.add("collapsed");
-        updateSidebarAndContentMargin();
+      const sidebar = document.getElementById("sidebar");
+      const sidebarToggle = document.getElementById("sidebarToggle");
+      function setSidebarCollapsed(collapsed) {
+        sidebar.classList.toggle("collapsed", collapsed);
       }
-    }
-  });
+      sidebarToggle.addEventListener("click", () => {
+        setSidebarCollapsed(!sidebar.classList.contains("collapsed"));
+      });
+      document.addEventListener("click", (e) => {
+        if (
+          window.innerWidth < 992 &&
+          !sidebar.classList.contains("collapsed")
+        ) {
+          if (
+            !sidebar.contains(e.target) &&
+            !sidebarToggle.contains(e.target)
+          ) {
+            setSidebarCollapsed(true);
+          }
+        }
+      });
+      setSidebarCollapsed(window.innerWidth < 992);
+      window.addEventListener("resize", () => {
+         setSidebarCollapsed(window.innerWidth < 992);
+      });
 
-  function initializeSidebarState() {
-    const shouldCollapse = window.innerWidth < 992;
-    sidebar.classList.toggle("collapsed", shouldCollapse);
-    updateSidebarAndContentMargin();
-  }
+      function applyFiltersAndSearch() {
+        const categoryValue = document.getElementById("categoryFilter").value;
+        const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
 
-  window.addEventListener("resize", initializeSidebarState);
-  initializeSidebarState();
-</script>
+        filteredEmployees = initialEmployees.filter(emp => {
+          const matchesCategory = categoryValue === "전체" || (emp.empDept && emp.empDept === categoryValue);
+          const matchesSearch = !searchValue || (emp.empName && emp.empName.toLowerCase().includes(searchValue));
+          return matchesCategory && matchesSearch;
+        });
+        currentPage = 1;
+        renderTable();
+        renderPagination();
+      }
+      document.getElementById("categoryFilter").addEventListener("change", applyFiltersAndSearch);
+      document.getElementById("searchBtn").addEventListener("click", applyFiltersAndSearch);
+      document.getElementById("searchInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault(); 
+            applyFiltersAndSearch();
+        }
+      });
+
+      function renderTable() {
+        const tbody = document.querySelector("#employeeTable tbody");
+        tbody.innerHTML = ""; 
+
+        const pageData = filteredEmployees.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+        if (pageData.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-secondary py-4">검색 결과가 없습니다.</td></tr>`; // colspan 6으로 수정
+          return;
+        }
+
+        pageData.forEach(emp => {
+          const detailUrl = `${employeeDetailBaseUrl}${emp.empId}`; // empId 사용
+
+          // 작업 열이 제거되었으므로 해당 부분 HTML 생성 안함
+          const row = `
+            <tr>
+              <td>${emp.empNo || ''}</td>
+              <td><a href="${detailUrl}" class="table-link">${emp.empName || ''}</a></td>
+              <td>${emp.empDept || ''}</td>
+              <td>${emp.empPosition || ''}</td>
+              <td>${emp.email || ''}</td>
+              <td>${emp.tel || ''}</td>
+            </tr>
+          `;
+          tbody.insertAdjacentHTML('beforeend', row);
+        });
+      }
+
+      function renderPagination() {
+        const totalItems = filteredEmployees.length;
+        const totalPages = Math.ceil(totalItems / pageSize);
+        const paginationUl = document.getElementById("pagination");
+        paginationUl.innerHTML = "";
+
+        if (totalPages <= 1) return;
+
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        if (totalPages > 5) {
+            if (currentPage <= 3) {
+                endPage = 5;
+            } else if (currentPage >= totalPages - 2) {
+                startPage = totalPages - 4;
+            }
+        } else {
+            startPage = 1;
+            endPage = totalPages;
+        }
+
+        if (currentPage > 1) {
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="이전">&laquo;</a></li>`);
+        }
+        if (startPage > 1) {
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`);
+          if (startPage > 2) {
+            paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item disabled"><span class="page-link">...</span></li>`);
+          }
+        }
+        for (let i = startPage; i <= endPage; i++) {
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item ${i === currentPage ? "active" : ""}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`);
+        }
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item disabled"><span class="page-link">...</span></li>`);
+          }
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`);
+        }
+        if (currentPage < totalPages) {
+          paginationUl.insertAdjacentHTML('beforeend', `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="다음">&raquo;</a></li>`);
+        }
+      }
+
+      document.getElementById("pagination").addEventListener("click", (e) => {
+        if (e.target.tagName === "A" && e.target.dataset.page) {
+          e.preventDefault();
+          currentPage = parseInt(e.target.dataset.page);
+          renderTable();
+          renderPagination();
+        }
+      });
+
+      applyFiltersAndSearch(); 
+    </script>
 </body>
 </html>

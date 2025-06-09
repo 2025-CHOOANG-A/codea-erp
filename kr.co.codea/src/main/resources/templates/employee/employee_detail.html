@@ -38,44 +38,29 @@
     </style>
 </head>
 <body>
-    <<!-- sidebar -->
-<nav id="sidebar" class="sidebar">
-    <div class="sidebar-header">메뉴</div>
-    <div class="menu-title">기준정보관리</div>
-    <ul class="nav flex-column mb-2">
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/business-unit}">사업장관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/accounts}">거래처관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/warehouse}">창고관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/products}">제품관리</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/items}">품목관리</a></li>
-        <li class="nav-item">
-            <a class="nav-link active" th:href="@{/employee}">사원관리</a>
-        </li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/notice}">공지사항</a></li>
-    </ul>
-</nav>
-
-<!-- sidebar toggle -->
-<button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="사이드바 열기/닫기">
-  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-    <rect width="16" height="2" y="2" rx="1" />
-    <rect width="16" height="2" y="7" rx="1" />
-    <rect width="16" height="2" y="12" rx="1" />
-  </svg>
-</button>
-
-<!-- header -->
-<header class="header d-flex justify-content-between align-items-center px-3">
-  <a th:href="@{/index}" style="text-decoration: none;">
-    <span class="logo">CodeA</span>
-  </a>
-  <div class="d-flex align-items-center gap-3">
-    <span class="text-dark fw-semibold" th:text="${#authentication?.name}">사용자</span>
-    <form th:action="@{/logout}" method="post" class="d-inline">
-      <button type="submit" class="btn btn-sm btn-outline-secondary">로그아웃</button>
-    </form>
-  </div>
-</header>
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">메뉴</div>
+            <div class="menu-title">기준정보관리</div>
+            <ul class="nav flex-column mb-2">
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/business-unit}">사업장관리</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/accounts}">거래처관리</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/warehouse}">창고관리</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/products}">제품관리</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/items}">품목관리</a></li>
+                <li class="nav-item">
+                  <a class="nav-link active" th:href="@{/employee}">사원관리</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/placeholder/notice}">공지사항</a></li>
+            </ul>
+    </nav>
+    <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="사이드바 열기/닫기">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+        <rect width="16" height="2" y="2" rx="1" /><rect width="16" height="2" y="7" rx="1" /><rect width="16" height="2" y="12" rx="1" />
+      </svg>
+    </button>
+    <header class="header">
+      <a th:href="@{/index}" style="text-decoration: none;"><span class="logo">CodeA</span></a>
+    </header>
 
     <div class="main-content-wrapper with-sidebar" th:if="${employeeView != null && employeeView.generalInfo != null}">
         <div class="container" style="max-width: 700px">
