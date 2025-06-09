@@ -7,263 +7,14 @@
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
-    />
-    <style>
-      body {
-        background: #f8f9fa;
-        min-height: 100vh;
-      }
-      .header {
-        height: 56px;
-        background: #fff;
-        border-bottom: 1px solid #dee2e6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: sticky;
-        top: 0;
-        z-index: 1050;
-      }
-      .header .logo {
-        font-size: 1.5rem;
-        font-weight: bold;
-        letter-spacing: 2px;
-        color: #343a40;
-        flex: 1;
-        text-align: center;
-      }
-      .sidebar-toggle-btn {
-        background: #23272b;
-        border: none;
-        color: #fff;
-        padding: 0.5rem 0.8rem;
-        border-radius: 0 0.5rem 0.5rem 0;
-        margin-right: 1rem;
-        font-size: 1.25rem;
-        display: flex;
-        align-items: center;
-        position: absolute;
-        left: 0.5rem;
-        top: 50%;
-        transform: translateY(-50%);
-        transition: background 0.2s;
-        z-index: 1100;
-      }
-      .sidebar-toggle-btn:hover {
-        background: #495057;
-      }
-      .sidebar {
-        width: 250px;
-        min-height: 100vh;
-        background: #23272b;
-        color: #fff;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 1040;
-        transition: transform 0.3s;
-        display: flex;
-        flex-direction: column;
-      }
-      .sidebar.collapsed {
-        transform: translateX(-100%);
-      }
-      .sidebar .sidebar-header {
-        padding: 1rem;
-        font-weight: bold;
-        font-size: 1.2rem;
-        background: #1a1d20;
-        text-align: center;
-        letter-spacing: 1px;
-      }
-      .sidebar .menu-title {
-        padding: 0.75rem 1.5rem 0.25rem 1.5rem;
-        font-size: 0.95rem;
-        color: #ced4da;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-      }
-      .sidebar .nav-link {
-        color: #adb5bd;
-        padding: 0.7rem 1.5rem;
-        transition: background 0.2s, color 0.2s;
-        border-radius: 0;
-        font-size: 1rem;
-      }
-      .sidebar .nav-link.active,
-      .sidebar .nav-link:hover {
-        background: #495057;
-        color: #fff;
-        text-decoration: none;
-      }
-      @media (max-width: 991.98px) {
-        .sidebar {
-          width: 200px;
-        }
-      }
-      @media (max-width: 767.98px) {
-        .sidebar {
-          width: 100vw;
-        }
-      }
-      .content {
-        margin-left: 250px;
-        padding: 2rem 1rem;
-        transition: margin-left 0.3s;
-      }
-      .sidebar.collapsed ~ .content {
-        margin-left: 0;
-      }
-      @media (max-width: 991.98px) {
-        .content {
-          margin-left: 200px;
-        }
-        .sidebar.collapsed ~ .content {
-          margin-left: 0;
-        }
-      }
-      @media (max-width: 767.98px) {
-        .content {
-          margin-left: 0;
-        }
-      }
-      .section-title {
-        font-size: 1.3rem;
-        font-weight: bold;
-        margin-bottom: 1rem;
-      }
-      .table-responsive {
-        background: #fff;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-        margin-bottom: 1.5rem;
-        overflow-x: auto;
-      }
-      .table th,
-      .table td {
-        vertical-align: middle;
-      }
-      .btn-add-material {
-        min-width: 90px;
-      }
-      .btn-delete-material {
-        min-width: 90px;
-        margin-left: 0.5rem;
-      }
-      .footer-btns {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
-        margin-top: 2rem;
-      }
-      .modal-content {
-        border-radius: 0.6rem;
-      }
-      .modal-backdrop-custom {
-        background: rgba(0, 0, 0, 0.7) !important;
-      }
-      @media (max-width: 767.98px) {
-        .footer-btns {
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-      }
-      .input-group .form-control:focus {
-        z-index: 2;
-      }
-      .search-result-list {
-        position: absolute;
-        z-index: 1200;
-        background: #fff;
-        width: 100%;
-        border: 1px solid #dee2e6;
-        border-top: none;
-        max-height: 200px;
-        overflow-y: auto;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      }
-      .search-result-item {
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-      }
-      .search-result-item:hover {
-        background: #f1f3f5;
-      }
-      .example-box {
-        background: #e9ecef;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        margin-bottom: 2rem;
-        font-size: 0.98rem;
-      }
-      .example-box strong {
-        color: #495057;
-      }
-      
-      
-      
-        /* 필요하다면 테이블 헤더만 있는 테이블 높이/스크롤 조정 */
-    /* 아래는 예시이므로, 실제 레이아웃에 맞춰 조절하세요. */
-    .left-header-table {
-      /* 헤더만 있으므로 높이를 줄이기 위해 min-height 지정 */
-      min-height: 56px;
-      /* 오른쪽 데이터 테이블에 스크롤이 생기더라도 고정하도록 sticky */
-      position: sticky;
-      top: 0;
-      /* 배경색이 흰색이라 하면, 스크롤 시 밑 배경을 가릴 수 있게 설정 */
-      background: #fff;
-      z-index: 5;
-      /* 테두리만 표시 */
-      border: 1px solid #dee2e6;
-      border-bottom: none; /* 아래쪽 테두리는 오른쪽 테이블과 이어지게 없음 */
-    }
-    </style>
+    />  <link rel="stylesheet" th:href="@{/css/sidebar.css}" />
+     <link rel="stylesheet" th:href="@{/css/bom_write.css}" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />     
   </head>
   <body>
     <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar collapsed">
-      <div class="sidebar-header">메뉴</div>
-      <div class="menu-title">기준정보관리</div>
-      <a class="nav-link" href="#">사업장관리</a>
-      <a class="nav-link" href="#">거래처관리</a>
-      <a class="nav-link" href="#">창고관리</a>
-      <a class="nav-link" href="#">제품관리</a>
-      <a class="nav-link" href="#">품목관리</a>
-      <a class="nav-link" href="#">사원관리</a>
-      <a class="nav-link" href="#">공지사항</a>
-      <div class="menu-title">구매영업관리</div>
-      <a class="nav-link" href="#">발주관리</a>
-      <a class="nav-link" href="#">주문관리</a>
-      <a class="nav-link" href="#">출고관리</a>
-      <a class="nav-link" href="#">자재소요량계산</a>
-      <div class="menu-title">자재관리</div>
-      <a class="nav-link" href="#">입고관리</a>
-      <a class="nav-link" href="#">재고관리</a>
-      <div class="menu-title">생산관리</div>
-      <a class="nav-link" href="#">생산계획</a>
-    </nav>
-
-    <!-- Header -->
-    <header class="header">
-      <button
-        class="sidebar-toggle-btn"
-        id="sidebarToggle"
-        aria-label="사이드바 열기/닫기"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="currentColor"
-          viewBox="0 0 16 16"
-        >
-          <rect width="16" height="2" y="2" rx="1" />
-          <rect width="16" height="2" y="7" rx="1" />
-          <rect width="16" height="2" y="12" rx="1" />
-        </svg>
-      </button>
-      <div class="logo">CodeA</div>
-    </header>
+     <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: layout}"></div>
 
     <!-- Main Content -->
     <main class="content">
@@ -292,6 +43,14 @@
         </div>
         <!-- BOM 등록 폼 -->
         <form id="bomForm" autocomplete="off">
+        
+         <!-- ⬇️ 여기에 hidden 필드들 추가! ⬇️ -->
+          <input type="hidden" name="productCode" id="hiddenProductCode" />
+          <input type="hidden" name="productName" id="hiddenProductName" />
+          <input type="hidden" name="spec" id="hiddenSpec" />
+          <input type="hidden" name="unit" id="hiddenUnit" />
+          <input type="hidden" name="note" id="hiddenNote" />
+          
           <div class="table-responsive mb-4">
             <table class="table table-bordered align-middle mb-0">
               <thead class="table-light">
@@ -310,12 +69,11 @@
                     <input
                       type="text"
                       class="form-control"
-                      name="bomCode"
+                      name="bomCode" 
                       id="bomCodeInput"
                       maxlength="20"
                       required
-                      placeholder="자동생성 또는 입력"
-                      value="BOM2024-01"
+                      
                     />
                   </td>
                   <td style="position: relative">
@@ -323,6 +81,7 @@
                       <input
                         type="text"
                         class="form-control"
+                        name="itemId"
                         id="productSearchInput"
                         placeholder="완제품 코드/명 검색"
                         autocomplete="off"
@@ -356,7 +115,6 @@
                     <input
                       type="text"
                       class="form-control"
-                      name="productName"
                       id="productNameInput"
                       readonly
                       value="제품A"
@@ -386,7 +144,7 @@
                     <input
                       type="text"
                       class="form-control"
-                      name="note"
+                      name="description" 
                       maxlength="50"
                       placeholder="예: 신규 등록"
                     />
@@ -425,22 +183,21 @@
               </tr>
             </thead>
             <!--  -->
-            <tbody id="modalProductResult">
-              <!-- Thymeleaf 예시 -->
-    
-              <tr th:each="bom_y : ${bom_item_y_list}"
-               th:data-code="${bom_y.itemCode}" 
-               th:data-name="${bom_y.itemName}" 
-               th:data-spec="${bom_y.spec}" 
-               th:data-unit="${bom_y.unitCode}"
-               onclick="selectProduct(this)">
-              <td th:text="${bom_y.itemCode}"></td>
-              <td th:text="${bom_y.itemName}"></td>
-               <td th:text="${bom_y.spec}"></td>
-             <td th:text="${bom_y.unitCode}"></td>
-             </tr>
-             
-            </tbody>
+           <!-- 완제품 검색 모달의 tbody 부분 -->
+      <tbody id="modalProductResult">
+        <tr th:each="bom_y : ${bom_item_y_list}"
+        th:data-code="${bom_y.materialCode}" 
+        th:data-name="${bom_y.materialName}" 
+        th:data-spec="${bom_y.spec}" 
+        th:data-unit="${bom_y.j_unitName}"
+        onclick="selectMaterial(this)"
+       style="cursor: pointer;">
+      <td th:text="${bom_y.materialCode}"></td>
+      <td th:text="${bom_y.materialName}"></td>
+      <td th:text="${bom_y.spec}"></td>
+      <td th:text="${bom_y.j_unitName}"></td>
+    </tr>
+  </tbody>
           </table>
         </div>
       </div> <!-- modal-body end -->
@@ -476,7 +233,8 @@
             >
               <thead class="table-light">
                 <tr>
-                  <th><input type="checkbox" id="selectAllMaterial" /></th>
+                  <th><input type="checkbox" id="selectAllMaterial" />
+                  </th>
                   <th>BOM 코드</th>
                   <th>자재 코드</th>
                   <th>자재 명</th>
@@ -487,35 +245,13 @@
                 </tr>
               </thead>
               <tbody>
-                <!-- JS로 자재 목록 렌더링 -->
+               
               </tbody>
             </table>
           </div>
         </div>
-                 
-          <div class="table-responsive">
-            <table
-              class="table table-hover align-middle mb-0"
-              id="materialTable"
-            >
-              <thead class="table-light">
-                <tr>
-                  <th><input type="checkbox" id="selectAllMaterial" /></th>
-                  <th>BOM 코드</th>
-                  <th>자재 코드</th>
-                  <th>자재 명</th>
-                  <th>규격</th>
-                  <th>단위(EA)</th>
-                  <th>단가</th>
-                  <th>자재소요량</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- JS로 자재 목록 렌더링 -->
-              </tbody>
-            </table>
-          </div>
-        </div>
+   
+</div>
 
         <!-- Footer Buttons -->
         <div class="footer-btns">
@@ -542,7 +278,7 @@
       data-bs-backdrop="static"
       data-bs-keyboard="false"
     >
-      <div class="modal-dialog modal-dialog-centered">
+     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <form id="materialAddForm" autocomplete="off">
             <div class="modal-header">
@@ -560,67 +296,96 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="bomCode"
+                  name="bomHeaderId" 
                   id="modalBomCode"
                   readonly
                 />
               </div>
               <div class="mb-2">
-                <label class="form-label">자재 코드</label>
+                <label class="form-label">자재 코드 *</label>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="materialCode"
+                    id="materialCodeInput"
+                    maxlength="20"
+                    required
+                    readonly
+                    placeholder="자재 검색 버튼을 클릭하세요"
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="materialSearchBtn"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.85-3.85zm-5.242 1.106a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">자재 명 *</label>
                 <input
                   type="text"
                   class="form-control"
-                  name="childId"
-                  id="childId"
-                  maxlength="20"
+                  name="materialName"
+                  id="materialNameInput"
+                  maxlength="50"
                   required
+                  readonly
                 />
               </div>
               <div class="mb-2">
-                <label class="form-label">자재 명</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="childId"
-                  id="childId"
-                  maxlength="20"
-                  required
-                />
-              </div>
-              <div class="mb-2">
-                <label class="form-label">규격</label>
+                <label class="form-label">규격 *</label>
                 <input
                   type="text"
                   class="form-control"
                   name="spec"
+                  id="materialSpecInput"
                   maxlength="20"
                   required
+                  readonly
                 />
               </div>
               <div class="mb-2">
-                <label class="form-label">단위(EA)</label>
-                <select class="form-select" name="unit" required>
-                  <option value="EA">EA</option>
-                  <option value="SET">SET</option>
-                  <option value="BOX">BOX</option>
-                </select>
+                <label class="form-label">단위 *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="j_unitName"
+                  id="materialUnitInput"
+                  required
+                  readonly
+                />
               </div>
               <div class="mb-2">
-                <label class="form-label">단가</label>
+                <label class="form-label">단가 *</label>
                 <input
                   type="number"
                   class="form-control"
                   name="price"
+                  id="materialPriceInput"
                   min="0"
                   required
                 />
               </div>
               <div class="mb-2">
-                <label class="form-label">자재소요량</label>
+                <label class="form-label">자재소요량 *</label>
                 <input
                   type="number"
                   class="form-control"
-                  name="qty"
+                  name="quantity"
+                  id="materialQtyInput"
                   min="1"
                   required
                 />
@@ -634,15 +399,61 @@
               >
                 취소
               </button>
-              <button type="button" class="btn btn-primary" >추가</button>
+              <button type="button" class="btn btn-primary" id="materialAddBtn">추가</button>
             </div>
           </form>
         </div>
       </div>
     </div>
 
+    <!-- Material Search Modal -->
+    <div class="modal fade" id="materialSearchModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <!-- 모달 헤더 -->
+          <div class="modal-header">
+            <h5 class="modal-title">자재 검색</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+          </div>
+
+          <!-- 모달 본문 -->
+          <div class="modal-body">
+            <!-- 검색창 -->
+            <input type="text" class="form-control mb-3" id="materialKeyword" placeholder="자재명 또는 코드 입력 후 Enter" />
+
+            <!-- 검색 결과 테이블 -->
+            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+              <table class="table table-hover table-sm mb-0" id="materialSearchTable">
+                <thead class="table-light">
+                  <tr>
+                    <th>자재코드</th>
+                    <th>자재명</th> 
+                    <th>규격</th>
+                    <th>단위</th>
+                    <th>단가</th>
+                  </tr>
+                </thead>
+                <tbody id="modalMaterialResult">
+    <tr th:each="mat : ${bom_item_j_list}"
+        th:data-code="${mat.materialCode}"
+        th:data-name="${mat.materialName}"
+        th:data-spec="${mat.spec}"
+        th:data-unit="${mat.j_unitName}"
+        th:data-price="${mat.price}"
+        onclick="selectMaterial(this)"
+        style="cursor: pointer;">
+      <td th:text="${mat.materialCode}"></td>
+      <td th:text="${mat.materialName}"></td>
+      <td th:text="${mat.spec}"></td>
+      <td th:text="${mat.j_unitName}"></td>
+      <td th:text="${mat.price}"></td>
+    </tr>
+  </tbody>
+</table>         
+</div>
+</div>
   </body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/bom_write.js?v=2"></script>
-  
+    <script src="/js/bom_write.js?v=4"></script>
+  	<script th:src="@{/js/sidebar.js}"></script>
 </html>

@@ -9,178 +9,14 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <style>
-      body {
-        min-height: 100vh;
-      }
-      .sidebar {
-        width: 250px;
-        min-height: 100vh;
-        background: #343a40;
-        color: #fff;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 1040;
-        transition: transform 0.3s;
-      }
-      .sidebar.closed {
-        transform: translateX(-100%);
-      }
-      .sidebar .nav-link,
-      .sidebar .sidebar-toggle {
-        color: #fff;
-      }
-      .sidebar .nav-link.active,
-      .sidebar .nav-link:hover {
-        background: #495057;
-        color: #fff;
-      }
-      .sidebar .sidebar-toggle {
-        background: #23272b;
-        border: none;
-        width: 100%;
-        text-align: left;
-        padding: 1rem;
-        font-size: 1.25rem;
-      }
-      .header {
-        height: 56px;
-        background: #23272b;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1050;
-      }
-      .header .sidebar-toggle-btn {
-        position: absolute;
-        left: 1rem;
-        background: #343a40;
-        border: none;
-        color: #fff;
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.25rem;
-        font-size: 1.25rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-      @media (max-width: 991.98px) {
-        .sidebar {
-          width: 200px;
-        }
-      }
-      .form-section-title {
-        background: #f8f9fa;
-        font-weight: 600;
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid #dee2e6;
-      }
-      .table-form th {
-        width: 160px;
-        background: #f8f9fa;
-        vertical-align: middle;
-      }
-      .table-form td {
-        vertical-align: middle;
-      }
-      .required {
-        color: #dc3545;
-        margin-left: 0.25rem;
-        font-size: 1rem;
-      }
-      .modal-dialog {
-        max-width: 500px;
-      }
-      /* 메인 컨텐츠 위치 조정 */
-      .main-content-wrapper {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        min-height: calc(100vh - 56px);
-        margin-top: 56px;
-        transition: margin-left 0.3s;
-      }
-      .main-content {
-        width: 100%;
-        max-width: 700px;
-        padding-top: 2rem;
-      }
-      @media (min-width: 992px) {
-        .main-content-wrapper {
-          margin-left: 250px;
-        }
-        .sidebar.closed ~ .main-content-wrapper {
-          margin-left: 0;
-        }
-      }
-      @media (max-width: 991.98px) {
-        .main-content-wrapper {
-          margin-left: 0;
-        }
-      }
-    </style>
+     <link rel="stylesheet" th:href="@{/css/sidebar.css}" />
+     <link rel="stylesheet" th:href="@{/css/item_write.css}" />
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />     
+ 
   </head>
   <body>
-    <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar closed">
-      <button
-        class="sidebar-toggle d-lg-none"
-        id="sidebarCloseBtn"
-        aria-label="사이드바 닫기"
-      >
-        <span>&#10005; 메뉴 닫기</span>
-      </button>
-      <div class="p-3">
-        <div class="mb-2 fw-bold text-uppercase small">기준정보관리</div>
-        <ul class="nav flex-column mb-3">
-          <li class="nav-item"><a class="nav-link" href="#">사업장관리</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">거래처관리</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">창고관리</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">제품관리</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">품목관리</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">사원관리</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">공지사항</a></li>
-        </ul>
-        <div class="mb-2 fw-bold text-uppercase small">구매영업관리</div>
-        <ul class="nav flex-column mb-3">
-          <li class="nav-item"><a class="nav-link" href="#">발주관리</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">주문관리</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">출고관리</a></li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">자재소요량계산</a>
-          </li>
-        </ul>
-        <div class="mb-2 fw-bold text-uppercase small">자재관리</div>
-        <ul class="nav flex-column mb-3">
-          <li class="nav-item"><a class="nav-link" href="#">입고관리</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">재고관리</a></li>
-        </ul>
-        <div class="mb-2 fw-bold text-uppercase small">생산관리</div>
-        <ul class="nav flex-column mb-3">
-          <li class="nav-item"><a class="nav-link" href="#">생산계획</a></li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- Header -->
-    <header class="header">
-      <button
-        class="sidebar-toggle-btn d-lg-none"
-        id="sidebarOpenBtn"
-        aria-label="사이드바 열기"
-      >
-        <span class="me-1">&#9776;</span>
-        <span>메뉴</span>
-      </button>
-      <span class="mx-auto fs-4 fw-bold">CodeA</span>
-    </header>
-
+       <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: layout}"></div>
     <!-- 주문정보등록 value="PRD20240601"-->
 
     <div class="main-content-wrapper">
@@ -210,14 +46,15 @@
                 <td th:each="cl:${calL}">
                   <select class="form-select" id="itemCatL" name="itemCatL" required>
                     <option value="">선택</option>
-                    <option th:text="${cl.categoryId}"></option>
+                    <option th:text="${cl.categoryName}"></option>
                   </select>
                 </td>
                 <th>소분류 <span class="required">*</span></th>
-                <td >
+                <td>
+                <!-- th:value="${cs.categoryName}" -->
                   <select class="form-select" id="itemCatS" name="itemCatS"  required>
                     <option value="">선택</option>
-                    <option th:value="${cs.categoryId}" th:each="cs:${calS}" th:text="${cs.categoryId}">회로</option>
+                    <option  th:each="cs:${calS}" th:text="${cs.categoryName}">회로</option>
                   </select>
                 </td>
               </tr>
@@ -446,5 +283,6 @@
     <!-- Bootstrap JS & Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
        <script src="/js/item_write.js?v=3"></script>
+       <script th:src="@{/js/sidebar.js}"></script>
   </body>
 </html>

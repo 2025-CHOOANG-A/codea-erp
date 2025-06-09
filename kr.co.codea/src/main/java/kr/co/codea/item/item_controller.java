@@ -90,7 +90,7 @@ public class item_controller {
 	        m.addAttribute("itemTypes", List.of("완제품","원자재")); // 예시
 	        m.addAttribute("totalCount", totalCount);
 
-	        System.out.println(pagedList);
+	       // System.out.println(pagedList);
 	        return "item/item_list"; // Thymeleaf 템플릿 이름
 	    }
 	
@@ -120,7 +120,7 @@ public class item_controller {
 			m.addAttribute("calS", calS); //소분류 항목만 가져옴
 			m.addAttribute("uni_code", uni_code); //단위 항목만 가져옴
 	        
-	        System.out.println(item);
+	       // System.out.println(item);
 	        return "item/item_edite"; // 수정 폼 페이지
 	    }
 
@@ -212,9 +212,14 @@ public class item_controller {
 		//System.out.println(uni_code);
 		//System.out.println(calL);
 		//System.out.println(calS);
+		System.out.println(calL);
+		System.out.println(calS);
+		
+		
 	    return "item/item_write"; 
 	}	
 	
+	/*
 	@PostMapping("/item_writeok")
 	public String item_wirteok(@ModelAttribute itemDTO dto, Model m) {
 		this.dao.insert_item(dto);//제품등록(item)
@@ -224,6 +229,16 @@ public class item_controller {
 		m.addAttribute("item_list", item_list);
 				
 	    return "item/item_list";
+	}
+	*/
+	@PostMapping("/item_writeok")
+	public String item_writeok(@ModelAttribute itemDTO dto, Model m) {
+	    // 1) item 등록
+	    this.dao.insert_item(dto);
+
+	    // 2) redirect 시에는 일반적으로 model에 데이터를 담지 않고, 
+	    //    리스트 페이지를 담당하는 GET 핸들러 쪽에서 DB 조회해 모델에 담도록 합니다.
+	    return "redirect:/item/item_list";
 	}
 
 }
