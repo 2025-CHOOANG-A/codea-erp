@@ -33,7 +33,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.PRIVATE_KEY }}
           source: "kr.co.codea/build/libs/kr.co.codea-0.0.1-SNAPSHOT.jar"
-          target: "/home/erp/app/"
+          target: "/home/erp/"
 
       - name: Restart Application
         uses: appleboy/ssh-action@v1.0.0
