@@ -36,9 +36,9 @@
 	       <td>${mat.materialCode}</td>
 	       <td>${mat.materialName}</td>
 	       <td>${mat.spec}</td>
-	       <td>${mat.unit}</td>
+	       <td>${mat.j_unitName}</td>
 	       <td>${mat.price.toLocaleString()}</td>
-	       <td>${mat.qty}</td>
+	       <td>${mat.quantity}</td>
 	     `;
 	     tbody.appendChild(tr);
 	   });
@@ -49,6 +49,7 @@
 	   }
 	 }
 
+	 
 	 // ============ 체크박스 전체 선택 기능 ============
 	 const selectAllMaterial = document.getElementById("selectAllMaterial");
 	 if (selectAllMaterial) {
@@ -624,8 +625,16 @@
 	   console.log("저장할 BOM 데이터:", bomDetail);
 	   
 	   // 서버로 전송할 데이터 구성 (hidden 필드들도 업데이트)
+	  
 	   const bomData = {
-	     bomCode: bomCode,
+	     // PK는 selectKey가 채워주므로 안 넘겨도 됩니다
+	     itemId:    bomDetail.productId,              // productId 가 아이디라면
+	     version:   1,                                 // 헤더 버전, 기본 1로 고정
+	     description: document.querySelector("[name=description]").value,
+	     materials: bomDetail.materials
+	   };
+	   /* const bomData = {
+	    //bomCode: bomCode,
 	     productCode: bomDetail.productCode,
 	     productName: bomDetail.productName,
 	     spec: bomDetail.spec,
@@ -633,14 +642,13 @@
 	     note: document.getElementById("noteInput") ? document.getElementById("noteInput").value : "",
 	     materials: bomDetail.materials
 	   };
-	   
+	   */
 	   // hidden 필드들 업데이트
 	   document.getElementById("hiddenProductCode").value = bomDetail.productCode || '';
 	   document.getElementById("hiddenProductName").value = bomDetail.productName || '';
 	   document.getElementById("hiddenSpec").value = bomDetail.spec || '';
 	   document.getElementById("hiddenUnit").value = bomDetail.unit || '';
 	   document.getElementById("hiddenNote").value = bomData.note;
-	   
 	   console.log("전송할 데이터:", bomData); // 디버깅용
 	   
 	   // 서버로 데이터 전송
