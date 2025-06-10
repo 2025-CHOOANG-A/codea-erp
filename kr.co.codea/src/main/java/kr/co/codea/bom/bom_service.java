@@ -68,7 +68,7 @@ public interface bom_service {
    int add_bom_detail(bomDTO dto);
 
    // 선택된 자재들 삭제 (체크박스 다중 삭제용)
-   int delete_bom_detail_by_materials(String bomCode, List<String> materialCodes);
+   int delete_bom_detail_by_material(Map<String, Object> params);
 
    // 단일 자재 삭제
    int delete_single_bom_detail(String bomCode, String materialCode);
