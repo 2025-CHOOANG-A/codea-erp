@@ -17,5 +17,7 @@ public class MaterialRequirementDTO {
     private String whName;           // 창고명
     private int availableQty;        // 가용 재고량
     private int empId; //담당id
+    private String empNo;
     private Integer planNo;  
+
 }

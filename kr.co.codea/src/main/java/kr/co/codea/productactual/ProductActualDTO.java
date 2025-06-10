@@ -28,6 +28,8 @@ public class ProductActualDTO {
     private Integer planQty;      // 계획 수량
     private String status;        // 상태
     private String empNo;         // 담당자 사번
+    private Integer empId;         // 담당자id
+
     private String remark;        // 비고
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
