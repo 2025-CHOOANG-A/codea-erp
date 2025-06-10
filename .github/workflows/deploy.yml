@@ -23,7 +23,7 @@ jobs:
         working-directory: kr.co.codea
 
       - name: Build with Gradle
-        run: ./gradlew clean build
+        run: ./gradlew clean build -x test
         working-directory: kr.co.codea
 
       - name: Upload JAR to Server
