@@ -2,21 +2,25 @@ name: Deploy to Server
 
 on:
   push:
-    branches: [dev]
+    branches: [dev] # dev 브랜치에 push될 때 실행
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v3
 
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: "17"
+          java-version: "17" # 사용하는 JDK 버전에 맞게 조정
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+        working-directory: kr.co.codea
 
       - name: Build with Gradle
         run: ./gradlew clean build
