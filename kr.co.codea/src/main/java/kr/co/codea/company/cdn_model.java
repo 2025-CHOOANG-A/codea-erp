@@ -39,7 +39,7 @@ public class cdn_model {
     // SFTP 정보
     final String user = "erp";
     final String pass = "choongang";
-    final int port = 9022; // SFTP는 기본 22번 포트
+    final int port = 9022; 
     final String url = "210.178.108.186";
 	
 	@Autowired
@@ -54,7 +54,7 @@ public class cdn_model {
 		try {
 			
 			/*
-			//UUID 사용시
+			//UUID 사용시 주석제거 (사용 X)
 			String ext = originalName.substring(originalName.lastIndexOf("."));
 			String uuid = UUID.randomUUID().toString();
 			String new_file = uuid + ext; 

@@ -47,9 +47,9 @@
     <h2 class="mb-4 fw-bold">자재소요량 계산</h2>
     <!-- 생산계획 필터/버튼 -->
     <form class="filter-bar mb-3 d-flex align-items-center" id="filterForm" autocomplete="off" onsubmit="return false;">
-      <input type="date" class="form-control" id="startDate" name="startDate" />
+      <input type="date" class="form-control" id="startDate" name="startDate"  th:value="${startDate}"/>
       <span>~</span>
-      <input type="date" class="form-control" id="endDate" name="endDate" />
+      <input type="date" class="form-control" id="endDate" name="endDate"  th:value="${endDate}"/>
       <button type="button" class="btn btn-outline-primary ms-2" id="searchBtn">검색</button>
       <button type="button" class="btn btn-outline-secondary ms-2" id="resetBtn">초기화</button>
       <button type="button" class="btn btn-success ms-2" id="calcSelectedBtn">선택항목 계산하기</button>
@@ -190,9 +190,9 @@
     <div id="mrpResult">
       <h5>MRP 결과 리스트</h5>
       <form class="mrp-filter-bar d-flex align-items-center" id="mrpFilterForm" autocomplete="off" onsubmit="return false;">
-        <input type="date" class="form-control" id="mrpStartDate" />
+        <input type="date" class="form-control" id="mrpStartDate" th:value="${startDate}"/>
         <span>~</span>
-        <input type="date" class="form-control" id="mrpEndDate" />
+        <input type="date" class="form-control" id="mrpEndDate"  th:value="${endDate}"/>
         <button type="button" class="btn btn-outline-primary btn-sm ms-2" id="mrpSearchBtn">검색</button>
         <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="mrpResetBtn">초기화</button>
       </form>
