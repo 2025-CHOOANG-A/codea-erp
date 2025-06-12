@@ -108,19 +108,19 @@
     ORDER BY I.ITEM_CODE
 </select>
 
-<select id="bom_item_type_y" parameterType="string" resultType="kr.co.codea.bom.bomDTO" resultMap="bomItemResultMap">
-      SELECT
-       H.BOM_HEADER_ID AS bomCode,
-        I.ITEM_ID AS itemId,        
+<select id="bom_item_type_y" parameterType="string" resultType="kr.co.codea.bom.bomDTO">
+    SELECT
+        H.BOM_HEADER_ID AS bomCode,
+        I.ITEM_ID AS itemId,           
         I.ITEM_CODE AS itemCode,     
         I.ITEM_NAME AS itemName,      
-        I.ITEM_TYPE,
-        I.ITEM_CAT_L,
-        I.ITEM_CAT_S,
+        I.ITEM_TYPE AS itemType,
+        I.ITEM_CAT_L AS itemCatL,
+        I.ITEM_CAT_S AS itemCatS,
         I.UNIT_CODE AS unitCode,      
         C.CODE AS unitName,           
         I.SPEC AS spec,
-        H.DESCRIPTION
+        H.DESCRIPTION AS description
     FROM BOM_HEADER H
     JOIN ITEM I ON H.ITEM_ID = I.ITEM_ID
     LEFT JOIN COMMON_CODE C 

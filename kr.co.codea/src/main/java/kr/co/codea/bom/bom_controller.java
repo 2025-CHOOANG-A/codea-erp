@@ -517,52 +517,126 @@ public class bom_controller {
 	   
 	  
 	  //등록할떄 값을 가져올 리스트 
-	  @GetMapping("/bom_write")
-	  public String bom_write( Model m) {	
-		  
-		  //자재추가(ITEM 항목 불러옴)
-		  //List<bomDTO> item_bom = this.b_dao.bom_item_list(itemId);
-		  
-		  //완제품, 원자재 리스트 조회
-
-		  List<bomDTO> bom_item_y_list= this.b_dao.bom_item_list_y();
-		  List<bomDTO> bom_item_j_list= this.b_dao.bom_item_type_j();
-
-		  m.addAttribute("bom_item_y_list", bom_item_y_list);//완제품 
-	      m.addAttribute("bom_item_j_list", bom_item_j_list);//원자재 조회
-	      System.out.println(bom_item_y_list);
-	       System.out.println(bom_item_j_list);
-		  
-	  return "bom/bom_write";   
-	     }
 	  
-	  
+	   //등록할떄 값을 가져올 리스트 
+		  @GetMapping("/bom_write")
+		  public String bom_write( Model m) {	
+			  
+			  //자재추가(ITEM 항목 불러옴)
+			  //List<bomDTO> item_bom = this.b_dao.bom_item_list(itemId);
+			  
+			  //완제품, 원자재 리스트 조회
+
+			  List<bomDTO> bom_item_y_list= this.b_dao.bom_item_type_y();
+			  List<bomDTO> bom_item_j_list= this.b_dao.bom_item_type_j();
+
+			  m.addAttribute("bom_item_y_list", bom_item_y_list);//완제품 
+		      m.addAttribute("bom_item_j_list", bom_item_j_list);//원자재 조회
+		      System.out.println(bom_item_y_list);
+		      //System.out.println(bom_item_j_list);
+
+			  
+		  return "bom/bom_write";   
+		     }
+		  
+		  
+		  @PostMapping("/bom_writeok")
+		  @ResponseBody
+		  @Transactional 
+		  public Map<String, Object> bomWriteOk(@RequestBody bomDTO bomData) {
+			    System.out.println("▶▶▶ 들어온 DTO: " + bomData);
+			  Map<String, Object> result = new HashMap<>();
+		      try {
+		          // 1. BOM 헤더 저장
+		          this.b_dao.insert_bom_header(bomData);
+		          
+		          // 2. BOM 디테일들 저장 (리스트로 한 번에)
+		          if (bomData.getMaterials() != null && !bomData.getMaterials().isEmpty()) {
+		              this.b_dao.insert_bom_details(bomData.getMaterials());
+		          }
+		          
+		          result.put("success", true);
+		          result.put("message", "BOM이 성공적으로 등록되었습니다.");
+		          
+		      } catch (Exception e) {
+		          result.put("success", false);
+		          result.put("message", "BOM 등록 실패: " + e.getMessage());
+		          e.printStackTrace(); // 에러 로그 출력
+		      }
+		      return result;
+		  }
+		  
+	  /*
 	  @PostMapping("/bom_writeok")
 	  @ResponseBody
-	  @Transactional 
+	  @Transactional
 	  public Map<String, Object> bomWriteOk(@RequestBody bomDTO bomData) {
-		    System.out.println("▶▶▶ 들어온 DTO: " + bomData);
-		  Map<String, Object> result = new HashMap<>();
+	      System.out.println("▶▶▶ 들어온 DTO: " + bomData);
+	      
+	      Map<String, Object> result = new HashMap<>();
+	      
 	      try {
-	          // 1. BOM 헤더 저장
-	          this.b_dao.insert_bom_header(bomData);
+	          // 필수 필드 검증
+	          if (bomData.getItemId() == null || bomData.getItemId().trim().isEmpty()) {
+	              result.put("success", false);
+	              result.put("message", "완제품 ID가 누락되었습니다.");
+	              return result;
+	          }
 	          
-	          // 2. BOM 디테일들 저장 (리스트로 한 번에)
-	          if (bomData.getMaterials() != null && !bomData.getMaterials().isEmpty()) {
-	              this.b_dao.insert_bom_details(bomData.getMaterials());
+	          if (bomData.getMaterials() == null || bomData.getMaterials().isEmpty()) {
+	              result.put("success", false);
+	              result.put("message", "자재 정보가 누락되었습니다.");
+	              return result;
+	          }
+	          
+	          // 1. BOM 헤더 저장
+	          System.out.println("▶▶▶ BOM 헤더 저장 시작");
+	          this.b_dao.insert_bom_header(bomData);
+	          System.out.println("▶▶▶ 생성된 bomHeaderId: " + bomData.getBomHeaderId());
+	          
+	          // bomHeaderId 생성 확인
+	          if (bomData.getBomHeaderId() == null || bomData.getBomHeaderId().trim().isEmpty()) {
+	              throw new RuntimeException("BOM Header ID 생성 실패 - 시퀀스를 확인하세요");
+	          }
+	          
+	          // 2. 자재들에 bomHeaderId 설정
+	          for (bomDTO material : bomData.getMaterials()) {
+	              material.setBomHeaderId(bomData.getBomHeaderId());
+	              
+	              // 자재 필드 검증
+	              if (material.getChildId() == null || material.getChildId().trim().isEmpty()) {
+	                  throw new RuntimeException("자재의 childId가 누락되었습니다: " + material);
+	              }
+	              
+	              System.out.println("▶▶▶ 자재: bomHeaderId=" + material.getBomHeaderId() + 
+	                               ", childId=" + material.getChildId() + 
+	                               ", quantity=" + material.getQuantity() + 
+	                               ", price=" + material.getPrice());
+	          }
+	          
+	          // 3. BOM 디테일들 저장 (반환값 확인)
+	          System.out.println("▶▶▶ BOM 디테일 저장 시작. 자재 개수: " + bomData.getMaterials().size());
+	          int insertedCount = this.b_dao.insert_bom_details(bomData.getMaterials());
+	          System.out.println("▶▶▶ 디테일 저장 결과: " + insertedCount + "건 처리됨");
+	          
+	          if (insertedCount <= 0) {
+	              throw new RuntimeException("BOM 디테일 저장 실패: 처리된 건수가 0입니다");
 	          }
 	          
 	          result.put("success", true);
-	          result.put("message", "BOM이 성공적으로 등록되었습니다.");
+	          result.put("message", "BOM이 성공적으로 등록되었습니다. (헤더 1건, 디테일 " + insertedCount + "건)");
 	          
 	      } catch (Exception e) {
+	          System.err.println("▶▶▶ BOM 등록 오류: " + e.getMessage());
+	          e.printStackTrace();
+	          
 	          result.put("success", false);
 	          result.put("message", "BOM 등록 실패: " + e.getMessage());
-	          e.printStackTrace(); // 에러 로그 출력
 	      }
+	      
 	      return result;
 	  }
-	  
+	*/
 	  /*
 	  @PostMapping("/bom_writeok")
 	  public String bom_writeok(@ModelAttribute bomDTO dto, RedirectAttributes ra) {
@@ -609,9 +683,6 @@ public class bom_controller {
 		  return "bom/bom_list";   
 	  }
 	  */
-
-	  
-	  
 	  
 	}
 	  

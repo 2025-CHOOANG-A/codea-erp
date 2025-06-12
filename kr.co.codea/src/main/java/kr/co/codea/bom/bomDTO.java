@@ -11,7 +11,7 @@ import lombok.Data;
 public class bomDTO {
 	
 	/*완제품조회 */
-	private String  itemId;  // 자동증가값 
+	private String itemId;  // 자동증가값 
     private String itemCode; // 제품코드(제품목록리스트, 주문등록)
 	private String itemName; // 제품명
     private String itemType; // 제품코드 
@@ -58,7 +58,6 @@ public class bomDTO {
 	
 	
 	  private List<bomDTO> detailList;
-	  
 	  
 	  // ==========================================
 	    // 수정 기능을 위해 꼭 필요한 필드만 추가
