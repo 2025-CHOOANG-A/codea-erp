@@ -1,6 +1,7 @@
 plugins {
     id 'org.springframework.boot' version '3.4.5'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'war' // WAR 플러그인으로 변경
     id 'java'
 }
 
@@ -14,78 +15,61 @@ java {
 repositories {
     mavenCentral()
 }
+
 tasks.withType(JavaCompile) {
     options.compilerArgs += '-parameters'
 }
+
 dependencies {
-	// ===== [템플릿 엔진] =====
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' // Thymeleaf 템플릿 엔진
-	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect' // 레이아웃 다이얼렉트 사용 시
-    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6' // Spring Security 연동
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat' // WAR 배포 시 필요
+
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-	
-	// ===== [JSON 처리] =====
-	implementation 'org.json:json:20240303' // JSON 파싱/생성 라이브러리
-	implementation 'com.googlecode.json-simple:json-simple:1.1.1' // 간단한 JSON 파싱 라이브러리 (중복 가능성 있음)
-	
-    // ===== [Spring Web / REST / SOAP / WebFlux] =====
-	implementation 'org.springframework.boot:spring-boot-starter-web' // Spring MVC (REST API 포함)
-	implementation 'org.springframework.boot:spring-boot-starter-web-services' // SOAP Web Service 지원
-	implementation 'org.springframework.boot:spring-boot-starter-webflux' // 비동기 WebFlux 지원
-    
-    // ===== [데이터베이스] =====
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // 순수 JDBC 설정
-	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc' // Spring Data JDBC (간단 ORM)
-	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // MyBatis 프레임워크 연동
-	// implementation 'org.springframework.boot:spring-boot-starter-data-mongodb' // MongoDB
-	runtimeOnly 'com.oracle.database.jdbc:ojdbc11' // Oracle JDBC 드라이버
-	// Mybatis 페이징
-	implementation("com.github.pagehelper:pagehelper-spring-boot-starter:2.1.0")
-    
-    // ===== [세션 관리] =====
-	// implementation 'org.springframework.session:spring-session-core' // Spring 세션 기본 추상화
-	// implementation 'org.springframework.session:spring-session-jdbc' // 세션을 DB에 저장
-    
-    // ===== [이메일] =====
-	implementation 'org.springframework.boot:spring-boot-starter-mail' // 이메일 전송 기능
-	
-	// ===== [개발 편의 기능] =====
-	developmentOnly 'org.springframework.boot:spring-boot-devtools' // 코드 변경 시 자동 리스타트
 
-	// ===== [Lombok] =====
-	compileOnly 'org.projectlombok:lombok' // 롬복 (컴파일 시만 필요)
-	annotationProcessor 'org.projectlombok:lombok' // 롬복 어노테이션 처리기
+    implementation 'org.json:json:20240303'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 
-    // ===== [테스트 관련] =====
-	testImplementation 'org.springframework.boot:spring-boot-starter-test' // JUnit, Mockito 등 포함
-	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4' // MyBatis 테스트 지원
-	testImplementation 'io.projectreactor:reactor-test' // WebFlux 관련 테스트 도구
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // JUnit Platform 실행기
-	
-	// Spring Security
-	implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Security 프레임워크를 사용하기 위한 기본 의존성
-	
-	// JWT (0.11.x 기준)
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5' //  JWT 생성/파싱/검증 기능을 정의한 API
-	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5' // 위 API의 실제 구현체
-	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JWT 내부 클레임을 JSON으로 직렬화/역직렬화 하기 위한 Jackson 연동
-	
-	// 페이징 처리용
-	implementation 'org.springframework.data:spring-data-commons'
-	
-	//파일 업로드
-	implementation 'commons-fileupload:commons-fileupload:1.5'
-	// FTP 파일 전송
-	implementation 'commons-net:commons-net:3.8.0'
-	// JAVA (Controller에서 외부 서버 접속 허용)
-	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-	
-	//POI
-	implementation 'org.apache.poi:poi:5.2.3'
-	implementation 'org.apache.poi:poi-ooxml:5.2.3'
-	
-	//sftp
-	implementation 'com.jcraft:jsch:0.1.55'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-web-services'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    implementation 'com.github.pagehelper:pagehelper-spring-boot-starter:2.1.0'
+    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    implementation 'org.springframework.data:spring-data-commons'
+
+    implementation 'commons-fileupload:commons-fileupload:1.5'
+    implementation 'commons-net:commons-net:3.8.0'
+
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    implementation 'org.apache.poi:poi:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
+    implementation 'com.jcraft:jsch:0.1.55'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+    testImplementation 'io.projectreactor:reactor-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
