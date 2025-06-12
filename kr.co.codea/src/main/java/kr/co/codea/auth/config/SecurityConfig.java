@@ -71,7 +71,7 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authz -> authz
                 // ADMIN 전용 경로
-                .requestMatchers("/notice/**", "/employee/new", "/employee/register", "/employee/{empId}/delete")
+                .requestMatchers("/employee/new", "/employee/register", "/employee/{empId}/delete")
                 .hasRole("ADMIN")
 
                 // 인증 없이 접근 가능한 공개 경로
