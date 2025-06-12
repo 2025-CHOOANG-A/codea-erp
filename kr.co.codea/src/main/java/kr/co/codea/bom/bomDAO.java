@@ -78,9 +78,9 @@ public class bomDAO implements bom_service{
     }
 	   
     //BOM 상세정보(디테일)
-	@Override
+    @Override
     public int insert_bom_detail(bomDTO dto) {
-	  return b_mp.insert_bom_detail(dto);
+        return this.b_mp.insert_bom_detail(dto);
     }
 	
 	@Override
