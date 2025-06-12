@@ -1,10 +1,40 @@
 /**
  * 생산실적관리 전용 스크립트
- * productplan_list.js와 완전히 분리된 독립형 파일
+ * 중복 실행 방지 및 오늘 날짜 설정 포함
  */
+
+// 중복 실행 방지
+if (typeof window.ProductActualInitialized !== 'undefined' && window.ProductActualInitialized) {
+    console.log('ProductActual script already initialized, preventing duplicate execution');
+} else {
+
+// 초기화 플래그 설정
+window.ProductActualInitialized = true;
 
 // 전역 변수
 window.ProductActualManager = {
+    
+    // 제출 중복 방지 플래그
+    isSubmitting: false,
+    
+    /**
+     * 오늘 날짜 설정 함수
+     */
+    setTodayDate: function() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayString = `${year}-${month}-${day}`;
+        
+        const actualDateInput = document.getElementById('actualDate');
+        if (actualDateInput) {
+            actualDateInput.value = todayString;
+            console.log('Today date set to:', todayString);
+        }
+        
+        return todayString;
+    },
     
     /**
      * 작업 시작 확인 및 처리
@@ -396,7 +426,7 @@ function showStatusMessage(status) {
 }
 
 /**
- * 폼 초기화 함수
+ * 폼 초기화 함수 (오늘 날짜 설정 포함)
  */
 function clearActualForm() {
     const elements = {
@@ -406,7 +436,6 @@ function clearActualForm() {
         actualQtyInput: document.getElementById('actualQtyInput'),
         defectQtyInput: document.getElementById('defectQtyInput'),
         actualRemark: document.getElementById('actualRemark'),
-        actualDateInput: document.getElementById('actualDate'),
         displayPlanId: document.getElementById('displayPlanId'),
         displayItemName: document.getElementById('displayItemName'),
         displayPlanQty: document.getElementById('displayPlanQty'),
@@ -421,10 +450,6 @@ function clearActualForm() {
         dailyActualsTableBody: document.querySelector('#dailyActualsTable tbody')
     };
 
-    // 오늘 날짜 설정
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
     // 폼 필드 초기화
     if (elements.actualPlanId) elements.actualPlanId.value = '';
     if (elements.currentActualQtyHidden) elements.currentActualQtyHidden.value = '';
@@ -432,7 +457,9 @@ function clearActualForm() {
     if (elements.actualQtyInput) elements.actualQtyInput.value = '';
     if (elements.defectQtyInput) elements.defectQtyInput.value = '0';
     if (elements.actualRemark) elements.actualRemark.value = '';
-    if (elements.actualDateInput) elements.actualDateInput.value = todayStr;
+    
+    // ✅ 오늘 날짜로 설정
+    window.ProductActualManager.setTodayDate();
     
     // 버튼 상태 초기화
     updateButtonStates(null);
@@ -529,6 +556,11 @@ function loadDailyActuals(planId) {
  */
 document.addEventListener('DOMContentLoaded', function() {
     
+    console.log('ProductActual DOMContentLoaded started');
+    
+    // ✅ 페이지 로드 시 즉시 오늘 날짜 설정
+    window.ProductActualManager.setTodayDate();
+    
     const elements = {
         productionPlanTable: document.getElementById('productionPlanTable'),
         selectedPlanCard: document.getElementById('selectedPlanCard'),
@@ -537,13 +569,12 @@ document.addEventListener('DOMContentLoaded', function() {
         actualRegisterButton: document.getElementById('actualRegisterButton'),
         actualRegisterForm: document.getElementById('actualRegisterForm'),
         clearActualFormButton: document.getElementById('clearActualFormButton'),
-        // 모달 관련 요소들 추가
         productionPlanRegisterModal: document.getElementById('productionPlanRegisterModal'),
         remarkModal: document.getElementById('remarkModal')
     };
 
     // 전역 함수 설정
-    window.getStatusBadgeClass = ProductActualManager.getStatusBadgeClass;
+    window.getStatusBadgeClass = window.ProductActualManager.getStatusBadgeClass;
     window.loadDailyActuals = loadDailyActuals;
 
     // 상세 버튼 클릭 이벤트 (이벤트 위임 방식)
@@ -576,12 +607,11 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function handleDetailModalShow(planId) {
         if (!planId) {
-            ProductActualManager.showAlert('error', '오류', '계획 ID를 찾을 수 없습니다.');
+            window.ProductActualManager.showAlert('error', '오류', '계획 ID를 찾을 수 없습니다.');
             return;
         }
 
-        // 로딩 표시
-        ProductActualManager.showProgressMessage('상세 정보를 불러오는 중...');
+        window.ProductActualManager.showProgressMessage('상세 정보를 불러오는 중...');
 
         fetch(`/productplan/${planId}`)
             .then(response => {
@@ -595,13 +625,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(planData => {
-                ProductActualManager.hideProgressMessage();
+                window.ProductActualManager.hideProgressMessage();
                 populateDetailModal(planData);
             })
             .catch(error => {
-                ProductActualManager.hideProgressMessage();
+                window.ProductActualManager.hideProgressMessage();
                 console.error('Error fetching plan details:', error);
-                ProductActualManager.showAlert('error', '로드 실패', 
+                window.ProductActualManager.showAlert('error', '로드 실패', 
                     '생산 계획 상세 정보를 불러오는 중 오류가 발생했습니다: ' + error.message);
             });
     }
@@ -626,12 +656,10 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton: document.getElementById('modalSubmitButton')
         };
 
-        // 모달 제목 설정
         if (modalElements.title) {
             modalElements.title.textContent = '생산 계획 상세 (조회 전용)';
         }
 
-        // 데이터 채우기
         if (modalElements.itemSearchInput) modalElements.itemSearchInput.value = planData.itemName || '';
         if (modalElements.itemCode) modalElements.itemCode.value = planData.itemCode || '';
         if (modalElements.modalPlanQty) modalElements.modalPlanQty.value = planData.planQty || '';
@@ -644,7 +672,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modalElements.modalEmpNo) modalElements.modalEmpNo.value = planData.empNo || '';
         if (modalElements.remark) modalElements.remark.value = planData.remark || '';
 
-        // 모든 필드를 읽기 전용으로 설정
         const formFields = document.querySelectorAll('#productionPlanForm input, #productionPlanForm select, #productionPlanForm textarea');
         formFields.forEach(field => {
             field.readOnly = true;
@@ -654,7 +681,6 @@ document.addEventListener('DOMContentLoaded', function() {
             field.style.backgroundColor = '#e9ecef';
         });
 
-        // 제출 버튼 숨기기
         if (modalElements.submitButton) {
             modalElements.submitButton.style.display = 'none';
         }
@@ -677,13 +703,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // 모달 숨김 시 초기화
     if (elements.productionPlanRegisterModal) {
         elements.productionPlanRegisterModal.addEventListener('hidden.bs.modal', function() {
-            // 폼 초기화
             const form = document.getElementById('productionPlanForm');
             if (form) {
                 form.reset();
             }
 
-            // 필드 스타일 복원
             const formFields = document.querySelectorAll('#productionPlanForm input, #productionPlanForm select, #productionPlanForm textarea');
             formFields.forEach(field => {
                 field.readOnly = false;
@@ -693,7 +717,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 field.style.backgroundColor = '';
             });
 
-            // 제출 버튼 복원
             const submitButton = document.getElementById('modalSubmitButton');
             if (submitButton) {
                 submitButton.style.display = 'block';
@@ -706,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.workStartButton.addEventListener('click', async function() {
             const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
             if (!selectedRadio) {
-                ProductActualManager.showAlert('warning', '선택 필요', '작업을 시작할 생산 계획을 선택해주세요.');
+                window.ProductActualManager.showAlert('warning', '선택 필요', '작업을 시작할 생산 계획을 선택해주세요.');
                 return;
             }
 
@@ -729,12 +752,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     default:
                         message = `현재 상태(${status})에서는 작업을 시작할 수 없습니다.`;
                 }
-                ProductActualManager.showAlert('error', '상태 오류', message);
+                window.ProductActualManager.showAlert('error', '상태 오류', message);
                 return;
             }
 
             try {
-                await ProductActualManager.confirmStartWork(planId, itemName);
+                await window.ProductActualManager.confirmStartWork(planId, itemName);
                 
                 const response = await fetch(`/productactual/start-work/${planId}`, {
                     method: 'POST',
@@ -743,24 +766,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                ProductActualManager.hideProgressMessage();
+                window.ProductActualManager.hideProgressMessage();
 
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || '작업 시작 중 오류가 발생했습니다.');
                 }
 
-                ProductActualManager.showAlert('success', '작업 시작 완료', 
+                window.ProductActualManager.showAlert('success', '작업 시작 완료', 
                     `${itemName}의 작업이 시작되었습니다.\n페이지를 새로고침합니다.`);
                 
                 setTimeout(() => location.reload(), 2000);
 
             } catch (error) {
-                ProductActualManager.hideProgressMessage();
+                window.ProductActualManager.hideProgressMessage();
                 if (error === '사용자 취소') return;
                 
                 console.error('작업 시작 중 오류:', error);
-                ProductActualManager.showAlert('error', '작업 시작 실패', 
+                window.ProductActualManager.showAlert('error', '작업 시작 실패', 
                     '작업 시작에 실패했습니다:\n' + error.message);
             }
         });
@@ -771,7 +794,7 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.workEndButton.addEventListener('click', async function() {
             const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
             if (!selectedRadio) {
-                ProductActualManager.showAlert('warning', '선택 필요', '작업을 종료할 생산 계획을 선택해주세요.');
+                window.ProductActualManager.showAlert('warning', '선택 필요', '작업을 종료할 생산 계획을 선택해주세요.');
                 return;
             }
 
@@ -796,7 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     default:
                         message = `현재 상태(${status})에서는 작업을 종료할 수 없습니다.`;
                 }
-                ProductActualManager.showAlert('error', '상태 오류', message);
+                window.ProductActualManager.showAlert('error', '상태 오류', message);
                 return;
             }
 
@@ -807,7 +830,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                await ProductActualManager.confirmEndWork(planId, itemName, actualQty, planQty);
+                await window.ProductActualManager.confirmEndWork(planId, itemName, actualQty, planQty);
                 
                 const response = await fetch(`/productactual/end-work/${planId}`, {
                     method: 'POST',
@@ -816,24 +839,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                ProductActualManager.hideProgressMessage();
+                window.ProductActualManager.hideProgressMessage();
 
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || '작업 종료 중 오류가 발생했습니다.');
                 }
 
-                ProductActualManager.showAlert('success', '작업 종료 완료', 
-                    `${itemName}의 작업이 완료되었습니다.\n완제품 ${ProductActualManager.formatQuantity(actualQty)} EA가 완제품창고에 입고되었습니다.\n\n페이지를 새로고침합니다.`);
+                window.ProductActualManager.showAlert('success', '작업 종료 완료', 
+                    `${itemName}의 작업이 완료되었습니다.\n완제품 ${window.ProductActualManager.formatQuantity(actualQty)} EA가 완제품창고에 입고되었습니다.\n\n페이지를 새로고침합니다.`);
                 
                 setTimeout(() => location.reload(), 3000);
 
             } catch (error) {
-                ProductActualManager.hideProgressMessage();
+                window.ProductActualManager.hideProgressMessage();
                 if (error === '사용자 취소') return;
                 
                 console.error('작업 종료 중 오류:', error);
-                ProductActualManager.showAlert('error', '작업 종료 실패', 
+                window.ProductActualManager.showAlert('error', '작업 종료 실패', 
                     '작업 종료에 실패했습니다:\n' + error.message);
             }
         });
@@ -844,7 +867,7 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.actualRegisterButton.addEventListener('click', function() {
             const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
             if (!selectedRadio) {
-                ProductActualManager.showAlert('warning', '선택 필요', '실적을 등록할 생산 계획을 선택해주세요.');
+                window.ProductActualManager.showAlert('warning', '선택 필요', '실적을 등록할 생산 계획을 선택해주세요.');
                 return;
             }
 
@@ -862,7 +885,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     default:
                         message = `현재 상태(${status})에서는 실적을 등록할 수 없습니다.`;
                 }
-                ProductActualManager.showAlert('error', '상태 오류', message);
+                window.ProductActualManager.showAlert('error', '상태 오류', message);
                 return;
             }
 
@@ -919,7 +942,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (displayElements.displayStatus) {
                     displayElements.displayStatus.textContent = status;
-                    displayElements.displayStatus.className = `badge ${ProductActualManager.getStatusBadgeClass(status)}`;
+                    displayElements.displayStatus.className = `badge ${window.ProductActualManager.getStatusBadgeClass(status)}`;
                 }
 
                 const progressRate = (planQty > 0) ? ((actualQty / planQty) * 100).toFixed(1) : 0;
@@ -939,6 +962,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (formElements.currentActualQtyHidden) formElements.currentActualQtyHidden.value = actualQty;
                 if (formElements.currentPlanQtyHidden) formElements.currentPlanQtyHidden.value = planQty;
 
+                // ✅ 계획 선택 시 날짜가 비어있으면 오늘 날짜로 설정
+                const actualDateInput = document.getElementById('actualDate');
+                if (actualDateInput && !actualDateInput.value) {
+                    window.ProductActualManager.setTodayDate();
+                }
+
                 updateButtonStates(selectedRadio);
                 loadDailyActuals(planId);
 
@@ -949,97 +978,142 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 실적 등록 폼 제출 이벤트
-    if (elements.actualRegisterForm) {
+    // ✅ 실적 등록 폼 제출 이벤트 (중복 방지 강화)
+    if (elements.actualRegisterForm && !elements.actualRegisterForm.hasAttribute('data-event-bound')) {
+        elements.actualRegisterForm.setAttribute('data-event-bound', 'true');
+        
         elements.actualRegisterForm.addEventListener('submit', function(event) {
             event.preventDefault();
+            event.stopImmediatePropagation();
             
-            const formData = new FormData(elements.actualRegisterForm);
-            const data = Object.fromEntries(formData.entries());
-            
-            const validation = ProductActualManager.validateActualForm(data);
-            if (!validation.isValid) {
-                ProductActualManager.showAlert('error', '입력 오류', validation.errors.join('\n'));
-                return;
+            // ✅ 이미 제출 중이면 완전히 무시
+            if (window.ProductActualManager.isSubmitting) {
+                console.warn('Already submitting, ignoring duplicate request');
+                return false;
             }
             
-            const planId = data.planId;
-            const actualDate = data.actualDate;
-            const actualQty = parseInt(data.actualQty, 10);
-            const defectQty = parseInt(data.defectQty, 10);
-            const remark = data.remark;
-            const currentAccumulatedActualQty = parseInt(data.currentActualQty, 10);
-            const totalPlanQty = parseInt(data.currentPlanQty, 10);
-
-            if (!planId) {
-                ProductActualManager.showAlert('error', '입력 오류', '생산 계획을 먼저 선택해주세요.');
-                return;
+            // ✅ 제출 상태 플래그 설정
+            window.ProductActualManager.isSubmitting = true;
+            
+            // 제출 버튼 비활성화
+            const submitButton = document.getElementById('saveActualButton');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> 등록 중...';
             }
-
-            const newAccumulatedActualQty = currentAccumulatedActualQty + actualQty;
-
-            if (newAccumulatedActualQty > totalPlanQty) {
-                ProductActualManager.showAlert('error', '수량 초과', 
-                    `오늘 생산 실적(양품)을 더하면 계획 수량(${totalPlanQty} EA)을 초과합니다.\n현재까지 실적(양품): ${currentAccumulatedActualQty} EA, 오늘 등록 양품: ${actualQty} EA`);
-                return;
-            }
-
-            const requestData = {
-                planId: planId,
-                actualDate: actualDate,
-                actualQty: actualQty,
-                defectQty: defectQty,
-                remark: remark
-            };
-
-            fetch('/productactual/insert', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestData),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => { 
-                        throw new Error(err.message || '서버 오류'); 
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                ProductActualManager.showAlert('success', '등록 완료', '생산 실적이 성공적으로 등록되었습니다.');
-
-                const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
-                if (selectedRadio) {
-                    selectedRadio.dataset.actualQty = newAccumulatedActualQty.toString();
-                }
-
-                ProductActualManager.updateUIAfterActualRegistration(planId, newAccumulatedActualQty, totalPlanQty);
-
-                if (selectedRadio) {
-                    const selectedRow = selectedRadio.closest('tr');
-                    const actualQtyCellInTable = selectedRow.cells[9];
-                    if (actualQtyCellInTable) {
-                        actualQtyCellInTable.textContent = newAccumulatedActualQty;
-                    }
-                }
-
-                loadDailyActuals(planId);
-
-                // 실적 입력 폼의 특정 필드만 초기화
-                const actualQtyInput = document.getElementById('actualQtyInput');
-                const defectQtyInput = document.getElementById('defectQtyInput');
-                const actualRemark = document.getElementById('actualRemark');
+            
+            try {
+                const formData = new FormData(elements.actualRegisterForm);
+                const data = Object.fromEntries(formData.entries());
                 
-                if (actualQtyInput) actualQtyInput.value = '';
-                if (defectQtyInput) defectQtyInput.value = '0';
-                if (actualRemark) actualRemark.value = '';
-            })
-            .catch(error => {
-                console.error('실적 등록 중 오류 발생:', error);
-                ProductActualManager.showAlert('error', '등록 실패', '실적 등록에 실패했습니다: ' + error.message);
-            });
+                const validation = window.ProductActualManager.validateActualForm(data);
+                if (!validation.isValid) {
+                    throw new Error(validation.errors.join('\n'));
+                }
+                
+                const planId = data.planId;
+                const actualDate = data.actualDate;
+                const actualQty = parseInt(data.actualQty, 10);
+                const defectQty = parseInt(data.defectQty, 10) || 0;
+                const remark = data.remark || '';
+                const currentAccumulatedActualQty = parseInt(data.currentActualQty, 10) || 0;
+                const totalPlanQty = parseInt(data.currentPlanQty, 10) || 0;
+
+                if (!planId) {
+                    throw new Error('생산 계획을 먼저 선택해주세요.');
+                }
+
+                const newAccumulatedActualQty = currentAccumulatedActualQty + actualQty;
+
+                if (newAccumulatedActualQty > totalPlanQty) {
+                    throw new Error(`오늘 생산 실적(양품)을 더하면 계획 수량(${totalPlanQty} EA)을 초과합니다.\n현재까지 실적(양품): ${currentAccumulatedActualQty} EA, 오늘 등록 양품: ${actualQty} EA`);
+                }
+
+                const requestData = {
+                    planId: planId,
+                    actualDate: actualDate,
+                    actualQty: actualQty,
+                    defectQty: defectQty,
+                    remark: remark
+                };
+
+                console.log('Sending actual registration request:', requestData);
+
+                fetch('/productactual/insert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { 
+                            throw new Error(err.message || '서버 오류'); 
+                        });
+                    }
+                    return response.json();
+                })
+                .then(responseData => {
+                    console.log('Actual registration successful:', responseData);
+                    
+                    window.ProductActualManager.showAlert('success', '등록 완료', 
+                        '생산 실적이 성공적으로 등록되었습니다.');
+
+                    // UI 업데이트
+                    const selectedRadio = document.querySelector('input[name="selectedPlan"]:checked');
+                    if (selectedRadio) {
+                        selectedRadio.dataset.actualQty = newAccumulatedActualQty.toString();
+                        
+                        const selectedRow = selectedRadio.closest('tr');
+                        const actualQtyCellInTable = selectedRow.cells[9];
+                        if (actualQtyCellInTable) {
+                            actualQtyCellInTable.textContent = newAccumulatedActualQty;
+                        }
+                    }
+
+                    window.ProductActualManager.updateUIAfterActualRegistration(planId, newAccumulatedActualQty, totalPlanQty);
+
+                    // 일별 실적 목록 새로고침
+                    loadDailyActuals(planId);
+
+                    // ✅ 폼 필드 초기화 (날짜는 오늘로 유지)
+                    const actualQtyInput = document.getElementById('actualQtyInput');
+                    const defectQtyInput = document.getElementById('defectQtyInput');
+                    const actualRemark = document.getElementById('actualRemark');
+                    
+                    if (actualQtyInput) actualQtyInput.value = '';
+                    if (defectQtyInput) defectQtyInput.value = '0';
+                    if (actualRemark) actualRemark.value = '';
+                    
+                    // 날짜는 오늘로 유지
+                    window.ProductActualManager.setTodayDate();
+                })
+                .catch(error => {
+                    console.error('실적 등록 중 오류 발생:', error);
+                    window.ProductActualManager.showAlert('error', '등록 실패', 
+                        '실적 등록에 실패했습니다:\n' + error.message);
+                })
+                .finally(() => {
+                    // ✅ 항상 플래그 리셋
+                    window.ProductActualManager.isSubmitting = false;
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="bi bi-check-lg"></i> 등록';
+                    }
+                });
+                
+            } catch (error) {
+                // 즉시 오류 처리
+                window.ProductActualManager.isSubmitting = false;
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="bi bi-check-lg"></i> 등록';
+                }
+                window.ProductActualManager.showAlert('error', '입력 오류', error.message);
+            }
+            
+            return false;
         });
     }
 
@@ -1050,6 +1124,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    console.log('ProductActual initialization completed');
+});
+
+// ✅ 페이지 표시 시에도 날짜 설정 (추가 보장)
+window.addEventListener('pageshow', function() {
+    if (window.ProductActualManager && window.ProductActualManager.setTodayDate) {
+        window.ProductActualManager.setTodayDate();
+    }
+});
+
+// ✅ 날짜 필드 포커스 시에도 날짜 확인
+document.addEventListener('focusin', function(event) {
+    if (event.target && event.target.id === 'actualDate') {
+        if (!event.target.value && window.ProductActualManager && window.ProductActualManager.setTodayDate) {
+            window.ProductActualManager.setTodayDate();
+        }
+    }
 });
 
 // CSS 스타일 추가
@@ -1130,5 +1221,18 @@ productActualStyle.textContent = `
         background-color: #e9ecef !important;
         cursor: not-allowed;
     }
+    
+    /* ✅ 날짜 입력 필드 스타일링 */
+    #actualDate {
+        background-color: #f8f9fa;
+        border: 2px solid #0d6efd;
+    }
+    
+    #actualDate:focus {
+        background-color: #ffffff;
+        box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+    }
 `;
 document.head.appendChild(productActualStyle);
+
+} // 중복 실행 방지 if문 종료
