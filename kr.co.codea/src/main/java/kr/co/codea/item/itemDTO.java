@@ -9,7 +9,9 @@ import lombok.Data;
 @Data
 @Repository("itemDTO")
 public class itemDTO {
-
+	
+	private String itemCatLName;
+    private String itemCatSName;
    //제품목록 리스트 
     private String inventoryCode; // 재고번호
 	private String itemCatL; // 대분류
