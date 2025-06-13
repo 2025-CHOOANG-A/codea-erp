@@ -11,7 +11,7 @@ import lombok.Data;
 public class bomDTO {
 	
 	/*완제품조회 */
-    private String itemId;  // 자동증가값 
+	private String itemId;  // 자동증가값 
     private String itemCode; // 제품코드(제품목록리스트, 주문등록)
 	private String itemName; // 제품명
     private String itemType; // 제품코드 
@@ -39,8 +39,8 @@ public class bomDTO {
     
     
     /* === BOM_HEADER 등록용 === */
-    private String bomHeaderId;    // BOM_HEADER_ID (등록용 PK)
-    private String version;        // 버전
+    private String   bomHeaderId;    // BOM_HEADER_ID (등록용 PK)
+    private String  version;        // 버전
     private String description;    // 비고
     private String descRiption;
     private String createdAt;      // 생성일시 (조회용)
@@ -59,7 +59,6 @@ public class bomDTO {
 	
 	  private List<bomDTO> detailList;
 	  
-	  
 	  // ==========================================
 	    // 수정 기능을 위해 꼭 필요한 필드만 추가
 	    // ==========================================
@@ -73,11 +72,6 @@ public class bomDTO {
 	    // ==========================================
 	    // 기존 getter/setter 메서드들 유지
 	    // ==========================================
-	  
-	  
-	  
-	  
-	  
 	  
 
     // getter, setter 메소드들...
@@ -95,6 +89,11 @@ public class bomDTO {
     // 아래부터는 getter / setter 메서드
     // ──────────────────────────────────────────────────────────────────────────
 
+ // materials 리스트 getter/setter 추가
+    public List<bomDTO> getMaterials() {
+        return materials;
+    }
+    
     public String getBomCode() {
         return bomCode;
     }
@@ -197,8 +196,7 @@ public class bomDTO {
     }
 	
 	
-	
-	
+
 	
 	
 	

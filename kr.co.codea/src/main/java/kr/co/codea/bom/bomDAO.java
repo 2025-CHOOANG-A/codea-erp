@@ -78,9 +78,9 @@ public class bomDAO implements bom_service{
     }
 	   
     //BOM 상세정보(디테일)
-	@Override
+    @Override
     public int insert_bom_detail(bomDTO dto) {
-	  return b_mp.insert_bom_detail(dto);
+        return this.b_mp.insert_bom_detail(dto);
     }
 	
 	@Override
@@ -130,8 +130,8 @@ public class bomDAO implements bom_service{
 
 // 선택된 자재들 삭제 (체크박스 다중 삭제용)
 @Override
-public int delete_bom_detail_by_materials(String bomCode, List<String> materialCodes) {
-    return b_mp.delete_bom_detail_by_materials(bomCode, materialCodes);
+public int delete_bom_detail_by_material(Map<String, Object> params) {
+    return b_mp.delete_bom_detail_by_material(params);
 }
 
 // 단일 자재 삭제

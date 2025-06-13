@@ -13,7 +13,6 @@
   </head>
   <body>
     <!-- Sidebar -->
-     <!-- Sidebar -->
     <div th:replace="~{fragments/sidebar :: layout}"></div>
 
     <!-- Main Content -->
@@ -50,6 +49,9 @@
           <input type="hidden" name="spec" id="hiddenSpec" />
           <input type="hidden" name="unit" id="hiddenUnit" />
           <input type="hidden" name="note" id="hiddenNote" />
+          <!-- 
+          <input type="hidden" name="itemId" id="hiddenItemId" />
+           -->
           
           <div class="table-responsive mb-4">
             <table class="table table-bordered align-middle mb-0">
@@ -184,20 +186,21 @@
             </thead>
             <!--  -->
            <!-- 완제품 검색 모달의 tbody 부분 -->
-      <tbody id="modalProductResult">
-        <tr th:each="bom_y : ${bom_item_y_list}"
-        th:data-code="${bom_y.materialCode}" 
-        th:data-name="${bom_y.materialName}" 
-        th:data-spec="${bom_y.spec}" 
-        th:data-unit="${bom_y.j_unitName}"
-        onclick="selectMaterial(this)"
-       style="cursor: pointer;">
-      <td th:text="${bom_y.materialCode}"></td>
-      <td th:text="${bom_y.materialName}"></td>
-      <td th:text="${bom_y.spec}"></td>
-      <td th:text="${bom_y.j_unitName}"></td>
-    </tr>
-  </tbody>
+   <tbody id="modalProductResult">
+  <tr th:each="bom_y : ${bom_item_y_list}"
+      th:data-code="${bom_y.itemCode}" 
+      th:data-name="${bom_y.itemName}" 
+      th:data-spec="${bom_y.spec}" 
+      th:data-unit="${bom_y.unitName}"
+      th:data-item-id="${bom_y.itemId}"
+      onclick="selectProduct(this)"
+      style="cursor: pointer;">
+    <td th:text="${bom_y.itemCode}"></td>
+    <td th:text="${bom_y.itemName}"></td>
+    <td th:text="${bom_y.spec}"></td>
+    <td th:text="${bom_y.unitName}"></td>
+  </tr>
+</tbody>
           </table>
         </div>
       </div> <!-- modal-body end -->
@@ -244,16 +247,12 @@
                   <th>자재소요량</th>
                 </tr>
               </thead>
-              <tbody>
-               
+              <tbody>               
               </tbody>
             </table>
           </div>
-        </div>
-   
-</div>
-
-        <!-- Footer Buttons -->
+        </div>  
+       <!-- Footer Buttons -->
         <div class="footer-btns">
           <button type="button" class="btn btn-dark" id="btnList">목록</button>
           <button
@@ -261,13 +260,10 @@
             class="btn btn-primary"
             form="bomForm"
             id="btnSave"
-          >
-            등록
+          > 등록
           </button>
         </div>
-      </div>
     </main>
-
     <!-- Material Add Modal -->
     <div
       class="modal fade"
@@ -342,7 +338,6 @@
                   id="materialNameInput"
                   maxlength="50"
                   required
-                  readonly
                 />
               </div>
               <div class="mb-2">
@@ -354,7 +349,6 @@
                   id="materialSpecInput"
                   maxlength="20"
                   required
-                  readonly
                 />
               </div>
               <div class="mb-2">
@@ -432,23 +426,24 @@
                     <th>단위</th>
                     <th>단가</th>
                   </tr>
-                </thead>
-                <tbody id="modalMaterialResult">
-    <tr th:each="mat : ${bom_item_j_list}"
-        th:data-code="${mat.materialCode}"
-        th:data-name="${mat.materialName}"
-        th:data-spec="${mat.spec}"
-        th:data-unit="${mat.j_unitName}"
-        th:data-price="${mat.price}"
-        onclick="selectMaterial(this)"
-        style="cursor: pointer;">
-      <td th:text="${mat.materialCode}"></td>
-      <td th:text="${mat.materialName}"></td>
-      <td th:text="${mat.spec}"></td>
-      <td th:text="${mat.j_unitName}"></td>
-      <td th:text="${mat.price}"></td>
-    </tr>
-  </tbody>
+                </thead><!-- 자재 검색 모달의 tbody 부분 수정 -->
+<tbody id="modalMaterialResult">
+  <tr th:each="mat : ${bom_item_j_list}"
+      th:data-code="${mat.materialCode}"
+      th:data-name="${mat.materialName}"
+      th:data-spec="${mat.spec}"
+      th:data-unit="${mat.j_unitName}"
+      th:data-price="${mat.price}"
+      th:data-item-id="${mat.itemId}"
+      onclick="selectMaterial(this)"
+      style="cursor: pointer;">
+    <td th:text="${mat.materialCode}"></td>
+    <td th:text="${mat.materialName}"></td>
+    <td th:text="${mat.spec}"></td>
+    <td th:text="${mat.j_unitName}"></td>
+    <td th:text="${mat.price}"></td>
+  </tr>
+</tbody>
 </table>         
 </div>
 </div>

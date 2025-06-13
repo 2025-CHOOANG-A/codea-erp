@@ -19,8 +19,8 @@ public class ShipmentDTO {
 	// 원천 문서 유형, 원천 문서 헤더 ID, 원천 문서 상세 ID, 담당자 ID
 	int sourceDocType, sourceDocHeaderId, sourceDocDetailId, empId;
 	
-	// 제품명, 제품 구분, 주문 번호, 주문 일자, 생산 번호, 생산 일자(생산 완료일), 창고명
-	String itemName, itemType, ordCode, orderDate, planId, completionDate, whName;
+	// 제품명, 제품 구분, 주문 번호, 주문 일자, 생산 번호, 창고명
+	String itemName, itemType, ordCode, orderDate, planId, whName;
 	
 	// 주문 ID, 주문 상세 ID
 	int ordId, ordDetailId;
