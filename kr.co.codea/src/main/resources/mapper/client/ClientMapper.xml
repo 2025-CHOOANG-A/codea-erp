@@ -31,7 +31,7 @@
   </resultMap>
 
   <!-- 거래처 목록 조회 (담당자 수 포함) -->
-  <select id="searchClientbyKeywordWithContactCount" parameterType="ClientDTO" resultType="kr.co.codea.client.ClientDTO">
+  <select id="searchClientbyKeywordWithContactCount" parameterType="kr.co.codea.client.ClientDTO" resultType="kr.co.codea.client.ClientDTO">
     SELECT
         p.BP_ID as bpId,
         p.BP_CODE as bpCode,

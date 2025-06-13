@@ -134,7 +134,6 @@
     
     
     
- <!--        pp.EMP_NO as empId -->
 
     <!-- MRP 데이터에서 자재 소요량 조회 (순수한 자재 정보만) -->
 <select id="getMaterialRequirements" parameterType="String" resultType="kr.co.codea.productplan.MaterialRequirementDTO">
@@ -146,11 +145,17 @@
         m.REQUIRED_QTY as requiredQty,
         COALESCE(cc.CODE, 'EA') as unit,
         COALESCE(i.PRICE, 0) as unitCost,
-        COALESCE(inv.WH_ID, 1) as whId
+        COALESCE(inv.WH_ID, 1) as whId,
+        
+        -- ✅ EMP_ID 관련 필드들 추가/확인 필요
+        pp.EMP_NO as empNo,
+        COALESCE(e.EMP_ID, 1) as empId  -- EMP_ID가 없으면 기본값 1 사용
+        
     FROM MRP m
     JOIN ITEM i ON m.CHILD_ID = i.ITEM_ID    -- 조인 조건 변경
     LEFT JOIN COMMON_CODE cc ON i.UNIT_CODE = cc.CODE_ID
     JOIN PRODUCTION_PLAN pp ON m.PLAN_ID = pp.PLAN_ID
+    LEFT JOIN EMPLOYEE e ON pp.EMP_NO = e.EMP_NO  -- ✅ EMPLOYEE 테이블 조인 추가
     LEFT JOIN (
         SELECT ITEM_ID, WH_ID,
                ROW_NUMBER() OVER (PARTITION BY ITEM_ID ORDER BY CURRENT_QTY DESC) as rn
