@@ -71,7 +71,7 @@
     </select>
 
     <!-- 공지사항 등록 -->
-    <insert id="insertNotice" parameterType="NoticeDTO" useGeneratedKeys="true" keyProperty="noticeId">
+    <insert id="insertNotice" parameterType="NoticeDTO"  keyProperty="noticeId">
         INSERT INTO NOTICE (
             TITLE,
             CONTENT,

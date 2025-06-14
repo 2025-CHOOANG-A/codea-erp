@@ -1,6 +1,8 @@
 package kr.co.codea.notice;
 
 import com.github.pagehelper.PageInfo;
+
+import kr.co.codea.auth.dto.UserDetailsDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +21,35 @@ import java.util.Map;
 public class NoticeController {
 
     private final NoticeService noticeService;
+    
+    
+    /**
+     * 현재 로그인한 사용자의 EMP_ID 가져오기
+     */
+    private Long getCurrentUserEmpId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (auth != null && auth.getPrincipal() instanceof UserDetailsDto) {
+            UserDetailsDto userDetails = (UserDetailsDto) auth.getPrincipal();
+            return userDetails.getEmpId();
+        }
+        
+        return null;
+    }
+
+    /**
+     * 현재 사용자가 관리자인지 확인
+     */
+    private boolean isAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return false;
+        }
+        return auth.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> 
+                    grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+    }
+    
 
     /**
      * 공지사항 목록 페이지
@@ -33,6 +64,8 @@ public class NoticeController {
         model.addAttribute("notices", pageInfo.getList());
         model.addAttribute("pageInfo", pageInfo);
         model.addAttribute("searchDto", dto);
+        model.addAttribute("isAdmin", isAdmin());
+
         model.addAttribute("templateName", "notice/notice_list");
         model.addAttribute("fragmentName", "contentFragment");
         
@@ -43,7 +76,7 @@ public class NoticeController {
      * 공지사항 상세 보기
      */
     @GetMapping("/{noticeId}")
-    public String noticeDetail(@PathVariable Long noticeId, Model model) {
+    public String noticeDetail(@PathVariable (value = "noticeId")Long noticeId, Model model) {
         // 조회수 증가
         noticeService.increaseViews(noticeId);
         
@@ -78,11 +111,15 @@ public class NoticeController {
     @PostMapping("/write")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String noticeInsert(NoticeDTO dto) {
-        // 현재 로그인한 사용자 정보 가져오기
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // 실제 구현에서는 사용자 정보에서 EMP_ID를 가져와야 함
-        // 여기서는 임시로 1을 설정 (관리자 ID)
-        dto.setAuthorEmpId(1L); // 실제로는 현재 로그인 사용자의 EMP_ID
+        // 현재 로그인한 사용자의 EMP_ID 설정
+        Long currentUserEmpId = getCurrentUserEmpId();
+        
+        if (currentUserEmpId != null) {
+            dto.setAuthorEmpId(currentUserEmpId);
+        } else {
+            // EMP_ID를 가져올 수 없는 경우 기본값 또는 에러 처리
+            dto.setAuthorEmpId(1L); // 기본값
+        }
         
         if (noticeService.insertNotice(dto)) {
             return "redirect:/notice/list?success=insert";

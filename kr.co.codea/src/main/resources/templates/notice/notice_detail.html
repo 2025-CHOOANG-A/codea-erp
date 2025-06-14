@@ -84,8 +84,8 @@
 
             <!-- 공지사항 내용 -->
             <div class="notice-content">
-                <div th:utext="${#strings.replace(notice.content, newlineChar, '&lt;br&gt;')}" 
-                     th:with="newlineChar=${T(java.lang.System).getProperty('line.separator')}">
+                <!-- CSS로 줄바꿈 처리 -->
+                <div th:text="${notice.content}" style="white-space: pre-wrap;">
                     공지사항 내용이 여기에 표시됩니다.
                 </div>
             </div>
@@ -98,16 +98,19 @@
                     </a>
                 </div>
                 
-                <div sec:authorize="hasRole('ROLE_ADMIN')">
-                    <a th:href="@{/notice/{id}/edit(id=${notice.noticeId})}" 
-                       class="btn btn-outline-primary me-2">
-                        <i class="bi bi-pencil"></i> 수정
-                    </a>
-                    <button type="button" 
-                            class="btn btn-outline-danger" 
-                            onclick="deleteNotice()">
-                        <i class="bi bi-trash"></i> 삭제
-                    </button>
+                <div>
+                    <!-- 관리자만 수정/삭제 버튼 표시 -->
+                    <div th:if="${isAdmin}">
+                        <a th:href="@{/notice/{id}/edit(id=${notice.noticeId})}" 
+                           class="btn btn-outline-primary me-2">
+                            <i class="bi bi-pencil"></i> 수정
+                        </a>
+                        <button type="button" 
+                                class="btn btn-outline-danger" 
+                                onclick="deleteNotice()">
+                            <i class="bi bi-trash"></i> 삭제
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
