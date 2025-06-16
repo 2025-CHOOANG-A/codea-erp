@@ -1,7 +1,7 @@
 plugins {
     id 'org.springframework.boot' version '3.4.5'
     id 'io.spring.dependency-management' version '1.1.4'
-    id 'war' // WAR 플러그인으로 변경
+//    id 'war' // WAR 플러그인으로 변경
     id 'java'
 }
 
@@ -21,7 +21,9 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat' // WAR 배포 시 필요
+   // providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat' // WAR 배포 시 필요
+   //test용
+    //runtimeOnly 'com.h2database:h2'
 
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
@@ -74,4 +76,8 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+springBoot {
+    mainClass = 'kr.co.codea.Application'
 }

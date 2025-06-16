@@ -3,10 +3,11 @@ package kr.co.codea.storage;
 import java.util.List;
 
 public interface StorageService {
-
-	List<StorageDTO> storageListByKeyword(StorageDTO dto); //창고 리스트
-	StorageDTO getStorageDetailById(Integer whId); //창고id로 상세
-	int insertStorageList(StorageDTO dto ); //창고 추가
-	List<StorageDTO> searchEmpNo(String query); //사원검색
-	int updateStorage(StorageDTO dto); //창고 업데이트
+    List<StorageDTO> storageListByKeyword(StorageDTO dto); // 창고 리스트 (페이징)
+    List<StorageDTO> storageListWithInventory(StorageDTO dto); // 재고 현황 포함 창고 리스트
+    int getStorageCount(StorageDTO dto); // 창고 총 개수
+    StorageDTO getStorageDetailById(Integer whId); // 창고id로 상세 (재고 현황 포함)
+    int insertStorageList(StorageDTO dto); // 창고 추가
+    List<StorageDTO> searchEmpNo(String query); // 사원검색
+    int updateStorage(StorageDTO dto); // 창고 업데이트
 }

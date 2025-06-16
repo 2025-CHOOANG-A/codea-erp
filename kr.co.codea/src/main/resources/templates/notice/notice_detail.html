@@ -3,88 +3,77 @@
     <th:block th:fragment="headFragment">
         <style>
             body {
-                min-height: 100vh;
-                background: #f8f9fa;
+                background: #ffffff;
             }
             .main-content {
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 64px 0.75rem 0;
+                padding: 64px 1rem 0;
             }
             .notice-header {
-                background: #fff;
-                border-radius: 0.5rem;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-                padding: 2rem;
+                padding: 1.5rem 0;
+                border-bottom: 1px solid #dee2e6;
                 margin-bottom: 1.5rem;
             }
             .notice-meta {
                 display: flex;
-                gap: 2rem;
-                margin-top: 1rem;
-                padding-top: 1rem;
-                border-top: 1px solid #e9ecef;
+                gap: 1.5rem;
+                margin-top: 0.5rem;
                 color: #6c757d;
                 font-size: 0.9rem;
             }
             .notice-content {
-                background: #fff;
-                border-radius: 0.5rem;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-                padding: 2rem;
+                padding: 1.5rem 0;
                 margin-bottom: 1.5rem;
                 min-height: 300px;
                 line-height: 1.8;
+                border-bottom: 1px solid #e9ecef;
             }
             .notice-actions {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                padding: 1rem 0;
+            }
+            .btn-group {
+                display: flex;
+                gap: 0.5rem;
             }
             @media (max-width: 767.98px) {
-                .main-content { padding: 64px 0.3rem 0; }
-                .notice-header, .notice-content { padding: 1.5rem; }
+                .main-content { 
+                    padding: 64px 0.5rem 0; 
+                }
                 .notice-meta { 
                     flex-direction: column; 
-                    gap: 0.5rem;
+                    gap: 0.3rem;
                 }
                 .notice-actions {
                     flex-direction: column;
                     gap: 1rem;
                     align-items: stretch;
                 }
+                .btn-group {
+                    justify-content: center;
+                }
             }
         </style>
     </th:block>
 
     <main class="main-content">
-        <div class="container">
+        <div class="container-fluid">
             <!-- 공지사항 헤더 -->
             <div class="notice-header">
-                <h1 class="mb-0" th:text="${notice.title}">공지사항 제목</h1>
+                <h3 class="mb-3" th:text="${notice.title}">공지사항 제목</h3>
                 <div class="notice-meta">
-                    <div>
-                        <i class="bi bi-person-circle me-1"></i>
-                        <span th:text="${notice.authorName ?: '관리자'}">작성자</span>
-                    </div>
-                    <div>
-                        <i class="bi bi-calendar3 me-1"></i>
-                        <span th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
-                    </div>
-                    <div>
-                        <i class="bi bi-eye me-1"></i>
-                        <span th:text="'조회수 ' + ${notice.views}">조회수</span>
-                    </div>
-                    <div th:if="${notice.updatedAt != null and !#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm').equals(#temporals.format(notice.updatedAt, 'yyyy-MM-dd HH:mm'))}">
-                        <i class="bi bi-pencil-square me-1"></i>
-                        <span th:text="'수정일 ' + ${#temporals.format(notice.updatedAt, 'yyyy-MM-dd HH:mm')}">수정일</span>
-                    </div>
+                    <span>작성자: <span th:text="${notice.authorName ?: '관리자'}">작성자</span></span>
+                    <span>작성일: <span th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span></span>
+                    <span>조회수: <span th:text="${notice.views}">조회수</span></span>
+                    <span th:if="${notice.updatedAt != null and !#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm').equals(#temporals.format(notice.updatedAt, 'yyyy-MM-dd HH:mm'))}">
+                        수정일: <span th:text="${#temporals.format(notice.updatedAt, 'yyyy-MM-dd HH:mm')}">수정일</span>
+                    </span>
                 </div>
             </div>
 
             <!-- 공지사항 내용 -->
             <div class="notice-content">
-                <!-- CSS로 줄바꿈 처리 -->
                 <div th:text="${notice.content}" style="white-space: pre-wrap;">
                     공지사항 내용이 여기에 표시됩니다.
                 </div>
@@ -93,23 +82,30 @@
             <!-- 액션 버튼들 -->
             <div class="notice-actions">
                 <div>
-                    <a href="/notice/list" class="btn btn-outline-secondary">
-                        <i class="bi bi-list"></i> 목록으로
+                    <a href="/notice/list" class="btn btn-outline-secondary btn-sm">
+                        목록으로
                     </a>
                 </div>
                 
                 <div>
                     <!-- 관리자만 수정/삭제 버튼 표시 -->
-                    <div th:if="${isAdmin}">
+                    <div th:if="${isAdmin}" class="btn-group">
                         <a th:href="@{/notice/{id}/edit(id=${notice.noticeId})}" 
-                           class="btn btn-outline-primary me-2">
-                            <i class="bi bi-pencil"></i> 수정
+                           class="btn btn-outline-primary btn-sm">
+                            수정
                         </a>
                         <button type="button" 
-                                class="btn btn-outline-danger" 
+                                class="btn btn-outline-danger btn-sm" 
                                 onclick="deleteNotice()">
-                            <i class="bi bi-trash"></i> 삭제
+                            삭제
                         </button>
+                        
+                        <!-- 숨겨진 삭제 폼 (대안) -->
+                        <form th:id="'deleteForm-' + ${notice.noticeId}" 
+                              th:action="@{/notice/{id}/delete(id=${notice.noticeId})}" 
+                              method="post" 
+                              style="display:none;">
+                        </form>
                     </div>
                 </div>
             </div>
@@ -122,13 +118,29 @@
             if (confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
                 const noticeId = /*[[${notice.noticeId}]]*/ 0;
                 
+                // 먼저 AJAX로 시도
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+                
+                // CSRF 토큰이 있으면 헤더에 추가
+                if (csrfToken && csrfHeader) {
+                    headers[csrfHeader] = csrfToken;
+                }
+                
                 fetch(`/notice/${noticeId}/delete`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
+                    headers: headers
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         alert('공지사항이 삭제되었습니다.');
@@ -138,8 +150,14 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('삭제 중 오류가 발생했습니다.');
+                    console.error('AJAX Error:', error);
+                    // AJAX 실패시 폼 제출로 대체
+                    const deleteForm = document.getElementById(`deleteForm-${noticeId}`);
+                    if (deleteForm) {
+                        deleteForm.submit();
+                    } else {
+                        alert('삭제 중 오류가 발생했습니다.');
+                    }
                 });
             }
         }
