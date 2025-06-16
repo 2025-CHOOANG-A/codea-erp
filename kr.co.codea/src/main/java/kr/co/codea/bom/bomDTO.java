@@ -83,6 +83,15 @@ public class bomDTO {
         this.detailList = detailList;
     }
     
+    
+    public String getChildId() {
+        return childId;
+    }
+    
+    public void setChildId(String childId) {
+        this.childId = childId;
+    }
+    
 	
 	
 	// ──────────────────────────────────────────────────────────────────────────

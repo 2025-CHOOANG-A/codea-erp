@@ -74,8 +74,7 @@
                       name="bomCode" 
                       id="bomCodeInput"
                       maxlength="20"
-                      required
-                      
+                      value="자동생성"
                     />
                   </td>
                   <td style="position: relative">
@@ -88,7 +87,7 @@
                         placeholder="완제품 코드/명 검색"
                         autocomplete="off"
                         required
-                        value="P001"
+
                       />
                       <button
                         class="btn btn-outline-secondary"
@@ -119,7 +118,7 @@
                       class="form-control"
                       id="productNameInput"
                       readonly
-                      value="제품A"
+                      value="제품명"
                     />
                   </td>
                   <td>
@@ -129,7 +128,6 @@
                       name="spec"
                       id="specInput"
                       readonly
-                      value="100x200"
                     />
                   </td>
                   <td>
@@ -139,7 +137,6 @@
                       name="unit"
                       id="unitInput"
                       readonly
-                      value="EA"
                     />
                   </td>
                   <td>
@@ -148,7 +145,7 @@
                       class="form-control"
                       name="description" 
                       maxlength="50"
-                      placeholder="예: 신규 등록"
+        
                     />
                   </td>
                 </tr>
@@ -294,6 +291,7 @@
                   class="form-control"
                   name="bomHeaderId" 
                   id="modalBomCode"
+                  value="자동생성"
                   readonly
                 />
               </div>
@@ -433,7 +431,6 @@
       th:data-name="${mat.materialName}"
       th:data-spec="${mat.spec}"
       th:data-unit="${mat.j_unitName}"
-      th:data-price="${mat.price}"
       th:data-item-id="${mat.itemId}"
       onclick="selectMaterial(this)"
       style="cursor: pointer;">

@@ -167,13 +167,17 @@
 	});
 	
 	document.getElementById("btnDelete").addEventListener("click", function () {
-	  if (confirm("정말 삭제하시겠습니까?")) {
-	    const bomCode = document.getElementById("bomCode").value;
-	    document.getElementById("bomCodeInput").value = bomCode;
-	    document.getElementById("deleteForm").submit();
-	  }
+	    if (confirm("정말 삭제하시겠습니까?")) {
+	        const bomCode = document.getElementById("bomCode").value;
+	        document.getElementById("bomCodeInput").value = bomCode;
+	        
+	        // 삭제 알림 먼저 표시
+	        alert("삭제되었습니다.");
+	        
+	        // 그 다음 폼 제출
+	        document.getElementById("deleteForm").submit();
+	    }
 	});
-	
 	
 	
 	
