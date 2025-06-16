@@ -27,8 +27,22 @@ public interface bom_mapper {
 	int insert_bom_header(bomDTO dto);
 	int insert_bom_detail(bomDTO dto);	
 	int insert_bom_details(List<bomDTO> detailList);
+	
+	//원자재 업데잍 하기 위한 조회
+	// bomDTO selectItemIdByCode(String materialCode);
+	String selectItemIdByCode(String materialCode);
+	
+	//<!-- 4. 디버깅용 - BOM_HEADER 존재 확인 -->
+	 bomDTO checkBomHeaderExists(String bomHeaderId);
+		
+	//<!-- 5. 디버깅용 - ITEM 존재 확인 -->
+	 bomDTO checkItemExists(String itemId);
+	 
+	//**********************************************************
+	
+	
 	 // 3) (선택) ITEM 조회
-    Long selectItemIdByCode(String itemCode);
+    //Long selectItemIdByCode(String itemCode);
 
     // 4) (선택) 새 ITEM INSERT
     void insert_item_material(itemDTO itemDto);

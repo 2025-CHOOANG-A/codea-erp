@@ -2,7 +2,6 @@ package kr.co.codea.bom;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -14,20 +13,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.servlet.http.HttpServletRequest;
-import kr.co.codea.item.itemDTO;
+
 
 
 //BOM
@@ -330,13 +328,46 @@ public class bom_controller {
 		    return result;
 		}
 
-		// BOM 상세 자재 추가 (AJAX)
+		// BOM 상세 자재 추가 (JSON 방식으로 수정)
 		@PostMapping("/addMaterial")
 		@ResponseBody
-		public Map<String, Object> addBomMaterial(@RequestBody bomDTO bomDTO) {
+		public Map<String, Object> addBomMaterial(@RequestBody Map<String, Object> requestData) {
 		    Map<String, Object> result = new HashMap<>();
 		    
 		    try {
+		        // JSON 데이터에서 값 추출
+		        String bomCode = (String) requestData.get("bomCode");
+		        String materialCode = (String) requestData.get("materialCode");
+		        String materialName = (String) requestData.get("materialName");
+		        String spec = (String) requestData.get("spec");
+		        String unit = (String) requestData.get("unit");
+		        Object priceObj = requestData.get("price");
+		        Object quantityObj = requestData.get("quantity");
+		        Object lossRateObj = requestData.get("lossRate");
+		        
+		        // 숫자 변환
+		        Integer price = convertToInteger(priceObj);
+		        Integer quantity = convertToInteger(quantityObj);
+		        Integer lossRate = convertToInteger(lossRateObj);
+		        
+		        System.out.println("자재 추가 요청:");
+		        System.out.println("bomCode: " + bomCode);
+		        System.out.println("materialCode: " + materialCode);
+		        System.out.println("materialName: " + materialName);
+		        System.out.println("quantity: " + quantity);
+		        System.out.println("price: " + price);
+		        
+		        // bomDTO 생성
+		        bomDTO bomDTO = new bomDTO();
+		        bomDTO.setBomCode(bomCode);
+		        bomDTO.setMaterialCode(materialCode);
+		        bomDTO.setMaterialName(materialName);
+		        bomDTO.setSpec(spec);
+		        bomDTO.setUnitName(unit);
+		        bomDTO.setQuantity(quantity != null ? quantity : 1);
+		        bomDTO.setPrice(price != null ? price : 0);
+		        bomDTO.setLossRate(lossRate != null ? lossRate : 0);
+		        
 		        int addResult = this.b_dao.add_bom_detail(bomDTO);
 		        
 		        if (addResult > 0) {
@@ -351,11 +382,13 @@ public class bom_controller {
 		        result.put("success", false);
 		        result.put("message", "자재 추가 중 오류가 발생했습니다: " + e.getMessage());
 		        e.printStackTrace();
+		        System.err.println("자재 추가 오류 상세: " + e.getMessage());
 		    }
 		    
 		    return result;
 		}
 
+		//자제건당 삭제 잘됨 
 		@PostMapping("/deleteMaterials")
 		@ResponseBody
 		public Map<String, Object> deleteBomMaterials(
@@ -472,7 +505,7 @@ public class bom_controller {
 		    // 저장 완료 후 바로 BOM 리스트로 리다이렉트
 		    return "redirect:/bom/bom_list";
 		}
-	   /*
+	   
 	 
 	   @PostMapping("/bom_deleteok")
 	   public String deleteBom(@RequestParam("bomCode") String bomCode, Model m) {
@@ -495,10 +528,10 @@ public class bom_controller {
 	           // 메시지도 같이 넘기기
 	           m.addAttribute("msg", "BOM이 성공적으로 삭제되었습니다!");
 
-	           return "bom/bom_list";
+	           return "redirect:/bom/bom_list";
 	   }
 	 
-	   */
+	
 	 
 	   
 	  //BOM 삭제 
@@ -515,9 +548,6 @@ public class bom_controller {
 	       return "bom/bom_list"; // 목록 페이지로 이동
 	   }
 	   
-	  
-	  //등록할떄 값을 가져올 리스트 
-	  
 	   //등록할떄 값을 가져올 리스트 
 		  @GetMapping("/bom_write")
 		  public String bom_write( Model m) {	
@@ -533,38 +563,201 @@ public class bom_controller {
 			  m.addAttribute("bom_item_y_list", bom_item_y_list);//완제품 
 		      m.addAttribute("bom_item_j_list", bom_item_j_list);//원자재 조회
 		      System.out.println(bom_item_y_list);
-		      //System.out.println(bom_item_j_list);
+		      System.out.println(bom_item_j_list);
 
 			  
-		  return "bom/bom_write";   
+		      return "bom/bom_write";   
+		      
 		     }
-		  
-		  
-		  @PostMapping("/bom_writeok")
+		   
+		  @PostMapping("/bom_save_details")
 		  @ResponseBody
-		  @Transactional 
-		  public Map<String, Object> bomWriteOk(@RequestBody bomDTO bomData) {
-			    System.out.println("▶▶▶ 들어온 DTO: " + bomData);
-			  Map<String, Object> result = new HashMap<>();
+		  public Map<String, Object> saveBomDetails(@RequestBody Map<String, Object> requestData) {
+		      Map<String, Object> result = new HashMap<>();
+		      
 		      try {
-		          // 1. BOM 헤더 저장
-		          this.b_dao.insert_bom_header(bomData);
+		          String bomHeaderId = (String) requestData.get("bomHeaderId");
+		          System.out.println("받은 bomHeaderId: [" + bomHeaderId + "]");
+		          @SuppressWarnings("unchecked")
+		          List<Map<String, Object>> materialsData = (List<Map<String, Object>>) requestData.get("materials");
 		          
-		          // 2. BOM 디테일들 저장 (리스트로 한 번에)
-		          if (bomData.getMaterials() != null && !bomData.getMaterials().isEmpty()) {
-		              this.b_dao.insert_bom_details(bomData.getMaterials());
+		          if (bomHeaderId == null || bomHeaderId.trim().isEmpty()) {
+		              result.put("success", false);
+		              result.put("message", "BOM 헤더 ID가 누락되었습니다.");
+		              return result;
 		          }
 		          
-		          result.put("success", true);
-		          result.put("message", "BOM이 성공적으로 등록되었습니다.");
+		          if (materialsData == null || materialsData.isEmpty()) {
+		              result.put("success", false);
+		              result.put("message", "자재 정보가 누락되었습니다.");
+		              return result;
+		          }
+		          
+		          int successCount = 0;
+		          int failCount = 0;
+		          
+		          for (int i = 0; i < materialsData.size(); i++) {
+		              Map<String, Object> materialData = materialsData.get(i);
+		              
+		              try {
+		                  String materialCode = (String) materialData.get("materialCode");
+		                  String itemId = (String) materialData.get("itemId");
+		                  String childId = (String) materialData.get("childId");
+		                  
+		                  String finalChildIdStr = (childId != null && !childId.trim().isEmpty()) ? childId : itemId;
+		                  
+		                  if (finalChildIdStr == null || finalChildIdStr.trim().isEmpty()) {
+		                      if (materialCode != null && !materialCode.trim().isEmpty()) {
+		                          try {
+		                              String lookedUpItemId = b_dao.selectItemIdByCode(materialCode);
+		                              if (lookedUpItemId != null && !lookedUpItemId.trim().isEmpty()) {
+		                                  finalChildIdStr = lookedUpItemId;
+		                              } else {
+		                                  System.err.println("자재[" + i + "] itemId 조회 실패 - materialCode: " + materialCode);
+		                              }
+		                          } catch (Exception dbException) {
+		                              System.err.println("자재[" + i + "] DB 조회 예외 - materialCode: " + materialCode + ", 오류: " + dbException.getMessage());
+		                          }
+		                      } else {
+		                          System.err.println("자재[" + i + "] materialCode가 null/빈값입니다.");
+		                      }
+		                  }
+		                  
+		                  // childId 숫자 형식 검증
+		                  if (finalChildIdStr != null && !finalChildIdStr.trim().isEmpty()) {
+		                      try {
+		                          // 숫자인지 검증만 하고 String으로 유지
+		                          Long.parseLong(finalChildIdStr.trim());
+		                      } catch (NumberFormatException e) {
+		                          System.err.println("자재[" + i + "] childId 숫자 형식 오류 - childId: " + finalChildIdStr + ", 오류: " + e.getMessage());
+		                          failCount++;
+		                          continue;
+		                      }
+		                  } else {
+		                      System.err.println("자재[" + (i+1) + "] finalChildId 누락 - materialCode: " + materialCode);
+		                      failCount++;
+		                      continue;
+		                  }
+		                  
+		                  Integer quantity = convertToInteger(materialData.get("quantity"));
+		                  Integer price = convertToInteger(materialData.get("price"));
+		                  
+		                  bomDTO detailDTO = new bomDTO();
+		                  detailDTO.setBomHeaderId(bomHeaderId);
+		                  detailDTO.setChildId(finalChildIdStr.trim()); // String으로 설정 (DB에서 NUMBER로 변환)
+		                  detailDTO.setQuantity(quantity != null ? quantity : 1);
+		                  detailDTO.setPrice(price != null ? price : 0);
+		                  
+		                  int detailResult = this.b_dao.insert_bom_detail(detailDTO);
+		                  
+		                  if (detailResult > 0) {
+		                      successCount++;
+		                  } else {
+		                      failCount++;
+		                      System.err.println("자재[" + i + "] 저장 실패 - materialCode: " + materialCode);
+		                  }
+		                  
+		              } catch (Exception e) {
+		                  failCount++;
+		                  System.err.println("자재[" + i + "] 처리 중 예외: " + e.getMessage());
+		              }
+		          }
+		          
+		          if (successCount > 0) {
+		              result.put("success", true);
+		              result.put("message", "자재 저장 완료: 성공 " + successCount + "개, 실패 " + failCount + "개");
+		              result.put("savedCount", successCount);
+		              result.put("failedCount", failCount);
+		              result.put("totalCount", materialsData.size());
+		          } else {
+		              result.put("success", false);
+		              result.put("message", "모든 자재 저장 실패 (" + failCount + "개 실패)");
+		              result.put("savedCount", 0);
+		              result.put("failedCount", failCount);
+		              result.put("totalCount", materialsData.size());
+		          }
 		          
 		      } catch (Exception e) {
+		          System.err.println("자재 저장 오류: " + e.getMessage());
 		          result.put("success", false);
-		          result.put("message", "BOM 등록 실패: " + e.getMessage());
-		          e.printStackTrace(); // 에러 로그 출력
+		          result.put("message", "자재 저장 오류: " + e.getMessage());
 		      }
+		      
 		      return result;
 		  }
+
+@PostMapping("/bom_save_header")
+@ResponseBody
+public Map<String, Object> saveBomHeader(@RequestBody Map<String, Object> requestData) {
+    Map<String, Object> result = new HashMap<>();
+    
+    try {
+        String bomCode = (String) requestData.get("bomCode");
+        String itemId = (String) requestData.get("itemId");
+        String version = (String) requestData.get("version");
+        String description = (String) requestData.get("description");
+        
+        if (itemId == null || itemId.trim().isEmpty()) {
+            result.put("success", false);
+            result.put("message", "완제품 ID가 누락되었습니다.");
+            return result;
+        }
+        
+        
+        bomDTO headerDTO = new bomDTO();
+        headerDTO.setItemId(itemId);
+        headerDTO.setVersion(version != null && !version.trim().isEmpty() ? version : "1.0");
+        headerDTO.setDescription(description != null && !description.trim().isEmpty() ? description : "신규 등록");
+        
+        int headerResult = this.b_dao.insert_bom_header(headerDTO);
+        
+        if (headerResult > 0 && headerDTO.getBomHeaderId() != null && !headerDTO.getBomHeaderId().trim().isEmpty()) {
+            result.put("success", true);
+            result.put("message", "BOM 제품 저장 완료");
+            result.put("bomHeaderId", headerDTO.getBomHeaderId());
+            result.put("bomCode", bomCode);
+        } else {
+            result.put("success", false);
+            result.put("message", "BOM 제품 저장 실패");
+            System.err.println("헤더 저장 실패 - headerResult: " + headerResult + ", bomHeaderId: " + headerDTO.getBomHeaderId());
+        }
+        
+    } catch (Exception e) {
+        System.err.println("제품 저장 오류: " + e.getMessage());
+        result.put("success", false);
+        result.put("message", "제품 저장 오류: " + e.getMessage());
+    }
+    
+    return result;
+}
+
+private Integer convertToInteger(Object value) {
+    if (value == null) {
+        return null;
+    }
+    
+    try {
+        if (value instanceof Integer) {
+            return (Integer) value;
+        } else if (value instanceof String) {
+            String strValue = ((String) value).trim();
+            if (strValue.isEmpty()) {
+                return null;
+            }
+            return Integer.parseInt(strValue);
+        } else if (value instanceof Double) {
+            return ((Double) value).intValue();
+        } else if (value instanceof Float) {
+            return ((Float) value).intValue();
+        } else if (value instanceof Long) {
+            return ((Long) value).intValue();
+        }
+    } catch (NumberFormatException e) {
+        System.err.println("숫자 변환 실패: " + value + " (" + value.getClass().getSimpleName() + ")");
+    }
+    
+    return null;
+}
 		  
 	  /*
 	  @PostMapping("/bom_writeok")
@@ -687,4 +880,3 @@ public class bom_controller {
 	}
 	  
 	    
-

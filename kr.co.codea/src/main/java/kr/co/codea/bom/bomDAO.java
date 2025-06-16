@@ -88,8 +88,13 @@ public class bomDAO implements bom_service{
 		return  b_mp.insert_bom_details(detailList);
 	}
 	
+	//등록하기 위해 필요한 리스트
 	
-
+	@Override
+	public String selectItemIdByCode(String materialCode) {
+	    return b_mp.selectItemIdByCode(materialCode);
+	}
+	
 	//BOM 전체삭제 
    @Override
     public int delete_bom_details(String bomCode) {
@@ -108,6 +113,18 @@ public class bomDAO implements bom_service{
 }
    
    //bom 수정하기 위한 추가본 
+ //<!-- 4. 디버깅용 - BOM_HEADER 존재 확인 -->
+    @Override
+     public bomDTO checkBomHeaderExists(String bomHeaderId) {
+	return b_mp.checkBomHeaderExists(bomHeaderId);
+     }
+    
+	//<!-- 5. 디버깅용 - ITEM 존재 확인 -->
+    @Override
+    public bomDTO checkItemExists(String itemId) {
+    	return  b_mp.checkBomHeaderExists(itemId);
+    }
+   
    
 
   // BOM 상세 수정 (기존 에러 해결용)

@@ -94,7 +94,6 @@ public class ProductPlanServiceImp implements ProductPlanService {
                     log.info("=== 자재 소요량 정보 디버깅 ===");
 
                     for (MaterialRequirementDTO material : materials) {
-                        // ✅ 모든 Material 필드 디버깅
                         log.info("자재 정보: 이름={}, itemId={}, materialId={}, empId={}, whId={}, requiredQty={}", 
                                 material.getItemName(), 
                                 material.getItemId(),        // 🔥 이 값이 문제!
@@ -103,7 +102,6 @@ public class ProductPlanServiceImp implements ProductPlanService {
                                 material.getWhId(), 
                                 material.getRequiredQty());
                         
-                        // ✅ 핵심 수정: getMaterialRequirements API와 동일한 메소드 호출
                         int availableQty = getAvailableInventory(material.getMaterialId());
                         
                         log.info("작업지시 생성 재고 확인: Plan={}, Material={}(ID={}), Required={}, Available={}", 

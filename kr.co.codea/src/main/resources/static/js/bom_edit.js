@@ -1,21 +1,11 @@
 // ================================
-// 샘플 데이터
-// ================================
-const products = [
-  { code: "P001", name: "제품A", spec: "100x200", unit: "EA" },
-  { code: "P002", name: "제품B", spec: "50x100", unit: "SET" },
-  { code: "P003", name: "제품C", spec: "200x300", unit: "BOX" },
-  { code: "P004", name: "제품D", spec: "150x150", unit: "EA" },
-];
-
-// ================================
 // DOM 로드 후 실행되는 메인 코드
 // ================================
 document.addEventListener("DOMContentLoaded", function() {
   console.log("DOM 로드 완료");
   
   // ================================
-  // 체크박스 전체 선택/해제 기능
+  // 체크박스 전체 선택/해제 기능 (기존 유지)
   // ================================
   const selectAllCheckbox = document.getElementById("selectAllMaterial");
   
@@ -62,10 +52,10 @@ document.addEventListener("DOMContentLoaded", function() {
   }
   
   // ================================
-  // 자재 관련 버튼 이벤트
+  // 자재 관련 버튼 이벤트 (기존 유지)
   // ================================
   
-  // 자재 추가 버튼 - e.preventDefault() 강화
+  // 자재 추가 버튼
   console.log("자재 추가 버튼 찾는 중...");
   const addMaterialBtn = document.querySelector(".btn-add-material");
   console.log("자재 추가 버튼:", addMaterialBtn);
@@ -73,8 +63,8 @@ document.addEventListener("DOMContentLoaded", function() {
   if (addMaterialBtn) {
     console.log("자재 추가 버튼 발견! 이벤트 추가");
     addMaterialBtn.addEventListener("click", function(e) {
-      e.preventDefault(); // 기본 동작 방지
-      e.stopPropagation(); // 이벤트 버블링 방지
+      e.preventDefault();
+      e.stopPropagation();
       console.log("자재 추가 버튼 클릭됨! (preventDefault 적용)");
       openMaterialAddModal();
     });
@@ -82,34 +72,34 @@ document.addEventListener("DOMContentLoaded", function() {
     console.error("자재 추가 버튼을 찾을 수 없습니다!");
   }
   
-  // 자재 검색 버튼 이벤트 - e.preventDefault() 추가
+  // 자재 검색 버튼 이벤트
   const materialSearchBtn = document.getElementById("materialSearchBtn");
   if (materialSearchBtn) {
     materialSearchBtn.addEventListener("click", function(e) {
-      e.preventDefault(); // 기본 동작 방지
-      e.stopPropagation(); // 이벤트 버블링 방지
+      e.preventDefault();
+      e.stopPropagation();
       console.log("자재 검색 버튼 클릭 (preventDefault 적용)");
       openMaterialSearchModal();
     });
   }
 
-  // 자재 추가 폼 제출 이벤트 - e.preventDefault() 강화
+  // 자재 추가 폼 제출 이벤트 (JSON으로 수정)
   const materialAddForm = document.getElementById("materialAddForm");
   if (materialAddForm) {
     materialAddForm.addEventListener("submit", function(e) {
-      e.preventDefault(); // 폼 기본 제출 방지
-      e.stopPropagation(); // 이벤트 버블링 방지
-      console.log("자재 폼 제출 (preventDefault 적용)");
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("자재 폼 제출 (JSON 방식)");
       submitMaterialForm();
     });
   }
   
-  // 자재 삭제 버튼 - e.preventDefault() 추가
+  // 자재 삭제 버튼 (기존 FormData 유지)
   const deleteMaterialBtn = document.querySelector(".btn-delete-material");
   if (deleteMaterialBtn) {
     deleteMaterialBtn.addEventListener("click", function(e) {
-      e.preventDefault(); // 기본 동작 방지
-      e.stopPropagation(); // 이벤트 버블링 방지
+      e.preventDefault();
+      e.stopPropagation();
       
       const checkedBoxes = document.querySelectorAll('#materialTable tbody input[type="checkbox"]:checked');
       
@@ -124,13 +114,13 @@ document.addEventListener("DOMContentLoaded", function() {
       
       // 선택된 자재 코드 수집
       const materialCodes = Array.from(checkedBoxes).map(cb => cb.value);
-      // BOM 코드는 폼에서 가져오기 (수정된 부분)
+      // BOM 코드는 폼에서 가져오기
       const bomCodeInput = document.querySelector('#bomForm input[name="bomCode"]');
       const bomCode = bomCodeInput ? bomCodeInput.value : '';
       
       console.log("삭제 요청:", { bomCode, materialCodes });
       
-      // FormData 방식으로 서버에 요청
+      // FormData 방식으로 서버에 요청 (기존 유지)
       const formData = new FormData();
       formData.append('bomCode', bomCode);
       materialCodes.forEach(code => {
@@ -158,20 +148,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
   
-  // 자재 수정 버튼 (이벤트 위임 사용)
-  const materialTableBody = document.querySelector("#materialTable tbody");
-  if (materialTableBody) {
-    materialTableBody.addEventListener("click", function(e) {
-      if (e.target.classList.contains("btn-edit-material")) {
-        // 수정 버튼은 Bootstrap의 data-bs-toggle으로 처리되므로 
-        // 여기서는 별도 처리 불필요
-        console.log("수정 버튼 클릭 - Bootstrap이 처리");
-      }
-    });
-  }
-  
   // ================================
-  // 기타 버튼 이벤트
+  // 기타 버튼 이벤트 (기존 유지)
   // ================================
   
   // 목록 버튼
@@ -209,7 +187,7 @@ document.addEventListener("DOMContentLoaded", function() {
 }); // DOMContentLoaded 끝
 
 // ================================
-// 자재 추가 모달 열기 - 핵심 수정
+// 자재 추가 모달 열기 (기존 유지)
 // ================================
 function openMaterialAddModal() {
   console.log("자재 추가 모달 열기 함수 실행");
@@ -239,8 +217,8 @@ function openMaterialAddModal() {
       console.log("모달 타이틀 설정 완료");
     }
     
-    // BOM 코드 설정 - 수정된 부분
-    const bomCodeInput = document.querySelector('#bomForm input[name="bomCode"]'); // 폼에서 BOM 코드 가져오기
+    // BOM 코드 설정
+    const bomCodeInput = document.querySelector('#bomForm input[name="bomCode"]');
     console.log("BOM 코드 입력 필드:", bomCodeInput);
     
     if (form.bomCode && bomCodeInput) {
@@ -287,7 +265,7 @@ function openMaterialAddModal() {
 }
 
 // ================================
-// 자재 검색 모달 열기 (HTML 모달만 사용)
+// 자재 검색 모달 열기 (기존 유지)
 // ================================
 function openMaterialSearchModal() {
   console.log("자재 검색 모달 열기");
@@ -336,7 +314,7 @@ function openMaterialSearchModal() {
 }
 
 // ================================
-// 자재 목록 필터링 (HTML 데이터 기준)
+// 자재 목록 필터링 (기존 유지)
 // ================================
 function filterMaterials(keyword) {
   console.log("검색 키워드:", keyword);
@@ -348,7 +326,7 @@ function filterMaterials(keyword) {
     return;
   }
   
-  // Thymeleaf로 생성된 행들 찾기 (th:each="mat2 : ${bom_item_j_list}")
+  // Thymeleaf로 생성된 행들 찾기
   const rows = modal.querySelectorAll('#modalMaterialResult tr[data-code]');
   let visibleCount = 0;
   
@@ -374,7 +352,7 @@ function filterMaterials(keyword) {
 }
 
 // ================================
-// 자재 선택
+// 자재 선택 (기존 유지)
 // ================================
 function selectMaterial(row) {
   console.log("자재 선택:", row);
@@ -411,10 +389,10 @@ function selectMaterial(row) {
 }
 
 // ================================
-// 자재 폼 제출
+// 자재 폼 제출 (JSON으로 수정)
 // ================================
 function submitMaterialForm() {
-  console.log("자재 폼 제출 시작");
+  console.log("자재 폼 제출 시작 (JSON 방식)");
   
   const form = document.getElementById("materialAddForm");
   if (!form) {
@@ -436,21 +414,27 @@ function submitMaterialForm() {
     return;
   }
   
-  // 서버로 자재 추가 요청
-  const formData = new FormData();
-  formData.append('bomCode', form.bomCode.value);
-  formData.append('materialCode', materialCode);
-  formData.append('materialName', materialName);
-  formData.append('spec', spec);
-  formData.append('unit', form.unit.value);
-  formData.append('price', price);
-  formData.append('qty', quantity);
+  // JSON 데이터 생성
+  const requestData = {
+    bomCode: form.bomCode.value,
+    materialCode: materialCode,
+    materialName: materialName,
+    spec: spec,
+    unit: form.unit.value,
+    price: parseInt(price),
+    quantity: parseInt(quantity),
+    lossRate: 0
+  };
   
-  console.log("서버 요청 시작");
+  console.log("서버 요청 시작 (JSON):", requestData);
   
+  // JSON으로 서버에 요청
   fetch('/bom/addMaterial', {
     method: 'POST',
-    body: formData
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestData)
   })
   .then(response => response.json())
   .then(data => {
@@ -473,7 +457,7 @@ function submitMaterialForm() {
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
         
-        window.location.reload();
+        window.location.reload(); // 페이지 새로고침으로 업데이트된 자재 목록 표시
       }, 100);
       
     } else {
@@ -487,11 +471,8 @@ function submitMaterialForm() {
 }
 
 // ================================
-// 자재 수정 모달 처리 (Bootstrap data-bs-toggle 방식)
+// 자재 수정 모달 처리 (기존 유지)
 // ================================
-// HTML의 수정 버튼에 data-bs-toggle="modal" data-bs-target="#materialAddModal"이 있으므로
-// Bootstrap이 자동으로 모달을 열어줍니다.
-// 모달이 열릴 때 데이터 설정은 show.bs.modal 이벤트에서 처리
 document.addEventListener('DOMContentLoaded', function() {
   const materialAddModal = document.getElementById('materialAddModal');
   if (materialAddModal) {
@@ -534,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         }
       } else {
-        // 추가 모드 (openMaterialAddModal 함수가 호출된 경우)
+        // 추가 모드
         console.log("자재 추가 모드");
         
         const modalTitle = this.querySelector('.modal-title');

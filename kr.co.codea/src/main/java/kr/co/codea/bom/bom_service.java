@@ -18,6 +18,14 @@ public interface bom_service {
 	  int insert_bom_details(List<bomDTO> detailList);
 	  //public List<bomDTO> bom_item_list_y();//완제품 조회
 	  
+	//원자재 업데잍 하기 위한 조회
+    //bomDTO selectItemIdByCode(String materialCode);
+		String selectItemIdByCode(String materialCode);
+		
+	//<!-- 4. 디버깅용 - BOM_HEADER 존재 확인 -->
+	  bomDTO checkBomHeaderExists(String bomHeaderId);		
+	//<!-- 5. 디버깅용 - ITEM 존재 확인 -->
+      bomDTO checkItemExists(String itemId);
 	 
 	
     // 2. 완제품 항목 조회

@@ -1,4 +1,3 @@
-
 // BOM 등록 데이터 - 빈 자재 리스트로 시작
 let bomDetail = {
   bomCode: "",
@@ -32,7 +31,7 @@ function renderMaterialTable() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><input type="checkbox" class="rowCheckbox1" data-idx="${idx}" /></td>
-      <td>${mat.bomCode}</td>
+	  <td>${mat.bomCode || ''}</td> 
       <td>${mat.materialCode}</td>
       <td>${mat.materialName}</td>
       <td>${mat.spec}</td>
@@ -135,8 +134,9 @@ function selectProduct(row) {
     const name = row.getAttribute("data-name");
     const spec = row.getAttribute("data-spec");
     const unit = row.getAttribute("data-unit");
+    const id = row.getAttribute("data-item-id"); // data-item-id로 수정
 
-    console.log("선택된 제품:", code, name, spec, unit); // 디버깅용
+    console.log("선택된 제품:", code, name, spec, unit, id); // 디버깅용
 
     const productSearchInput = document.getElementById("productSearchInput");
     const productNameInput = document.getElementById("productNameInput");
@@ -150,6 +150,7 @@ function selectProduct(row) {
 
     // bomDetail 업데이트 (안전하게)
     if (typeof bomDetail !== 'undefined' && bomDetail) {
+      bomDetail.productId = id || code; // ID가 있으면 ID, 없으면 code 사용
       bomDetail.productCode = code || '';
       bomDetail.productName = name || '';
       bomDetail.spec = spec || '';
@@ -232,8 +233,8 @@ document.getElementById("materialSearchBtn").addEventListener("click", () => {
         name: row.getAttribute('data-name'),
         spec: row.getAttribute('data-spec'),
         unit: row.getAttribute('data-unit'),
-        price: row.getAttribute('data-price')
-      }); // 디버깅
+        itemId: row.getAttribute('data-item-id')
+      }); // 디버깅 (price 제거)
       
       row.style.cursor = 'pointer';
       
@@ -294,58 +295,39 @@ function selectMaterial(row) {
     const name = row.getAttribute("data-name");
     const spec = row.getAttribute("data-spec");
     const unit = row.getAttribute("data-unit");
-    const price = row.getAttribute("data-price");
+    const itemId = row.getAttribute("data-item-id"); // 원자재의 ITEM_ID
 
-    console.log("추출된 데이터:", { code, name, spec, unit, price }); // 디버깅
+    console.log("추출된 원자재 데이터:", { 
+      code, name, spec, unit, 
+      itemId: itemId,
+      itemIdType: typeof itemId
+    }); // 디버깅 (price 제거)
 
     // 자재 추가 모달의 입력 필드들에 값 설정
     const materialCodeInput = document.getElementById("materialCodeInput");
     const materialNameInput = document.getElementById("materialNameInput");
     const materialSpecInput = document.getElementById("materialSpecInput");
     const materialUnitInput = document.getElementById("materialUnitInput");
-    const materialPriceInput = document.getElementById("materialPriceInput");
-
-    console.log("입력 필드들 확인:", {
-      materialCodeInput: !!materialCodeInput,
-      materialNameInput: !!materialNameInput,
-      materialSpecInput: !!materialSpecInput,
-      materialUnitInput: !!materialUnitInput,
-      materialPriceInput: !!materialPriceInput
-    }); // 디버깅
 
     if (materialCodeInput) {
       materialCodeInput.value = code || '';
-      console.log("자재코드 설정됨:", code);
-    } else {
-      console.error("materialCodeInput을 찾을 수 없습니다!");
+      materialCodeInput.dataset.itemId = itemId || ''; // 원자재 ITEM_ID 저장
+      console.log("자재코드 설정됨:", code, "원자재 itemId:", itemId);
     }
     
     if (materialNameInput) {
       materialNameInput.value = name || '';
       console.log("자재명 설정됨:", name);
-    } else {
-      console.error("materialNameInput을 찾을 수 없습니다!");
     }
     
     if (materialSpecInput) {
       materialSpecInput.value = spec || '';
       console.log("규격 설정됨:", spec);
-    } else {
-      console.error("materialSpecInput을 찾을 수 없습니다!");
     }
     
     if (materialUnitInput) {
       materialUnitInput.value = unit || '';
       console.log("단위 설정됨:", unit);
-    } else {
-      console.error("materialUnitInput을 찾을 수 없습니다!");
-    }
-    
-    if (materialPriceInput) {
-      materialPriceInput.value = price || '';
-      console.log("단가 설정됨:", price);
-    } else {
-      console.error("materialPriceInput을 찾을 수 없습니다!");
     }
  
     // 자재 모달 닫기
@@ -410,36 +392,8 @@ function selectMaterial(row) {
 function openMaterialAddModal() {
   const modal = new bootstrap.Modal(document.getElementById("materialAddModal"));
   
-  // BOM 코드 자동 생성 (I00029v01부터 시작)
-  let bomCode;
-  
-  // 기존 자재가 있다면 마지막 번호에서 +1
-  if (bomDetail.materials.length > 0) {
-    // 마지막 자재의 BOM 코드에서 숫자 부분 추출
-    let lastBomCode = bomDetail.materials[bomDetail.materials.length - 1].bomCode;
-    let match = lastBomCode.match(/I(\d+)v01/);
-    
-    if (match) {
-      let nextNumber = parseInt(match[1]) + 1;
-      let paddedNumber = String(nextNumber).padStart(5, '0');
-      bomCode = `I${paddedNumber}v01`;
-    } else {
-      // 패턴이 맞지 않으면 기본값 사용 (I00029v01부터 시작)
-      bomCode = "I00029v01";
-    }
-  } else {
-    // 첫 번째 자재라면 I00029v01부터 시작
-    bomCode = "I00029v01";
-  }
-  
-  // 폼 초기화
+  // 폼 초기화만 수행 (BOM 코드 자동 생성 제거)
   document.getElementById("materialAddForm").reset();
-  
-  // 1. 자재 추가 모달의 BOM 코드 설정
-  document.getElementById("modalBomCode").value = bomCode;
-  
-  // 2. 상단 메인 BOM 코드도 함께 설정
-  document.getElementById("bomCodeInput").value = bomCode;
   
   modal.show();
 }
@@ -497,7 +451,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         // 폼 데이터 읽기
-        const bomCodeValue = form.elements["bomCode"] ? form.elements["bomCode"].value.trim() : '';
         const materialCodeValue = form.elements["materialCode"] ? form.elements["materialCode"].value.trim() : '';
         const materialNameValue = form.elements["materialName"] ? form.elements["materialName"].value.trim() : '';
         const specValue = form.elements["spec"] ? form.elements["spec"].value.trim() : '';
@@ -505,14 +458,20 @@ document.addEventListener("DOMContentLoaded", function() {
         const priceValue = form.elements["price"] ? form.elements["price"].value : '';
         const qtyValue = document.getElementById("materialQtyInput") ? document.getElementById("materialQtyInput").value : '';
         
+        // 자재의 itemId 가져오기 (data 속성에서)
+        const materialCodeInput = document.getElementById("materialCodeInput");
+        const itemId = materialCodeInput ? materialCodeInput.dataset.itemId : null;
+        
         console.log("폼 데이터:", {
-          bomCode: bomCodeValue,
           materialCode: materialCodeValue,
           materialName: materialNameValue,
           spec: specValue,
           unit: unitValue,
           price: priceValue,
-          qty: qtyValue
+          qty: qtyValue,
+          itemId: itemId,
+          itemIdType: typeof itemId,
+          itemIdEmpty: !itemId || itemId.trim() === ''
         }); // 디버깅용
         
         // 유효성 검사 (필수 필드만 체크)
@@ -521,16 +480,32 @@ document.addEventListener("DOMContentLoaded", function() {
           return;
         }
         
+        // 수량 기본값 설정
+        if (!qtyValue || qtyValue.trim() === '') {
+          document.getElementById("materialQtyInput").value = "1";
+        }
+        
         // bomDetail.materials 배열에 새 자재 추가
         const newMaterial = {
-          bomCode: bomCodeValue,
           materialCode: materialCodeValue,
           materialName: materialNameValue,
           spec: specValue,
-          j_unitName: unitValue,  // unit → j_unitName으로 변경
-          price: Number(priceValue) || 0,
-          quantity: Number(qtyValue) || 1
+          j_unitName: unitValue,
+          price: (priceValue && priceValue.trim() !== '') ? Math.floor(Number(priceValue)) : 0,
+          quantity: (qtyValue && qtyValue.trim() !== '') ? Math.floor(Number(qtyValue)) : 1,
+          itemId: itemId || null,
+          childId: itemId || null
         };
+        
+        console.log("새 자재 추가:", {
+          materialCode: materialCodeValue,
+          materialName: materialNameValue,
+          price: newMaterial.price,
+          quantity: newMaterial.quantity,
+          itemId: itemId,
+          qtyInputElement: !!document.getElementById("materialQtyInput"),
+          qtyInputValue: document.getElementById("materialQtyInput") ? document.getElementById("materialQtyInput").value : "input not found"
+        });
         
         console.log("새 자재:", newMaterial); // 디버깅용
         
@@ -609,11 +584,10 @@ document.getElementById("btnList").addEventListener("click", function () {
 document.getElementById("bomForm").addEventListener("submit", function (e) {
   e.preventDefault();
   
-  const bomCode = document.getElementById("bomCodeInput").value.trim();
   const productCode = productSearchInput.value.trim();
   
-  if (!bomCode || !productCode) {
-    alert("BOM 코드와 완제품을 선택하세요.");
+  if (!productCode) {
+    alert("완제품을 선택하세요.");
     return;
   }
   
@@ -624,50 +598,145 @@ document.getElementById("bomForm").addEventListener("submit", function (e) {
   
   console.log("저장할 BOM 데이터:", bomDetail);
   
-  // 서버로 전송할 데이터 구성 (hidden 필드들도 업데이트)
- 
-  const bomData = {
-    // PK는 selectKey가 채워주므로 안 넘겨도 됩니다
-    itemId:    bomDetail.productId,              // productId 가 아이디라면
-    version:   1,                                 // 헤더 버전, 기본 1로 고정
-    description: document.querySelector("[name=description]").value,
-    materials: bomDetail.materials
+  // 헤더 정보 (완제품 정보)
+  const headerData = {
+    itemId: bomDetail.productId ? String(bomDetail.productId) : null,
+    version: "1",  // 문자열로 전송
+    description: document.querySelector("[name=description]") ? document.querySelector("[name=description]").value : "",
+    productCode: bomDetail.productCode || "",
+    productName: bomDetail.productName || "",
+    spec: bomDetail.spec || "",
+    unit: bomDetail.unit || "",
+    note: document.getElementById("noteInput") ? document.getElementById("noteInput").value : ""
   };
-  /* const bomData = {
-   //bomCode: bomCode,
-    productCode: bomDetail.productCode,
-    productName: bomDetail.productName,
-    spec: bomDetail.spec,
-    unit: bomDetail.unit,
-    note: document.getElementById("noteInput") ? document.getElementById("noteInput").value : "",
-    materials: bomDetail.materials
-  };
-  */
-  // hidden 필드들 업데이트
-  document.getElementById("hiddenProductCode").value = bomDetail.productCode || '';
-  document.getElementById("hiddenProductName").value = bomDetail.productName || '';
-  document.getElementById("hiddenSpec").value = bomDetail.spec || '';
-  document.getElementById("hiddenUnit").value = bomDetail.unit || '';
-  document.getElementById("hiddenNote").value = bomData.note;
-  console.log("전송할 데이터:", bomData); // 디버깅용
   
-  // 서버로 데이터 전송
-  fetch('/bom/bom_writeok', {
+  // 자재 정보 - 숫자 타입 확실히 변환하고 필요한 필드들 추가
+  const detailsData = {
+    materials: bomDetail.materials.map((material, index) => {
+      const quantity = material.quantity;
+      const price = material.price;
+      
+      console.log(`자재[${index}] 원본 데이터:`, {
+        materialCode: material.materialCode,
+        quantity: quantity, 
+        quantityType: typeof quantity,
+        price: price,
+        priceType: typeof price,
+        itemId: material.itemId,
+        childId: material.childId
+      });
+      
+      // 안전한 숫자 변환 - 정수로 확실히 변환
+      const safeQuantity = (quantity !== null && quantity !== undefined && quantity !== '') ? 
+        Math.floor(Number(quantity)) : 1;
+      const safePrice = (price !== null && price !== undefined && price !== '') ? 
+        Math.floor(Number(price)) : 0;
+      
+      console.log(`자재[${index}] 변환된 데이터:`, {
+        materialCode: material.materialCode,
+        safeQuantity: safeQuantity,
+        safeQuantityType: typeof safeQuantity,
+        safeQuantityString: String(safeQuantity),
+        safePrice: safePrice,
+        safePriceType: typeof safePrice,
+        safePriceString: String(safePrice),
+        isQuantityNaN: isNaN(safeQuantity),
+        isPriceNaN: isNaN(safePrice),
+        isQuantityInteger: Number.isInteger(safeQuantity),
+        isPriceInteger: Number.isInteger(safePrice)
+      });
+      
+      return {
+        materialCode: material.materialCode || "",
+        materialName: material.materialName || "",
+        spec: material.spec || "",
+        j_unitName: material.j_unitName || "",
+        price: safePrice,
+        quantity: safeQuantity,
+        lossRate: 0,
+        itemId: material.itemId || null,
+        childId: material.childId || material.itemId || null
+      };
+    })
+  };
+  
+  console.log("헤더 데이터:", headerData);
+  console.log("자재 데이터:", detailsData);
+  
+  // 먼저 헤더 저장
+  fetch('/bom/bom_save_header', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(bomData)
+    body: JSON.stringify(headerData)
   })
   .then(response => {
-    console.log("서버 응답 상태:", response.status); // 디버깅용
+    console.log("헤더 저장 응답 상태:", response.status);
     if (response.ok) {
       return response.json();
     }
-    throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
+    throw new Error(`헤더 저장 오류: ${response.status} ${response.statusText}`);
   })
-  .then(data => {
-    console.log("서버 응답 데이터:", data); // 디버깅용
+  .then(headerResult => {
+    console.log("헤더 저장 성공:", headerResult);
+    
+    // 헤더 저장 후 받은 ID를 자재 데이터에 추가
+    const bomHeaderId = headerResult.bomHeaderId;
+    console.log("생성된 BOM 헤더 ID:", bomHeaderId);
+    
+    if (!bomHeaderId) {
+      throw new Error("헤더 저장 후 bomHeaderId를 받지 못했습니다.");
+    }
+    
+    // 자재 데이터에 헤더 ID 추가
+    const updatedDetailsData = {
+      bomHeaderId: String(bomHeaderId),  // 헤더 ID를 문자열로 전달
+      materials: detailsData.materials.map((material, index) => {
+        console.log(`최종 전송 자재[${index}]:`, {
+          materialCode: material.materialCode,
+          bomHeaderId: String(bomHeaderId),
+          childId: material.childId,
+          itemId: material.itemId,
+          quantity: material.quantity,
+          price: material.price,
+          lossRate: material.lossRate
+        });
+        
+        // childId 검증
+        let finalChildId = material.childId || material.itemId;
+        if (!finalChildId || finalChildId.trim() === '') {
+          console.error(`자재[${index}] childId가 없습니다:`, material);
+          finalChildId = null; // null로 설정
+        }
+        
+        return {
+          ...material,
+          childId: finalChildId
+        };
+      })
+    };
+    
+    console.log("업데이트된 자재 데이터:", updatedDetailsData);
+    
+    // 헤더 저장 성공 후 자재 저장
+    return fetch('/bom/bom_save_details', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedDetailsData)
+    });
+  })
+  .then(response => {
+    console.log("자재 저장 응답 상태:", response.status);
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error(`자재 저장 오류: ${response.status} ${response.statusText}`);
+  })
+  .then(detailsResult => {
+    console.log("자재 저장 성공:", detailsResult);
     alert("BOM이 성공적으로 등록되었습니다.");
     // 성공 시 목록 페이지로 이동
     location.href = "/bom/bom_list";
@@ -676,9 +745,16 @@ document.getElementById("bomForm").addEventListener("submit", function (e) {
     console.error('BOM 등록 오류:', error);
     alert("BOM 등록 중 오류가 발생했습니다: " + error.message);
   });
+  
+  // hidden 필드들 업데이트 (백업용)
+  document.getElementById("hiddenProductCode").value = bomDetail.productCode || '';
+  document.getElementById("hiddenProductName").value = bomDetail.productName || '';
+  document.getElementById("hiddenSpec").value = bomDetail.spec || '';
+  document.getElementById("hiddenUnit").value = bomDetail.unit || '';
+  document.getElementById("hiddenNote").value = headerData.note;
 });
 
 // ============ 초기화 ============
 document.addEventListener("DOMContentLoaded", () => {
   renderMaterialTable();
-});			        	         
+});

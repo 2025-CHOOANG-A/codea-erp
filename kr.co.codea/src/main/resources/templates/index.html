@@ -68,28 +68,48 @@
 
   <div class="main-content">
     <!-- 공지사항 5건 -->
-    <section class="mb-4 mt-3">
-      <div class="card shadow-sm notice-card">
-        <div class="card-header bg-white d-flex align-items-center justify-content-between">
-          <h5 class="mb-0">공지사항</h5>
-          <a href="/notice/list" class="btn btn-sm btn-outline-primary">전체보기</a>
-        </div>
-        <div class="table-responsive">
-          <table class="table mb-0">
-            <thead>
-              <tr>
-                <th style="width:60px">번호</th>
-                <th>제목</th>
-                <th style="width:120px">작성자</th>
-                <th style="width:140px">작성일</th>
-                <th style="width:80px">조회수</th>
-              </tr>
-            </thead>
-            <tbody id="mainNoticeBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+
+<section class="mb-4 mt-3">
+  <div class="card shadow-sm notice-card">
+    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+      <h5 class="mb-0">공지사항</h5>
+      <a href="/notice/list" class="btn btn-sm btn-outline-primary">전체보기</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th style="width:60px">번호</th>
+            <th>제목</th>
+            <th style="width:120px">작성자</th>
+            <th style="width:140px">작성일</th>
+            <th style="width:80px">조회수</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${recentNotices == null or #lists.isEmpty(recentNotices)}">
+            <td colspan="5" class="text-center text-muted">등록된 공지사항이 없습니다.</td>
+          </tr>
+          <tr th:each="notice : ${recentNotices}" th:unless="${recentNotices == null or #lists.isEmpty(recentNotices)}">
+            <td th:text="${notice.noticeId}"></td>
+            <td>
+              <a th:href="@{/notice/{id}(id=${notice.noticeId})}" 
+                 style="color: #212529 !important; text-decoration: none !important; font-weight: 500;"
+                 th:text="${notice.title}">
+              </a>
+            </td>
+            <td th:text="${notice.authorName ?: '관리자'}"></td>
+            <td th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}"></td>
+            <td th:text="${notice.views}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+    
+    
+    
     <!-- 입출고: 공지사항과 폭 동일하게 한 줄로 split -->
     <div class="row g-4 inout-row">
       <div class="col-md-12">
@@ -161,28 +181,6 @@
     </div> <!-- inout-row -->
 
   </div> <!-- main-content -->
-
-  <script>
-    // 공지 5건만
-    const mainNotices = [
-      {id: 35, title: "6월 정기점검 안내", author: "관리자", date: "2024-06-20", views: 12},
-      {id: 34, title: "시스템 업데이트 공지", author: "관리자", date: "2024-06-18", views: 21},
-      {id: 33, title: "휴가 신청 안내", author: "관리자", date: "2024-06-15", views: 33}
-    ];
-    window.addEventListener("DOMContentLoaded", function(){
-      const body = document.getElementById("mainNoticeBody");
-      mainNotices.forEach(n => {
-        body.innerHTML += `
-          <tr>
-            <td>${n.id}</td>
-            <td><a href="#">${n.title}</a></td>
-            <td>${n.author}</td>
-            <td>${n.date}</td>
-            <td>${n.views}</td>
-          </tr>`;
-      });
-    });
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script th:src="@{/js/sidebar.js}"></script>
 </body>
