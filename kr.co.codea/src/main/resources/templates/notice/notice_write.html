@@ -1,130 +1,177 @@
-<!DOCTYPE html>
-<html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <title>공지사항 작성</title>
-    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
-    <style>
-      body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        background: #f7f9fb;
-        margin: 0;
-        padding: 0;
-      }
-      .container {
-        max-width: 600px;
-        margin: 50px auto;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
-        padding: 40px 32px 32px 32px;
-      }
-      h2 {
-        margin-top: 0;
-        margin-bottom: 32px;
-        font-size: 2rem;
-        color: #222;
-        text-align: center;
-        letter-spacing: -1px;
-      }
-      .form-group {
-        margin-bottom: 24px;
-        padding-left: 0;
-        padding-right: 0;
-      }
-      label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #333;
-        padding-left: 2px;
-      }
-      input[type="text"],
-      input[type="email"],
-      textarea {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 10px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 1rem;
-        background: #f9fafb;
-        transition: border 0.2s;
-      }
-      input[type="text"]:focus,
-      input[type="email"]:focus,
-      textarea:focus {
-        border: 1.5px solid #2563eb;
-        outline: none;
-        background: #fff;
-      }
-      .readonly {
-        background: #f1f5f9;
-        color: #888;
-      }
-      .button-group {
-        text-align: right;
-        margin-top: 36px;
-        padding-left: 0;
-        padding-right: 0;
-      }
-      button {
-        padding: 10px 28px;
-        font-size: 1rem;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        background: #2563eb;
-        color: #fff;
-        font-weight: 600;
-        margin-left: 10px;
-        transition: background 0.2s;
-      }
-      button[type="button"] {
-        background: #e5e7eb;
-        color: #222;
-      }
-      button:hover {
-        background: #1d4ed8;
-      }
-      button[type="button"]:hover {
-        background: #cbd5e1;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h2>공지사항 작성</h2>
-      <form method="post" action="/notice/write">
-        <div class="form-group">
-          <label for="title">제목</label>
-          <input type="text" id="title" name="title" required />
+<div th:fragment="contentFragment">
+
+    <th:block th:fragment="headFragment">
+        <style>
+            body {
+                min-height: 100vh;
+                background: #f8f9fa;
+            }
+            .main-content {
+                max-width: 1000px;
+                margin: 0 auto;
+                padding: 64px 0.75rem 0;
+            }
+            .write-form {
+                background: #fff;
+                border-radius: 0.5rem;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+                padding: 2rem;
+            }
+            .form-label {
+                font-weight: 600;
+                color: #333;
+            }
+            .content-textarea {
+                min-height: 400px;
+                resize: vertical;
+            }
+            .form-actions {
+                display: flex;
+                justify-content: center;
+                gap: 1rem;
+                margin-top: 2rem;
+                padding-top: 1.5rem;
+                border-top: 1px solid #e9ecef;
+            }
+            @media (max-width: 767.98px) {
+                .main-content { padding: 64px 0.3rem 0; }
+                .write-form { padding: 1.5rem; }
+                .form-actions {
+                    flex-direction: column;
+                }
+            }
+        </style>
+    </th:block>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="bi bi-pencil-square text-primary me-2"></i>
+                    공지사항 작성
+                </h2>
+            </div>
+
+            <div class="write-form">
+                <form th:action="@{/notice/write}" method="post" th:object="${notice}">
+                    <!-- 제목 입력 -->
+                    <div class="mb-4">
+                        <label for="title" class="form-label">
+                            <i class="bi bi-card-heading me-1"></i>
+                            제목
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="title" 
+                               name="title"
+                               th:field="*{title}"
+                               placeholder="공지사항 제목을 입력하세요"
+                               required 
+                               maxlength="200" />
+                    </div>
+
+                    <!-- 내용 입력 -->
+                    <div class="mb-4">
+                        <label for="content" class="form-label">
+                            <i class="bi bi-text-paragraph me-1"></i>
+                            내용
+                        </label>
+                        <textarea class="form-control content-textarea" 
+                                  id="content" 
+                                  name="content"
+                                  th:field="*{content}"
+                                  placeholder="공지사항 내용을 입력하세요"
+                                  required></textarea>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>
+                            줄바꿈은 자동으로 적용됩니다.
+                        </div>
+                    </div>
+
+                    <!-- 작성자 정보 (읽기 전용) -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-person-circle me-1"></i>
+                            작성자
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               value="관리자" 
+                               readonly />
+                    </div>
+
+                    <!-- 버튼 영역 -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-lg me-1"></i>
+                            등록하기
+                        </button>
+                        <a href="/notice/list" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-x-lg me-1"></i>
+                            취소
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="form-group">
-          <label for="author">작성자</label>
-          <input
-            type="text"
-            id="author"
-            name="author"
-            class="readonly"
-            value="{{ user.username }}"
-            readonly
-          />
-        </div>
-        <div class="form-group">
-          <label for="content">내용</label>
-          <textarea id="content" name="content" rows="10"></textarea>
-        </div>
-        <div class="button-group">
-          <button type="submit">저장</button>
-          <button type="button" onclick="window.location.href='/notice/list'">
-            취소
-          </button>
-        </div>
-      </form>
-    </div>
+    </main>
+
+    <!-- 폼 유효성 검사 스크립트 -->
     <script>
-      CKEDITOR.replace("content");
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const titleInput = document.getElementById('title');
+            const contentTextarea = document.getElementById('content');
+
+            form.addEventListener('submit', function(e) {
+                // 제목 검사
+                if (titleInput.value.trim() === '') {
+                    e.preventDefault();
+                    alert('제목을 입력해주세요.');
+                    titleInput.focus();
+                    return;
+                }
+
+                // 내용 검사
+                if (contentTextarea.value.trim() === '') {
+                    e.preventDefault();
+                    alert('내용을 입력해주세요.');
+                    contentTextarea.focus();
+                    return;
+                }
+
+                // 제목 길이 검사
+                if (titleInput.value.length > 200) {
+                    e.preventDefault();
+                    alert('제목은 200자 이내로 입력해주세요.');
+                    titleInput.focus();
+                    return;
+                }
+            });
+
+            // 실시간 글자 수 표시 (선택사항)
+            titleInput.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                const maxLength = 200;
+                
+                // 기존 글자수 표시 제거
+                const existingCounter = document.querySelector('.title-counter');
+                if (existingCounter) {
+                    existingCounter.remove();
+                }
+                
+                // 새 글자수 표시 추가
+                if (currentLength > 0) {
+                    const counter = document.createElement('div');
+                    counter.className = 'form-text title-counter';
+                    counter.textContent = `${currentLength}/${maxLength}자`;
+                    if (currentLength > maxLength) {
+                        counter.style.color = '#dc3545';
+                    }
+                    titleInput.parentNode.appendChild(counter);
+                }
+            });
+        });
     </script>
-  </body>
-</html>
+
+</div>

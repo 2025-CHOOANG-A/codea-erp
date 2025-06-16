@@ -64,7 +64,7 @@ public class ProductPlanServiceImp implements ProductPlanService {
     
     @Override
     @Transactional
-    public Map<String, Object> changePlansStatus(List<String> planIds, String targetStatus, String mrpok) {
+   public Map<String, Object> changePlansStatus(List<String> planIds, String targetStatus, String mrpok) {
         Map<String, Object> result = new HashMap<>();
         int updatedCount = 0;
         List<String> errorMessages = new ArrayList<>();
@@ -89,10 +89,25 @@ public class ProductPlanServiceImp implements ProductPlanService {
                         continue;
                     }
                     
-                    // 3. 재고 확인
+                    // 3. 재고 확인 - 🔥 getMaterialRequirements API와 정확히 동일한 로직 사용
                     List<String> materialErrors = new ArrayList<>();
+                    log.info("=== 자재 소요량 정보 디버깅 ===");
+
                     for (MaterialRequirementDTO material : materials) {
-                        int availableQty = getAvailableInventoryInternal(material.getItemId());
+                        log.info("자재 정보: 이름={}, itemId={}, materialId={}, empId={}, whId={}, requiredQty={}", 
+                                material.getItemName(), 
+                                material.getItemId(),        // 🔥 이 값이 문제!
+                                material.getMaterialId(), 
+                                material.getEmpId(), 
+                                material.getWhId(), 
+                                material.getRequiredQty());
+                        
+                        int availableQty = getAvailableInventory(material.getMaterialId());
+                        
+                        log.info("작업지시 생성 재고 확인: Plan={}, Material={}(ID={}), Required={}, Available={}", 
+                                planId, material.getItemName(), material.getMaterialId(), 
+                                material.getRequiredQty(), availableQty);
+                        
                         if (availableQty < material.getRequiredQty()) {
                             materialErrors.add(String.format(
                                 "품목 %s: 필요수량 %d, 가용재고 %d (부족: %d)",
@@ -101,6 +116,9 @@ public class ProductPlanServiceImp implements ProductPlanService {
                                 availableQty,
                                 material.getRequiredQty() - availableQty
                             ));
+                        }
+                        if (material.getEmpId() == 0 ) {
+                            log.error("⚠️ empId가 null 또는 0입니다! Material: {}", material.getItemName());
                         }
                     }
                     
@@ -113,7 +131,7 @@ public class ProductPlanServiceImp implements ProductPlanService {
                     // 4. 가출고 처리 (계획 정보를 외부에서 전달)
                     boolean allOutboundSuccess = true;
                     for (MaterialRequirementDTO material : materials) {
-                        // 자재 + 계획정보를 외부에서 전달 → 논리적으로 깔끔!
+                        // 자재 + 계획정보를 외부에서 전달 
                         boolean outboundResult = processOutbound(material, planNo, planId);
                         if (!outboundResult) {
                             allOutboundSuccess = false;
@@ -162,6 +180,9 @@ public class ProductPlanServiceImp implements ProductPlanService {
         
         return result;
     }
+    
+    
+    
     private Integer convertToInteger(Object value) {
         if (value == null) {
             return null;
@@ -202,55 +223,18 @@ public class ProductPlanServiceImp implements ProductPlanService {
                     
                     log.info("작업지시 취소 시작 - Plan ID: {}, Plan NO: {}", planId, plan.getPlanNo());
                     
-                    // 2. 가출고 내역 조회 (삭제하기 전에 먼저 조회)
+                    // ✅ Shipment 패키지에 취소 로직이 있다면 그것 사용
+                    // 없다면 현재 방식대로 직접 처리
+                    
+                    // 2. 가출고 내역 조회
                     List<Map<String, Object>> outbounds = mapper.getOutboundsByPlanId(planId);
                     log.info("조회된 가출고 내역 수: {} (Plan ID: {})", outbounds.size(), planId);
                     
-                    if (outbounds.isEmpty()) {
-                        log.warn("가출고 내역이 없습니다 - Plan ID: {}", planId);
-                    }
-                    
-                    // 3. 재고 할당 해제 (가출고 삭제 전에 먼저 실행)
-                    boolean allocationSuccess = true;
-                    for (Map<String, Object> outbound : outbounds) {
-                        try {
-                            // BigDecimal을 안전하게 Integer로 변환
-                            Integer itemId = convertToInteger(outbound.get("ITEM_ID"));
-                            Integer whId = convertToInteger(outbound.get("WH_ID"));
-                            Integer quantity = convertToInteger(outbound.get("QUANTITY"));
-                            
-                            if (itemId == null || whId == null || quantity == null) {
-                                log.error("가출고 데이터가 불완전합니다: {}", outbound);
-                                continue;
-                            }
-                            
-                            log.info("재고 할당 해제 - Item ID: {}, WH ID: {}, Quantity: {}", itemId, whId, quantity);
-                            
-                            // 할당 수량 감소 (음수로 전달)
-                            int updateResult = mapper.updateInventoryAllocated(itemId, whId, -quantity);
-                            
-                            if (updateResult <= 0) {
-                                log.error("재고 할당 해제 실패 - Item ID: {}, WH ID: {}, Quantity: {}", itemId, whId, quantity);
-                                allocationSuccess = false;
-                            } else {
-                                log.info("재고 할당 해제 성공 - Item ID: {}, WH ID: {}, Quantity: {}", itemId, whId, quantity);
-                            }
-                            
-                        } catch (Exception e) {
-                            log.error("재고 할당 해제 중 오류 - Plan ID: {}, Outbound: {}, Error: {}", planId, outbound, e.getMessage());
-                            allocationSuccess = false;
-                        }
-                    }
-                    
-                    if (!allocationSuccess) {
-                        errorMessages.add("계획 " + planId + ": 재고 할당 해제 중 일부 오류가 발생했습니다.");
-                    }
-                    
-                    // 4. 가출고 내역 삭제
+                    // 3. 가출고 내역 삭제 (Shipment 패키지 로직 또는 직접 처리)
                     int deletedOutbounds = mapper.deleteOutboundsByPlanId(planId);
                     log.info("삭제된 가출고 내역 수: {} (Plan ID: {})", deletedOutbounds, planId);
                     
-                    // 5. 상태를 "자재계획완료"로 되돌림
+                    // 4. 상태를 "자재계획완료"로 되돌림
                     int updateResult = mapper.updateStatus(planId, "자재계획완료");
                     
                     if (updateResult > 0) {
@@ -258,12 +242,11 @@ public class ProductPlanServiceImp implements ProductPlanService {
                         log.info("작업지시 취소 완료 - Plan ID: {}", planId);
                     } else {
                         errorMessages.add("계획 " + planId + ": 상태 변경에 실패했습니다.");
-                        log.error("상태 변경 실패 - Plan ID: {}", planId);
                     }
                     
                 } catch (Exception e) {
                     log.error("개별 작업지시 취소 중 오류 - Plan ID: {}, Error: {}", planId, e.getMessage(), e);
-                    errorMessages.add("계획 " + planId + ": 취소 처리 중 오류가 발생했습니다. (" + e.getMessage() + ")");
+                    errorMessages.add("계획 " + planId + ": 취소 처리 중 오류가 발생했습니다.");
                 }
             }
             
@@ -275,7 +258,7 @@ public class ProductPlanServiceImp implements ProductPlanService {
                 result.put("errorMessages", errorMessages);
                 result.put("message", "일부 작업지시 취소에 실패했습니다:\n" + String.join("\n", errorMessages));
             } else {
-                result.put("message", canceledCount + "개의 작업지시가 성공적으로 취소되었습니다.\n자재 할당이 해제되고 재고가 복구되었습니다.");
+                result.put("message", canceledCount + "개의 작업지시가 성공적으로 취소되었습니다.");
             }
             
             log.info("작업지시 취소 완료 - 성공: {}, 실패: {}", canceledCount, planIds.size() - canceledCount);
@@ -285,7 +268,6 @@ public class ProductPlanServiceImp implements ProductPlanService {
             result.put("success", false);
             result.put("message", "작업지시 취소 중 오류가 발생했습니다: " + e.getMessage());
             result.put("canceledCount", 0);
-            result.put("errorMessages", Arrays.asList("전체 처리 중 오류: " + e.getMessage()));
         }
         
         return result;
@@ -306,34 +288,66 @@ public class ProductPlanServiceImp implements ProductPlanService {
     /**
      * 자재 가출고 처리 - PLAN_NO 사용으로 Integer overflow 해결!
      */
-    private boolean processOutbound(MaterialRequirementDTO material,Integer planNo, String planId) {
+ // ProductPlanServiceImp.java의 processOutbound 메소드 수정
+
+    private boolean processOutbound(MaterialRequirementDTO material, Integer planNo, String planId) {
         try {
+            log.info("=== processOutbound 시작 ===");
+            log.info("Material 정보: 이름={}, materialId={}, empId={}, whId={}", 
+                    material.getItemName(), material.getMaterialId(), 
+                    material.getEmpId(), material.getWhId());
+            
             if (shipmentDAO != null) {
                 // ShipmentDAO 활용하여 가출고 처리
                 ShipmentDTO shipmentDto = new ShipmentDTO();
                 shipmentDto.setInoutType(24); // 가출고
-                shipmentDto.setItemId(material.getItemId());
+                shipmentDto.setItemId(material.getMaterialId()); // materialId 사용
                 shipmentDto.setWhId(material.getWhId());
                 shipmentDto.setQuantity(material.getRequiredQty());
                 shipmentDto.setItemUnitCost(material.getUnitCost());
                 shipmentDto.setSourceDocType(43); // 생산지시
-
-                // ✅ PLAN_NO 사용으로 Integer overflow 완전 해결!
                 shipmentDto.setSourceDocHeaderId(planNo);
-                shipmentDto.setEmpId(material.getEmpId());
+                shipmentDto.setEmpNo(material.getEmpNo());
+                
+                if (material.getEmpId() == 0) {
+                    log.warn("Material의 empId가 0입니다. 기본값 1 사용");
+                    shipmentDto.setEmpId(1); 
+                } else {
+                    shipmentDto.setEmpId(material.getEmpId()); 
+                }
+                
+                
                 shipmentDto.setRemark("작업지시에 의한 자재 가출고 - 목적지: 생산공장01 - 계획번호: " + planId);
+
+                log.info("가출고 처리: Plan No={}, Material ID={}, Quantity={}, EMP_ID={}", 
+                        planNo, material.getMaterialId(), material.getRequiredQty(), shipmentDto.getEmpId());
 
                 int result = shipmentDAO.ship_insert(shipmentDto);
 
                 if (result > 0) {
-                    // 가출고 성공 시 재고의 할당 수량 업데이트
-                    return updateInventoryAllocation(material.getItemId(), material.getWhId(), 
-                        material.getRequiredQty(), true);
+                    log.info("가출고 등록 성공 - Shipment 패키지가 알아서 재고 처리합니다");
+                    // updateInventoryAllocation 호출 제거 - Shipment 패키지에서 처리
+                    return true;
                 }
                 return false;
             } else {
-                // ShipmentDAO가 없으면 직접 처리 (PLAN_NO 기준)
-                return mapper.insertOutbound(material, planId) > 0;
+                // ShipmentDAO가 없으면 직접 처리
+                if (material.getEmpId() == 0) {
+                    log.warn("insertOutbound: empId가 0이므로 기본값 1 설정");
+                    material.setEmpId(1);
+                }
+                
+                log.info("직접 가출고 처리: Plan ID={}, Material ID={}, EMP_ID={}", 
+                        planId, material.getMaterialId(), material.getEmpId());
+                
+                boolean outboundSuccess = mapper.insertOutbound(material, planId) > 0;
+                
+                if (outboundSuccess) {
+                    // 직접 처리일 때만 재고 할당 업데이트
+                    return updateInventoryAllocation(material.getMaterialId(), material.getWhId(), 
+                        material.getRequiredQty(), true);
+                }
+                return false;
             }
         } catch (Exception e) {
             log.error("자재 가출고 처리 중 오류 발생 (Plan No: {}, ID: {}): {}", 
@@ -347,12 +361,19 @@ public class ProductPlanServiceImp implements ProductPlanService {
      */
     private boolean updateInventoryAllocation(int itemId, int whId, int quantity, boolean isAllocate) {
         try {
+            log.info("재고 할당 업데이트: Item ID={}, WH ID={}, Quantity={}, Allocate={}", 
+                    itemId, whId, quantity, isAllocate);
+            
             if (isAllocate) {
                 // 할당 증가 (가출고시)
-                return mapper.updateInventoryAllocated(itemId, whId, quantity) > 0;
+                int result = mapper.updateInventoryAllocated(itemId, whId, quantity);
+                log.info("할당 증가 결과: {}", result);
+                return result > 0;
             } else {
                 // 할당 감소 (가출고 취소시)
-                return mapper.updateInventoryAllocated(itemId, whId, -quantity) > 0;
+                int result = mapper.updateInventoryAllocated(itemId, whId, -quantity);
+                log.info("할당 감소 결과: {}", result);
+                return result > 0;
             }
         } catch (Exception e) {
             log.error("재고 할당 수량 업데이트 중 오류 발생: {}", e.getMessage(), e);
@@ -372,10 +393,34 @@ public class ProductPlanServiceImp implements ProductPlanService {
         return mapper.getMaterialRequirements(planId);
     }
     
+    
+    //가용재고 조회
     @Override
     public int getAvailableInventory(int itemId) {
-        return mapper.getAvailableInventory(itemId);
+        try {
+            // 🔥 이 부분이 정확히 어떻게 되어 있는지 확인!
+            // 만약 getAvailableInventoryInternal을 호출하고 있다면 문제
+            
+            log.info("=== getAvailableInventory 호출 시작 ===");
+            log.info("Item ID: {}", itemId);
+            
+            // ✅ 직접 mapper 호출로 수정
+            int result = mapper.getAvailableInventory(itemId);
+            
+            log.info("Mapper 결과: {}", result);
+            log.info("=== getAvailableInventory 호출 완료 ===");
+            
+            return result;
+            
+            // ❌ 만약 이런 식으로 되어 있다면 문제:
+            // return getAvailableInventoryInternal(itemId);
+            
+        } catch (Exception e) {
+            log.error("가용 재고 조회 중 오류 발생: {}", e.getMessage(), e);
+            return 0;
+        }
     }
+
     
     @Override
     public Map<String, Object> checkMaterialAvailability(List<String> planIds) {
@@ -385,6 +430,7 @@ public class ProductPlanServiceImp implements ProductPlanService {
         
         try {
             for (String planId : planIds) {
+                // ✅ getMaterialRequirements와 동일한 방식으로 자료 조회
                 List<MaterialRequirementDTO> materials = mapper.getMaterialRequirements(planId);
                 ProductPlanDTO plan = mapper.productPlanDetail(planId);
                 
@@ -392,11 +438,13 @@ public class ProductPlanServiceImp implements ProductPlanService {
                     continue;
                 }
                 
+                // ✅ getMaterialRequirements와 동일한 로직 사용
                 List<Map<String, Object>> materialStatus = new ArrayList<>();
                 boolean planHasShortage = false;
                 
                 for (MaterialRequirementDTO material : materials) {
-                    int availableQty = getAvailableInventoryInternal(material.getItemId());
+                    // 🔥 핵심: getMaterialRequirements API와 정확히 동일한 메소드 호출
+                    int availableQty = getAvailableInventory(material.getMaterialId());
                     
                     Map<String, Object> materialInfo = new HashMap<>();
                     materialInfo.put("itemCode", material.getItemCode());

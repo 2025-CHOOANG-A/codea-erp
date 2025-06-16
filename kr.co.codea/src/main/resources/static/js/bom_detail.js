@@ -1,18 +1,3 @@
-// Sidebar toggle
-    const sidebar = document.getElementById("sidebar");
-    const sidebarToggle = document.getElementById("sidebarToggle");
-    sidebarToggle.addEventListener("click", () => {
-      sidebar.classList.toggle("collapsed");
-    });
-    function handleResize() {
-      if (window.innerWidth < 992) {
-        sidebar.classList.add("collapsed");
-      } else {
-        sidebar.classList.remove("collapsed");
-      }
-    }
-    window.addEventListener("resize", handleResize);
-    handleResize();
 
     // 샘플 BOM 상세 데이터
     let bomDetail = {
@@ -162,13 +147,13 @@
 
     // 하단 버튼 이벤트 (샘플)
     document.getElementById("btnList").addEventListener("click", function () {
-      alert("목록 페이지로 이동");
+      alert("목록 페이지로 이동 힙니다.");
 	  location.href = "/bom/bom_list";
     });
 	
 	
 	document.getElementById("btnEdit").addEventListener("click", function () {
-	  alert("수정 페이지로 이동");
+	  alert("수정 페이지로 이동 합니다");
 
 	  const bomCode = document.getElementById("bomCode")?.value;
 
@@ -182,13 +167,17 @@
 	});
 	
 	document.getElementById("btnDelete").addEventListener("click", function () {
-	  if (confirm("정말 삭제하시겠습니까?")) {
-	    const bomCode = document.getElementById("bomCode").value;
-	    document.getElementById("bomCodeInput").value = bomCode;
-	    document.getElementById("deleteForm").submit();
-	  }
+	    if (confirm("정말 삭제하시겠습니까?")) {
+	        const bomCode = document.getElementById("bomCode").value;
+	        document.getElementById("bomCodeInput").value = bomCode;
+	        
+	        // 삭제 알림 먼저 표시
+	        alert("삭제되었습니다.");
+	        
+	        // 그 다음 폼 제출
+	        document.getElementById("deleteForm").submit();
+	    }
 	});
-	
 	
 	
 	

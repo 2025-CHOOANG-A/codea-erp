@@ -20,6 +20,4 @@ public interface ReceivingMapper {
 	public Integer rec_check(@Param("sourceDocType") int sourceDocType, @Param("sourceDocHeaderId") int sourceDocHeaderId, @Param("itemId") int itemId);	// 입고 중복 체크
 	
 	public Integer rec_insert(ReceivingDTO dto);	// 입고 등록
-	
-	List<ReceivingDTO> selectRecentReceivingList(@Param("size") int size);
 }

@@ -108,14 +108,14 @@ LEFT JOIN ITEM_CATEGORY catS ON .ITEM_CAT_S = catS.CATEGORY_ID
 </select>
 
 <!-- 대분류만 뽑기 -->
-<select id="selectCatL" resultType="itemDTO">
+<select id="selectCatL" resultType="kr.co.codea.item.itemDTO">
   SELECT CATEGORY_ID, CATEGORY_NAME
   FROM ITEM_CATEGORY
   WHERE CATEGORY_LEVEL = 1
 </select>
 
 <!-- 소분류만 뽑기 -->
-<select id="selectCatS" resultType="itemDTO">
+<select id="selectCatS" resultType="kr.co.codea.item.itemDTO">
   SELECT CATEGORY_ID, CATEGORY_NAME, PARENT_ID
   FROM ITEM_CATEGORY
   WHERE CATEGORY_LEVEL = 2
@@ -124,7 +124,7 @@ LEFT JOIN ITEM_CATEGORY catS ON .ITEM_CAT_S = catS.CATEGORY_ID
 <!-- 단위뽑기
   c.CODE_DESC AS UNIT_NAME =>별명 잡음(단위이름)
  -->
-<select  id="unitcode_list" resultType="itemDTO">
+<select  id="unitcode_list" resultType="kr.co.codea.item.itemDTO">
   SELECT CODE_ID, CODE
   FROM COMMON_CODE
   WHERE CODE_TYPE = 'UNIT_CODE'
@@ -150,7 +150,7 @@ LEFT JOIN ITEM_CATEGORY catS ON .ITEM_CAT_S = catS.CATEGORY_ID
 <!-- 제품 등록삭제 -->
   <delete id="delete_item" parameterType="String">
     DELETE FROM ITEM
-    WHERE ITEM_CODE = #{itemId}
+    WHERE ITEM_ID = #{itemId}
   </delete>
 
 

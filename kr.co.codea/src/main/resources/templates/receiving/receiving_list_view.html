@@ -74,7 +74,7 @@
 								<td>[[${n.itemName}]]</td>	<!-- 제품명 -->
 								<td>[[${n.itemType}]]</td>	<!-- 제품 구분 -->
 								<td>[[${n.docNo}]]</td>	<!-- 발주 및 생산 번호 -->
-								<td>[[${n.docDate.substring(0, 10)}]]</td>	<!-- 발주 및 생산 일자 -->
+								<td>[[${n.docDate}]]</td>	<!-- 발주 및 생산 일자 -->
 								<td>[[${n.quantity}]]</td>	<!-- 입고 수량 -->
 								<td>[[${n.whName}]]</td>	<!-- 창고명 -->
 							</tr>
@@ -99,17 +99,10 @@
 			</div>
 		</div>
 
-		<!-- Pagination & Register Button -->
+		<!-- Register Button -->
 		<div class="row align-items-center">
 			<div th:if="${!#strings.isEmpty(keyword)}" class="col-auto">
 				<a th:href="@{/receiving/list}" class="btn btn-secondary">전체 목록</a>
-			</div>
-			<div class="col text-center">
-				<nav>
-					<ul class="pagination justify-content-center my-2" id="pagination">
-						<!-- JS로 페이지네이션 렌더링 -->
-					</ul>
-				</nav>
 			</div>
 			<div class="col-auto ms-auto">
 				<a href="/receiving/write" class="btn btn-success" id="rec_add">등록</a>

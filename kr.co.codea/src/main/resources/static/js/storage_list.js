@@ -20,25 +20,6 @@ function submitSearchForm() {
     }
 }
 
-// Sidebar toggle (기존 코드 유지)
-const sidebar = document.getElementById("sidebar");
-const sidebarToggle = document.getElementById("sidebarToggle");
-if (sidebarToggle) {
-    sidebarToggle.addEventListener("click", () => {
-        if (sidebar) sidebar.classList.toggle("collapsed");
-    });
-}
-
-function handleResize() {
-    if (window.innerWidth < 992) {
-        if (sidebar) sidebar.classList.add("collapsed");
-    } else {
-        if (sidebar) sidebar.classList.remove("collapsed");
-    }
-}
-window.addEventListener("resize", handleResize);
-handleResize();
-
 
 
 // "상세 보기" 모달을 위한 함수 (AJAX로 상세 정보 가져오기)

@@ -2,62 +2,48 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.bom.bom_mapper">
 
- <!-- BOM_HEADER 등록 -->
- <!--BOM항목을 불러오기 위한 리스트 -->
- <select id="bom_item_list_y" parameterType="string" resultType="kr.co.codea.bom.bomDTO" resultMap="bomItemResultMap">
 
- SELECT
-    I.ITEM_ID,
-    I.ITEM_CODE,
-    I.ITEM_NAME,
-    I.SPEC,
-    I.UNIT_CODE,
-    C.CODE AS UNIT_NAME
-FROM ITEM I
-LEFT JOIN COMMON_CODE C
-    ON I.UNIT_CODE = C.CODE_ID
-   AND C.CODE_TYPE = 'UNIT_CODE'
-WHERE I.ITEM_TYPE = '완제품'
-ORDER BY I.ITEM_CODE
- </select>
- 
- <!--BOM 등록파트  -->
-
-  <insert id="insert_bom_header" parameterType="kr.co.codea.bom.bomDTO">
+<!-- DB 자동 생성 ID를 받아오는 방식 -->
+<insert id="insert_bom_header" parameterType="kr.co.codea.bom.bomDTO" 
+        useGeneratedKeys="true" keyProperty="bomHeaderId" keyColumn="BOM_HEADER_ID">
     INSERT INTO BOM_HEADER (
-      BOM_HEADER_ID,
-      ITEM_ID,
-      VERSION,
-      DESCRIPTION,
-      CREATED_AT
+        ITEM_ID,
+        VERSION,
+        DESCRIPTION,
+        CREATED_AT
     ) VALUES (
-      #{bomCode},
-      #{itemId},
-      #{version},
-      #{description},
-      SYSDATE
+        #{itemId},
+        #{version},
+        #{description},
+        SYSDATE
     )
-  </insert>
+</insert>
 
-   
-  <!-- BOM_DETAIL 등록 --> 
-  <insert id="insert_bom_detail" parameterType="kr.co.codea.bom.bomDTO">
+<!-- 2. BOM_DETAIL 단건 등록 (수정된 버전) -->
+<insert id="insert_bom_detail" parameterType="kr.co.codea.bom.bomDTO">
     INSERT INTO BOM_DETAIL (
-      DETAIL_ID,
-      BOM_HEADER_ID,
-      CHILD_ID,
-      QUANTITY,
-      PRICE,
-      LOSS_RATE
+        BOM_HEADER_ID,
+        CHILD_ID,
+        QUANTITY,
+        PRICE,
+        LOSS_RATE
     ) VALUES (
-      BOM_DETAIL_SEQ.NEXTVAL,
-      #{bomCode},
-      #{childId},
-      #{quantity},
-      #{price},
-      #{lossRate}
+        #{bomHeaderId},          <!-- BOM_HEADER_ID: 문자열 -->
+        #{childId},              <!-- CHILD_ID: 숫자 -->
+        #{quantity},             <!-- QUANTITY: 숫자 -->
+        #{price},                <!-- PRICE: 숫자 -->
+        0                        <!-- LOSS_RATE: 기본값 0 -->
     )
-  </insert>
+</insert>
+
+
+
+<!--원자재 아이템 아이디 출력을 위해 필요  -->
+<select id="selectItemIdByCode" parameterType="String" resultType="String">
+  SELECT ITEM_ID
+  FROM ITEM
+  WHERE ITEM_CODE = #{materialCode}
+</select>
   
  <!--BOM 전체삭제 -->  
 
@@ -77,36 +63,57 @@ ORDER BY I.ITEM_CODE
    
 <!-- 조회항목  -->
 <!-- 완재품 항목조회  -->
-<select id="bom_item_type_y" parameterType="string" resultType="kr.co.codea.bom.bomDTO" resultMap="bomItemResultMap">
-SELECT 
-    H.BOM_HEADER_ID AS bomCode,  
-    I.ITEM_ID,
-    I.ITEM_CODE,
-    I.ITEM_NAME,
-    I.ITEM_TYPE,
-    I.ITEM_CAT_L,
-    I.ITEM_CAT_S,
-    I.UNIT_CODE,
-    C.CODE  AS UNIT_NAME,  
-    I.SPEC,
-    H.DESCRIPTION
-FROM BOM_HEADER H
-JOIN ITEM I 
-    ON H.ITEM_ID = I.ITEM_ID
-LEFT JOIN COMMON_CODE C 
-    ON I.UNIT_CODE = C.CODE_ID
-    AND C.CODE_TYPE = 'UNIT_CODE'
-WHERE I.ITEM_TYPE = '완제품'
+
+<select id="bom_item_list_y" parameterType="string" resultType="kr.co.codea.bom.bomDTO" resultMap="bomItemResultMap">
+  SELECT
+        I.ITEM_ID AS itemId,           
+        I.ITEM_CODE AS materialCode,
+        I.ITEM_NAME AS materialName,
+        I.ITEM_TYPE,
+        I.ITEM_CAT_L,
+        I.ITEM_CAT_S,
+        I.UNIT_CODE AS unitCode,
+        C.CODE AS j_unitName,
+        I.SPEC AS spec,
+        I.PRICE AS price
+    FROM ITEM I
+    LEFT JOIN COMMON_CODE C 
+        ON I.UNIT_CODE = C.CODE_ID 
+        AND C.CODE_TYPE = 'UNIT_CODE'
+    WHERE I.ITEM_TYPE = '원자재'
+    ORDER BY I.ITEM_CODE
+</select>
+
+<select id="bom_item_type_y" parameterType="string" resultType="kr.co.codea.bom.bomDTO">
+    SELECT
+        H.BOM_HEADER_ID AS bomCode,
+        I.ITEM_ID AS itemId,           
+        I.ITEM_CODE AS itemCode,     
+        I.ITEM_NAME AS itemName,      
+        I.ITEM_TYPE AS itemType,
+        I.ITEM_CAT_L AS itemCatL,
+        I.ITEM_CAT_S AS itemCatS,
+        I.UNIT_CODE AS unitCode,      
+        C.CODE AS unitName,           
+        I.SPEC AS spec,
+        H.DESCRIPTION AS description
+    FROM BOM_HEADER H
+    JOIN ITEM I ON H.ITEM_ID = I.ITEM_ID
+    LEFT JOIN COMMON_CODE C 
+        ON I.UNIT_CODE = C.CODE_ID 
+        AND C.CODE_TYPE = 'UNIT_CODE'
+    WHERE I.ITEM_TYPE = '완제품'
 </select>
 
 <!-- 완자재 항목조회  -->
 <select id="bom_item_type_j" parameterType="string" resultType="kr.co.codea.bom.bomDTO" resultMap="bomItemResultMap">
 SELECT 
-    B.BOM_HEADER_ID     AS bomCode,        
+    B.BOM_HEADER_ID     AS bomCode,
+    A.ITEM_ID ,            
     A.ITEM_CODE         AS materialCode,   
     A.ITEM_NAME         AS materialName,   
     A.SPEC              AS spec,          
-    C.CODE              AS unitName,        
+    C.CODE              AS j_unitName,        
     A.PRICE             AS price,           
     B.QUANTITY          AS quantity        
 FROM BOM_DETAIL B
@@ -126,28 +133,14 @@ SELECT
     I.ITEM_NAME     AS productName,
     I.SPEC,
     CC.CODE_DESC    AS unitName
+    H.BOM_HEADER_ID AS bomCode,
 FROM BOM_HEADER H
 JOIN ITEM I ON H.ITEM_ID = I.ITEM_ID
 LEFT JOIN COMMON_CODE CC ON I.UNIT_CODE = CC.CODE_ID AND CC.CODE_TYPE = 'UNIT_CODE'
 WHERE H.BOM_HEADER_ID = #{bomCode}
 </select>
 
-<!-- 자재 리스트 조회 -->
-<!-- 
-SELECT
-    B.BOM_HEADER_ID AS bomCode,
-    CI.ITEM_CODE    AS materialCode,
-    CI.ITEM_NAME    AS materialName,
-    CI.SPEC         AS spec,
-    CC.CODE_DESC    AS unitName,
-    CI.PRICE        AS price,
-    B.QUANTITY      AS quantity
-FROM BOM_DETAIL B
-JOIN ITEM CI ON B.CHILD_ID = CI.ITEM_ID
-LEFT JOIN COMMON_CODE CC ON CI.UNIT_CODE = CC.CODE_ID AND CC.CODE_TYPE = 'UNIT_CODE'
-WHERE B.BOM_HEADER_ID = #{bomCode}
 
- -->
 <select id="selectBomMaterialList" resultType="kr.co.codea.bom.bomDTO">
 SELECT
     B.BOM_HEADER_ID AS bomCode,
@@ -215,29 +208,6 @@ ORDER BY H.BOM_HEADER_ID, D.DETAIL_ID
   )
 </insert>
 
-<!-- bom 상세정보(완제품) -->
-<!-- 
-SELECT
-    H.BOM_HEADER_ID        AS bomCode,
-    I.ITEM_CODE            AS productCode,
-    I.ITEM_NAME            AS productName,
-    C.ITEM_CODE            AS materialCode,
-    C.ITEM_NAME            AS materialName,
-    C.SPEC                 AS spec,
-    CC.CODE                AS unitUnicode,  
-    CC.CODE_DESC           AS unitName,     
-    D.PRICE                AS price,
-    D.QUANTITY             AS quantity,
-    h.REMARK                AS reMark
-FROM BOM_HEADER H
-JOIN ITEM I ON H.ITEM_ID = I.ITEM_ID        
-JOIN BOM_DETAIL D ON H.BOM_HEADER_ID = D.BOM_HEADER_ID
-JOIN ITEM C ON D.CHILD_ID = C.ITEM_ID        
-LEFT JOIN COMMON_CODE CC 
-  ON C.UNIT_CODE = CC.CODE_ID               
-  AND CC.CODE_TYPE = 'UNIT_CODE'
-ORDER BY H.BOM_HEADER_ID, D.DETAIL_ID
- -->
 
 <!--단일헤더 조회(bom 코드만)  -->
 <select id="selectBomHeaderByCode" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
@@ -270,8 +240,139 @@ ORDER BY H.BOM_HEADER_ID, D.DETAIL_ID
   WHERE B.BOM_HEADER_ID = #{bomCode}
 </select>
 
+<!-- BOM edit 삭제 업데이트 파트 -->
 
-<!-- BOM edit -->
+<!-- 1. BOM 상세 수정 쿼리 (UPDATE) - 에러 해결용 -->
+<update id="edite_bom_detail_ok" parameterType="kr.co.codea.bom.bomDTO">
+  UPDATE BOM_DETAIL 
+  SET CHILD_ID = (SELECT ITEM_ID FROM ITEM WHERE ITEM_CODE = #{materialCode}),
+      QUANTITY = #{quantity},
+      PRICE = #{price},
+      LOSS_RATE = #{lossRate}
+  WHERE BOM_HEADER_ID = #{bomCode} 
+    AND CHILD_ID = (SELECT ITEM_ID FROM ITEM WHERE ITEM_CODE = #{originalMaterialCode})
+</update>
+
+<!-- 2. BOM 헤더 정보 수정 -->
+<update id="update_bom_header" parameterType="kr.co.codea.bom.bomDTO">
+  UPDATE BOM_HEADER 
+  SET ITEM_ID = #{itemId},
+      VERSION = #{version},
+      DESCRIPTION = #{description}
+  WHERE BOM_HEADER_ID = #{bomCode}
+</update>
+
+<!-- 3. 특정 자재 삭제 (체크박스 선택 삭제용) -->
+<delete id="delete_bom_detail_by_material" parameterType="map">
+  DELETE FROM BOM_DETAIL 
+  WHERE BOM_HEADER_ID = #{bomCode} 
+    AND CHILD_ID IN (
+      <foreach collection="materialCodes" item="materialCode" separator=",">
+        (SELECT ITEM_ID FROM ITEM WHERE ITEM_CODE = #{materialCode})
+      </foreach>
+    )
+</delete>
+
+<!-- 4. 단일 자재 삭제 -->
+<delete id="delete_single_bom_detail" parameterType="map">
+  DELETE FROM BOM_DETAIL 
+  WHERE BOM_HEADER_ID = #{bomCode} 
+    AND CHILD_ID = (SELECT ITEM_ID FROM ITEM WHERE ITEM_CODE = #{materialCode})
+</delete>
+
+<!-- 5. BOM 상세 추가 (개별 추가용) -->
+<insert id="add_bom_detail" parameterType="kr.co.codea.bom.bomDTO">
+  INSERT INTO BOM_DETAIL (
+    DETAIL_ID,
+    BOM_HEADER_ID,
+    CHILD_ID,
+    QUANTITY,
+    PRICE,
+    LOSS_RATE
+  ) VALUES (
+    BOM_DETAIL_SEQ.NEXTVAL,
+    #{bomCode},
+    (SELECT ITEM_ID FROM ITEM WHERE ITEM_CODE = #{materialCode}),
+    #{quantity},
+    #{price},
+    #{lossRate}
+  )
+</insert>
+
+<!-- 6. 기존 edite_bom_detail SELECT 쿼리는 이름 변경 -->
+<select id="select_bom_detail_for_edit" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
+  SELECT
+    B.BOM_HEADER_ID AS bomCode,
+    C.ITEM_CODE     AS materialCode,
+    C.ITEM_NAME     AS materialName,
+    C.SPEC          AS spec,
+    CC.CODE_DESC    AS unitCode,
+    C.PRICE         AS price,
+    B.QUANTITY      AS quantity
+  FROM BOM_DETAIL B
+  JOIN ITEM C ON B.CHILD_ID = C.ITEM_ID
+  LEFT JOIN COMMON_CODE CC ON C.UNIT_CODE = CC.CODE_ID AND CC.CODE_TYPE = 'UNIT_CODE'
+  WHERE B.BOM_HEADER_ID = #{bomCode}
+</select>
+
+<!-- 7. 자재 검색 (모달에서 자재 선택용) -->
+<select id="search_materials" parameterType="map" resultType="kr.co.codea.bom.bomDTO">
+  SELECT
+    I.ITEM_ID       AS itemId,
+    I.ITEM_CODE     AS materialCode,
+    I.ITEM_NAME     AS materialName,
+    I.SPEC          AS spec,
+    CC.CODE_DESC    AS unitName,
+    I.PRICE         AS price
+  FROM ITEM I
+  LEFT JOIN COMMON_CODE CC 
+    ON I.UNIT_CODE = CC.CODE_ID 
+    AND CC.CODE_TYPE = 'UNIT_CODE'
+  WHERE I.ITEM_TYPE = '원자재'
+  <if test="keyword != null and keyword != ''">
+    AND (I.ITEM_CODE LIKE '%' || #{keyword} || '%' 
+         OR I.ITEM_NAME LIKE '%' || #{keyword} || '%')
+  </if>
+  ORDER BY I.ITEM_CODE
+</select>
+
+<!-- 8. BOM 전체 정보 조회 (수정 페이지용) -->
+<select id="select_bom_for_edit" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
+  SELECT 
+    H.BOM_HEADER_ID    AS bomCode,
+    H.ITEM_ID          AS itemId,
+    H.VERSION          AS version,
+    H.DESCRIPTION      AS description,
+    I.ITEM_CODE        AS productCode,
+    I.ITEM_NAME        AS productName,
+    I.SPEC             AS spec,
+    CC.CODE_DESC       AS unitName
+  FROM BOM_HEADER H
+  JOIN ITEM I ON H.ITEM_ID = I.ITEM_ID
+  LEFT JOIN COMMON_CODE CC 
+    ON I.UNIT_CODE = CC.CODE_ID AND CC.CODE_TYPE = 'UNIT_CODE'
+  WHERE H.BOM_HEADER_ID = #{bomCode}
+</select>
+
+<!-- 9. 특정 BOM의 자재 목록 조회 (수정 페이지용) -->
+<select id="select_bom_materials_for_edit" parameterType="String" resultType="kr.co.codea.bom.bomDTO">
+  SELECT
+    B.BOM_HEADER_ID   AS bomCode,
+    B.DETAIL_ID       AS detailId,
+    C.ITEM_CODE       AS materialCode,
+    C.ITEM_NAME       AS materialName,
+    C.SPEC            AS spec,
+    CC.CODE_DESC      AS unitCode,
+    B.PRICE           AS price,
+    B.QUANTITY        AS quantity,
+    B.LOSS_RATE       AS lossRate
+  FROM BOM_DETAIL B
+  JOIN ITEM C ON B.CHILD_ID = C.ITEM_ID
+  LEFT JOIN COMMON_CODE CC ON C.UNIT_CODE = CC.CODE_ID AND CC.CODE_TYPE = 'UNIT_CODE'
+  WHERE B.BOM_HEADER_ID = #{bomCode}
+  ORDER BY B.DETAIL_ID
+</select>
+
 
 <!-- BOM을 수정하기 위해 불러오는 항목 -->
 <!-- 제품목록 -->
@@ -290,14 +391,7 @@ WHERE BOM_HEADER_ID =#{bomCode}
   -->
 
 
-
- <!-- 
-    1) 공통 SELECT 절 (Fragment) 
-       - AS alias는 DTO 필드명과 정확히 일치해야 합니다.
-       - 예시: bomCode, productCode, productName, materialId, materialCode,
-         materialName, quantity, spec, unitUnicode, price
-  -->
-  <sql id="BaseSelect"> 
+<sql id="BaseSelect"> 
      SELECT
       H.BOM_HEADER_ID      AS bomCode,
       I.ITEM_CODE          AS productCode,
@@ -321,9 +415,7 @@ WHERE BOM_HEADER_ID =#{bomCode}
       ON C.UNIT_CODE = CC.CODE_ID
      AND CC.CODE_TYPE = 'UNIT_CODE'
   </sql>
-
-
-  <!--
+ <!--
     2) 검색(keyword) + 정렬(sortField, sortOrder) + 페이징(offset, limit) 처리
        → Oracle 12c 이상에서 지원하는 OFFSET ... FETCH 방식
 
@@ -338,6 +430,7 @@ WHERE BOM_HEADER_ID =#{bomCode}
       예: DTO가 `kr.co.codea.bom.bomDTO` 패키지에 있으면 그대로 사용,
           다른 패키지에 있으면 `kr.co.codea.dto.bomDTO` 등으로 변경해야 합니다.
   -->
+  
   <select id="select_bomList"
           parameterType="map"
           resultType="kr.co.codea.bom.bomDTO">
@@ -368,8 +461,10 @@ WHERE BOM_HEADER_ID =#{bomCode}
     </choose>
 
     <!-- (D) OFFSET 페이징 (Oracle 12c 이상) -->
+    <if test="offset != null and limit != null">
     OFFSET #{offset} ROWS
     FETCH NEXT #{limit} ROWS ONLY
+    </if>
   </select>
 
 
@@ -377,6 +472,7 @@ WHERE BOM_HEADER_ID =#{bomCode}
     3) 검색조건(keyword)만 적용하여 전체 건수를 조회
        → 페이징 UI에서 “총 페이지 수”를 계산할 때 사용
   -->
+
   <select id="select_bomCount"
           parameterType="map"
           resultType="int">
@@ -399,6 +495,7 @@ WHERE BOM_HEADER_ID =#{bomCode}
 
 
 
+
 <!-- resultMap -->
 <resultMap id="bomItemResultMap" type="kr.co.codea.bom.bomDTO" >
     <result property="itemId" column="ITEM_ID"/>
@@ -413,6 +510,8 @@ WHERE BOM_HEADER_ID =#{bomCode}
     <result property="reMark" column="REMARK"/>
     <result property="unitName2" column="unitName2"/>
     
+     <result property="j_unitName" column="j_unitName"/>
+  
     <result property="bomCode" column="bomCode"/>
     <result property="productCode" column="productCode"/>
     <result property="productName" column="productName"/>

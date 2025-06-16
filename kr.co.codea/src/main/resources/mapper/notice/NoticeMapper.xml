@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.codea.notice.NoticeMapper">
+
+    <!-- 공지사항 목록 조회 -->
+    <select id="selectNoticeList" parameterType="NoticeDTO" resultType="NoticeDTO">
+        SELECT 
+            n.NOTICE_ID,
+            n.TITLE,
+            n.CONTENT,
+            n.AUTHOR_EMP_ID,
+            e.EMP_NAME as AUTHOR_NAME,
+            n.VIEWS,
+            n.CREATED_AT,
+            n.UPDATED_AT,
+            n.IS_DELETED
+        FROM NOTICE n
+        LEFT JOIN EMPLOYEE e ON n.AUTHOR_EMP_ID = e.EMP_ID
+        WHERE n.IS_DELETED = 'N'
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(n.TITLE) LIKE '%' || UPPER(#{keyword}) || '%'
+                OR UPPER(n.CONTENT) LIKE '%' || UPPER(#{keyword}) || '%'
+            )
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND n.CREATED_AT >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND n.CREATED_AT &lt;= TO_DATE(#{endDate} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        ORDER BY n.CREATED_AT DESC
+    </select>
+
+    <!-- 공지사항 총 개수 -->
+    <select id="selectNoticeCount" parameterType="NoticeDTO" resultType="int">
+        SELECT COUNT(*)
+        FROM NOTICE n
+        WHERE n.IS_DELETED = 'N'
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(n.TITLE) LIKE '%' || UPPER(#{keyword}) || '%'
+                OR UPPER(n.CONTENT) LIKE '%' || UPPER(#{keyword}) || '%'
+            )
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND n.CREATED_AT >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND n.CREATED_AT &lt;= TO_DATE(#{endDate} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+    </select>
+
+    <!-- 공지사항 상세 조회 -->
+    <select id="selectNoticeById" parameterType="long" resultType="NoticeDTO">
+        SELECT 
+            n.NOTICE_ID,
+            n.TITLE,
+            n.CONTENT,
+            n.AUTHOR_EMP_ID,
+            e.EMP_NAME as AUTHOR_NAME,
+            n.VIEWS,
+            n.CREATED_AT,
+            n.UPDATED_AT,
+            n.IS_DELETED
+        FROM NOTICE n
+        LEFT JOIN EMPLOYEE e ON n.AUTHOR_EMP_ID = e.EMP_ID
+        WHERE n.NOTICE_ID = #{noticeId} 
+        AND n.IS_DELETED = 'N'
+    </select>
+
+    <!-- 공지사항 등록 -->
+    <insert id="insertNotice" parameterType="NoticeDTO"  keyProperty="noticeId">
+        INSERT INTO NOTICE (
+            TITLE,
+            CONTENT,
+            AUTHOR_EMP_ID,
+            VIEWS,
+            CREATED_AT,
+            UPDATED_AT,
+            IS_DELETED
+        ) VALUES (
+            #{title},
+            #{content},
+            #{authorEmpId},
+            0,
+            SYSDATE,
+            SYSDATE,
+            'N'
+        )
+    </insert>
+
+    <!-- 공지사항 수정 -->
+    <update id="updateNotice" parameterType="NoticeDTO">
+        UPDATE NOTICE SET
+            TITLE = #{title},
+            CONTENT = #{content},
+            UPDATED_AT = SYSDATE
+        WHERE NOTICE_ID = #{noticeId}
+        AND IS_DELETED = 'N'
+    </update>
+
+    <!-- 공지사항 삭제 (논리삭제) -->
+    <update id="deleteNotice" parameterType="long">
+        UPDATE NOTICE SET
+            IS_DELETED = 'Y',
+            UPDATED_AT = SYSDATE
+        WHERE NOTICE_ID = #{noticeId}
+    </update>
+
+    <!-- 조회수 증가 -->
+    <update id="updateViews" parameterType="long">
+        UPDATE NOTICE SET
+            VIEWS = VIEWS + 1
+        WHERE NOTICE_ID = #{noticeId}
+        AND IS_DELETED = 'N'
+    </update>
+
+    <!-- 메인페이지용 최근 공지사항 조회 -->
+    <select id="selectRecentNotices" parameterType="int" resultType="NoticeDTO">
+        SELECT * FROM (
+            SELECT 
+                n.NOTICE_ID,
+                n.TITLE,
+                n.CONTENT,
+                n.AUTHOR_EMP_ID,
+                e.EMP_NAME as AUTHOR_NAME,
+                n.VIEWS,
+                n.CREATED_AT,
+                n.UPDATED_AT,
+                n.IS_DELETED
+            FROM NOTICE n
+            LEFT JOIN EMPLOYEE e ON n.AUTHOR_EMP_ID = e.EMP_ID
+            WHERE n.IS_DELETED = 'N'
+            ORDER BY n.CREATED_AT DESC
+        ) WHERE ROWNUM &lt;= #{limit}
+    </select>
+
+</mapper>

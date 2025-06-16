@@ -18,6 +18,4 @@ public interface ShipmentService {
 	public String check(int sourceDocType, int sourceDocHeaderId, int itemId);	// 출고 중복 체크
 	
 	public Integer ship_insert(ShipmentDTO dto);	// 출고 등록
-	
-	List<ShipmentDTO> getRecentShipmentList(int size);
 }

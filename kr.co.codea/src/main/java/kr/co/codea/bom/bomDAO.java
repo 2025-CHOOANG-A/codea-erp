@@ -3,6 +3,7 @@ package kr.co.codea.bom;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,8 @@ public class bomDAO implements bom_service{
 		 List<bomDTO> select_bomList = this.b_mp.selectBomList();
 		return select_bomList;
 	}
+	
+
 	
 	//bom 등록시 제품 리스트 불러오기 위한 항목 
 	@Override
@@ -75,10 +78,22 @@ public class bomDAO implements bom_service{
     }
 	   
     //BOM 상세정보(디테일)
-	@Override
+    @Override
     public int insert_bom_detail(bomDTO dto) {
-	  return b_mp.insert_bom_detail(dto);
+        return this.b_mp.insert_bom_detail(dto);
     }
+	
+	@Override
+	public int insert_bom_details(List<bomDTO> detailList) {
+		return  b_mp.insert_bom_details(detailList);
+	}
+	
+	//등록하기 위해 필요한 리스트
+	
+	@Override
+	public String selectItemIdByCode(String materialCode) {
+	    return b_mp.selectItemIdByCode(materialCode);
+	}
 	
 	//BOM 전체삭제 
    @Override
@@ -96,6 +111,71 @@ public class bomDAO implements bom_service{
    public List<bomDTO> edite_bom_detail(String bomCode) {
 	return b_mp.edite_bom_detail(bomCode);
 }
+   
+   //bom 수정하기 위한 추가본 
+ //<!-- 4. 디버깅용 - BOM_HEADER 존재 확인 -->
+    @Override
+     public bomDTO checkBomHeaderExists(String bomHeaderId) {
+	return b_mp.checkBomHeaderExists(bomHeaderId);
+     }
+    
+	//<!-- 5. 디버깅용 - ITEM 존재 확인 -->
+    @Override
+    public bomDTO checkItemExists(String itemId) {
+    	return  b_mp.checkBomHeaderExists(itemId);
+    }
+   
+   
+
+  // BOM 상세 수정 (기존 에러 해결용)
+   @Override
+   public int edite_bom_detail_ok(bomDTO dto) {
+    return b_mp.edite_bom_detail_ok(dto);
+   }
+
+   // BOM 헤더 정보 수정
+   @Override
+    public int update_bom_header(bomDTO dto) {
+    return b_mp.update_bom_header(dto);
+    }
+
+     // 자재 추가
+    @Override
+   public int add_bom_detail(bomDTO dto) {
+    return b_mp.add_bom_detail(dto);
+ }
+
+// 선택된 자재들 삭제 (체크박스 다중 삭제용)
+@Override
+public int delete_bom_detail_by_material(Map<String, Object> params) {
+    return b_mp.delete_bom_detail_by_material(params);
+}
+
+// 단일 자재 삭제
+@Override
+public int delete_single_bom_detail(String bomCode, String materialCode) {
+    return b_mp.delete_single_bom_detail(bomCode, materialCode);
+}
+
+// 자재 검색 (모달에서 자재 선택용)
+@Override
+public List<bomDTO> search_materials(String keyword) {
+    return b_mp.search_materials(keyword);
+}
+
+// 수정용 BOM 전체 정보 조회
+@Override
+public bomDTO select_bom_for_edit(String bomCode) {
+    return b_mp.select_bom_for_edit(bomCode);
+}
+
+// 수정용 자재 목록 조회
+@Override
+public List<bomDTO> select_bom_materials_for_edit(String bomCode) {
+    return b_mp.select_bom_materials_for_edit(bomCode);
+}
+   
+   
    
    
   //BOM 자재 하단 
@@ -150,7 +230,10 @@ public class bomDAO implements bom_service{
    }  
    
    
-   
+   @Override
+    public List<bomDTO> select_allBomList(Map<String, Object> params) {
+	return b_mp.select_allBomList(params);
+}
    
    
    

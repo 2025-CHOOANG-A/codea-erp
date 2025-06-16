@@ -73,7 +73,7 @@ document.getElementById("rec_sea_form").addEventListener("submit", function(e){
 					const docQtyLabel = document.querySelector("label[for='docQty']");
 					const docCostLabel = document.querySelector("label[for='docCost']");
 					const inoutType = document.getElementById("inoutType");
-					
+
 					document.getElementById("itemCode").value = item.itemCode;
 					document.getElementById("itemName").value = item.itemName;
 					document.getElementById("itemType").value = item.itemType;
@@ -81,7 +81,7 @@ document.getElementById("rec_sea_form").addEventListener("submit", function(e){
 					document.getElementById("code").value = item.code;
 					document.getElementById("price").value = item.price.toLocaleString() + " 원";
 					document.getElementById("docNo").value = item.docNo;
-					document.getElementById("docDate").value = item.docDate.substring(0, 10);
+					document.getElementById("docDate").value = item.docDate;
 					document.getElementById("docQty").value = item.docQty;
 					document.getElementById("docCost").value = item.docCost.toLocaleString() + " 원";
 					document.getElementById("qty").value = item.qty;
@@ -98,15 +98,25 @@ document.getElementById("rec_sea_form").addEventListener("submit", function(e){
 						docQtyLabel.textContent = "발주 수량";
 						docCostLabel.textContent = "발주 총액";
 
-						inoutType.value = "23";
+						if(item.itemType == "원자재"){
+							inoutType.value = "23";
+						}
+						else if(item.itemType == "완제품"){
+							inoutType.value = "22";
+						}
 					}
-					if(item.sourceDocType == "43"){
+					else if(item.sourceDocType == "43"){
 						docNoLabel.textContent = "생산 계획 번호";
 						docDateLabel.textContent = "생산 일자";
 						docQtyLabel.textContent = "생산 수량";
 						docCostLabel.textContent = "생산 총액";
 
-						inoutType.value = "22";
+						if(item.itemType == "원자재"){
+							inoutType.value = "23";
+						}
+						else if(item.itemType == "완제품"){
+							inoutType.value = "22";
+						}
 					}
 					
 					// 닫기

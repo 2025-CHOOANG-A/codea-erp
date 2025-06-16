@@ -1,20 +1,4 @@
-// Sidebar toggle
-     const sidebar = document.getElementById("sidebar");
-     const sidebarToggle = document.getElementById("sidebarToggle");
-     sidebarToggle.addEventListener("click", () => {
-       sidebar.classList.toggle("collapsed");
-     });
-     function handleResize() {
-       if (window.innerWidth < 992) {
-         sidebar.classList.add("collapsed");
-       } else {
-         sidebar.classList.remove("collapsed");
-       }
-     }
-     window.addEventListener("resize", handleResize);
-     handleResize();
-
-     // 샘플 BOM 데이터 (제품별로 여러 자재)
+// 샘플 BOM 데이터 (제품별로 여러 자재)
 	 /*
      const bomData = [
 		
@@ -416,3 +400,15 @@
 	    }
 	  });
 	  */
+
+
+
+
+
+
+
+
+
+
+
+

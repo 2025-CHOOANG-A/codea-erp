@@ -63,4 +63,7 @@ public class InventoryDTO {
 	
 	// 문서 번호, 문서 일자
 	String docNo, docDate;
+	
+	// 생산 계획 번호
+	int planNo;
 }

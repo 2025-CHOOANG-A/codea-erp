@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- 2. 유틸리티 함수들 ---
     
+
     // 상태별 알림 함수
     function showStatusAlert(type, message) {
         // 기존 알림 제거
@@ -694,9 +695,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- 9. 단일 계획 자재소요량 조회 (상태 클릭시) ---
     window.showMaterialRequirementsForPlan = function(planId) {
-        fetch(`/productplan/api/material-requirements/${planId}`)
-        .then(response => response.json())
+		console.log('=== 자재 소요량 조회 시작 ===');
+		console.log('Plan ID:', planId);
+		
+		  fetch(`/productplan/api/material-requirements/${planId}`)
+		  .then(response => {
+		      console.log('응답 상태:', response.status);
+		      console.log('응답 헤더:', response.headers);
+		      return response.json();
+		  })
         .then(data => {
+			console.log('=== 응답 데이터 전체 ===');
+			       console.log(JSON.stringify(data, null, 2));
+			       
+			       console.log('success 값:', data.success);
+			       console.log('materials 배열:', data.materials);
+			       console.log('materials 타입:', typeof data.materials);
+			       console.log('materials 길이:', data.materials ? data.materials.length : 'undefined');
+				   
             if (data.success) {
                 showSinglePlanMaterialModal(planId, data.materials);
             } else {

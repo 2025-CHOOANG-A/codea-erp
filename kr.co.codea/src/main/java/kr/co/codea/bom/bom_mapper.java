@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import kr.co.codea.item.itemDTO;
 
@@ -17,18 +18,31 @@ public interface bom_mapper {
 	List<bomDTO> bom_item_type_y(); // 완제품
 	List<bomDTO> bom_item_type_j(); // 자재
 	
-	
-	
+	 List<bomDTO> bom_item_list_y();
 	
 	/*등록하기 위한 필요한 리스트 */
-	List<bomDTO> bom_item_list_y();//완제품
+	//List<bomDTO> bom_item_list_y();//완제품
 	
 	//BOM 등록(bom_write)
 	int insert_bom_header(bomDTO dto);
-	int insert_bom_detail(bomDTO dto);
+	int insert_bom_detail(bomDTO dto);	
+	int insert_bom_details(List<bomDTO> detailList);
+	
+	//원자재 업데잍 하기 위한 조회
+	// bomDTO selectItemIdByCode(String materialCode);
+	String selectItemIdByCode(String materialCode);
+	
+	//<!-- 4. 디버깅용 - BOM_HEADER 존재 확인 -->
+	 bomDTO checkBomHeaderExists(String bomHeaderId);
+		
+	//<!-- 5. 디버깅용 - ITEM 존재 확인 -->
+	 bomDTO checkItemExists(String itemId);
+	 
+	//**********************************************************
+	
 	
 	 // 3) (선택) ITEM 조회
-    Long selectItemIdByCode(String itemCode);
+    //Long selectItemIdByCode(String itemCode);
 
     // 4) (선택) 새 ITEM INSERT
     void insert_item_material(itemDTO itemDto);
@@ -58,6 +72,8 @@ public interface bom_mapper {
 	 
 	//BOM 수정(원자재수정)	
 	 int modify_bom_detail(bomDTO dto);
+
+	 
 	 
 	 //bom 헤더 단일 상세 정보전달 
       bomDTO selectBomHeaderByCode(String bomCode);
@@ -66,6 +82,37 @@ public interface bom_mapper {
       //bom 헤더 단일 상세 정보전달 
       bomDTO select_bom_by_bom(String bomCode); //제품
       List<bomDTO> edite_bom_detail(String bomCode);//원자제(리스트가 여러개이기떄문)
+      
+   // ==========================================
+   // 수정 기능을 위해 추가된 메서드들
+   // ==========================================
+
+   // BOM 상세 수정 (기존 에러 해결용)
+   int edite_bom_detail_ok(bomDTO dto);
+
+   // BOM 헤더 정보 수정
+   int update_bom_header(bomDTO dto);
+
+   // 자재 추가
+   int add_bom_detail(bomDTO dto);
+
+   // 선택된 자재들 삭제 (체크박스 다중 삭제용)
+   int delete_bom_detail_by_material(Map<String, Object> params);
+   
+   // 단일 자재 삭제
+   int delete_single_bom_detail(@Param("bomCode") String bomCode, 
+                               @Param("materialCode") String materialCode);
+
+   // 자재 검색 (모달에서 자재 선택용)
+   List<bomDTO> search_materials(@Param("keyword") String keyword);
+
+   // 수정용 BOM 전체 정보 조회
+   bomDTO select_bom_for_edit(String bomCode);
+
+   // 수정용 자재 목록 조회
+   List<bomDTO> select_bom_materials_for_edit(String bomCode);
+
+      
       
       
       /*BOM삭제 파트 */
@@ -100,6 +147,6 @@ public interface bom_mapper {
        */
       int select_bomCount(Map<String, Object> params);
       
-      
+      public List<bomDTO> select_allBomList(Map<String, Object> params);
 	
 }

@@ -1,5 +1,7 @@
 package kr.co.codea.receiving;
 
+import java.sql.Date;
+
 import org.springframework.stereotype.Repository;
 
 import lombok.Data;
@@ -42,4 +44,7 @@ public class ReceivingDTO {
 	
 	// 창고 주소, 창고 상세 주소
 	String address, addressDetail;
+	
+	// 생산 계획 번호
+	int planNo;
 }

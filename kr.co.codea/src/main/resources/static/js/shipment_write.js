@@ -84,6 +84,11 @@ function ship_add(){
 		frm.quantity.value = "";
 		frm.quantity.focus();
 	}
+	else if(Number(quantity.value) > Number(document.getElementById("currentQty").value)){
+		alert("출고 수량은 보유 수량을 초과할 수 없습니다.");
+		frm.quantity.value = "";
+		frm.quantity.focus();
+	}
 	else if(whCode.value == ""){
 		alert("창고 정보를 입력하세요.");
 	}

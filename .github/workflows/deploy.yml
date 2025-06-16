@@ -1,0 +1,46 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [dev] # dev 브랜치에 push될 때 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "17" # 사용하는 JDK 버전에 맞게 조정
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+        working-directory: kr.co.codea
+
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+        working-directory: kr.co.codea
+
+      - name: Upload JAR to Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          source: "kr.co.codea/build/libs/kr.co.codea-0.0.1-SNAPSHOT.jar"
+          target: "/home/erp/"
+
+      - name: Restart Application
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            pkill -f 'kr.co.codea-0.0.1-SNAPSHOT.jar' || true
+            nohup java -jar /home/erp/app/kr.co.codea-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > /home/erp/app/app.log 2>&1 &

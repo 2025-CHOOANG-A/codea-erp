@@ -22,6 +22,4 @@ public interface ShipmentMapper {
 	public Integer ship_check(@Param("sourceDocType") int sourceDocType, @Param("sourceDocHeaderId") int sourceDocHeaderId, @Param("itemId") int itemId);	// 출고 중복 체크
 	
 	public Integer ship_insert(ShipmentDTO dto);	// 출고 등록
-	
-	List<ShipmentDTO> selectRecentShipmentList(@Param("size") int size);
 }

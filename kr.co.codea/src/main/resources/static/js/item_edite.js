@@ -1,17 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-      /*** 1. Sidebar 토글(생략) ***/
-      const sidebar = document.getElementById("sidebar");
-      document.getElementById("sidebarOpenBtn").onclick = () =>
-        sidebar.classList.remove("closed");
-      document.getElementById("sidebarCloseBtn").onclick = () =>
-        sidebar.classList.add("closed");
-      function handleSidebar() {
-        if (window.innerWidth >= 992) sidebar.classList.remove("closed");
-        else sidebar.classList.add("closed");
-      }
-      window.addEventListener("resize", handleSidebar);
-      window.addEventListener("DOMContentLoaded", handleSidebar);
-
       /*** 2. 거래처 검색 모달 열기 및 필터링 ***/
       const clientModal = new bootstrap.Modal(
         document.getElementById("clientSearchModal")

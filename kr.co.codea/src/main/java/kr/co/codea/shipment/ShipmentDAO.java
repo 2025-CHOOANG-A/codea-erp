@@ -21,9 +21,6 @@ public class ShipmentDAO implements ShipmentService {
 	@Autowired
 	private InventoryService inv_se;
 	
-	@Autowired
-	private ShipmentMapper shipmentMapper;
-	
 	@Override
 	public List<ShipmentDTO> ship_list(Integer sourceDocType, String field, String keyword) {	// 목록 페이지
 		List<ShipmentDTO> list = this.mp.ship_list(sourceDocType, field, keyword);
@@ -92,6 +89,8 @@ public class ShipmentDAO implements ShipmentService {
 		
 		InventoryDTO before = this.inv_mp.get_inv(dto.getItemId(), dto.getWhId());
 		
+		InventoryDTO qtyDTO = this.inv_se.inv_dto(dto.getItemId(), dto.getWhId());
+		
 		if(before != null) {
 			int newQty = before.getCurrentQty() - dto.getQuantity();
 			
@@ -99,6 +98,8 @@ public class ShipmentDAO implements ShipmentService {
 			update.setItemId(dto.getItemId());
 			update.setWhId(dto.getWhId());
 			update.setCurrentQty(newQty);
+			update.setExpectedQty(qtyDTO.getExpectedQty());
+			update.setAllocatedQty(qtyDTO.getAllocatedQty());
 			update.setAverageCost(before.getAverageCost());
 			update.setEmpNo(dto.getEmpNo());
 			
@@ -106,10 +107,5 @@ public class ShipmentDAO implements ShipmentService {
 		}
 		
 		return result;
-	}
-	
-	@Override
-	public List<ShipmentDTO> getRecentShipmentList(int size) {
-	    return shipmentMapper.selectRecentShipmentList(size);
 	}
 }

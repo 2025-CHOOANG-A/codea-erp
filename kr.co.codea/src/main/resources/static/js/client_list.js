@@ -1,4 +1,5 @@
 // client_list.js - 완전한 버전 (모든 문제 해결)
+let currentContacts = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
@@ -364,6 +365,8 @@ function loadContacts(bpId) {
 
 // 담당자 목록 표시
 function displayContacts(contacts, bpId) {
+    currentContacts = contacts;
+    
     const tbody = document.querySelector('#contactTable tbody');
     if (!tbody) return;
 
@@ -388,7 +391,10 @@ function displayContacts(contacts, bpId) {
     }
 }
 
+
+
 // 담당자 행 생성 - 필드명 수정
+// 간단한 담당자 행 생성 - 드롭다운 없이 버튼만
 function createContactRow(contact, bpId) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -399,16 +405,16 @@ function createContactRow(contact, bpId) {
         <td class="py-3 border-light">${contact.email || '-'}</td>
         <td class="py-3 border-light">${contact.bc_remark || '-'}</td>
         <td class="py-3 border-light text-center">
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-sm btn-outline-primary px-3" 
-                        onclick="editContact(${contact.bcId}, ${bpId})">
-                    수정
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-danger px-3" 
-                        onclick="deleteContact(${contact.bcId}, ${bpId})">
-                    삭제
-                </button>
-            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary me-1" 
+                    onclick="editContact(${contact.bcId}, ${bpId})"
+                    title="수정">
+                <i class="bi bi-pencil"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" 
+                    onclick="deleteContact(${contact.bcId}, ${bpId})"
+                    title="삭제">
+                <i class="bi bi-trash"></i>
+            </button>
         </td>
     `;
     return tr;
@@ -635,20 +641,15 @@ function saveContact() {
 
 // 담당자 수정
 function editContact(bcId, bpId) {
-    fetch(`/api/client/${bpId}/contact/${bcId}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('담당자 정보를 불러오는데 실패했습니다.');
-            }
-            return response.json();
-        })
-        .then(contactData => {
-            openContactModal('edit', bpId, contactData);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('담당자 정보를 불러오는데 실패했습니다.');
-        });
+    // 현재 로드된 담당자 목록에서 해당 담당자 찾기
+    const contactData = currentContacts.find(contact => contact.bcId == bcId);
+    
+    if (contactData) {
+        openContactModal('edit', bpId, contactData);
+    } else {
+        console.error('담당자 정보를 찾을 수 없습니다. bcId:', bcId);
+        alert('담당자 정보를 찾을 수 없습니다.');
+    }
 }
 
 // 담당자 삭제
