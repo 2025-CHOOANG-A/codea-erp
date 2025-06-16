@@ -5,153 +5,7 @@
     <title>사원 목록 - CodeA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <style>
-      body {
-        min-height: 100vh;
-        background: #f8f9fa;
-      }
-      .sidebar {
-        width: 260px;
-        min-width: 200px;
-        max-width: 300px;
-        background: #343a40;
-        color: #fff;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 1040;
-        transition: transform 0.2s;
-        display: flex;
-        flex-direction: column;
-      }
-      .sidebar.collapsed {
-        transform: translateX(-100%);
-      }
-      .sidebar .sidebar-header {
-        padding: 1.2rem 1.5rem;
-        font-size: 1.2rem;
-        font-weight: 600;
-        background: #23272b;
-        border-bottom: 1px solid #222;
-        letter-spacing: 1px;
-      }
-      .sidebar .nav-link {
-        color: #adb5bd;
-        padding: 0.7rem 1.5rem;
-        font-size: 1rem;
-        border-radius: 0.3rem;
-        transition: background 0.15s;
-      }
-      .sidebar .nav-link.active,
-      .sidebar .nav-link:hover {
-        background: #495057;
-        color: #fff;
-      }
-      .sidebar .menu-title {
-        padding: 0.8rem 1.5rem 0.3rem 1.5rem;
-        font-size: 0.95rem;
-        color: #ced4da;
-        font-weight: 500;
-        letter-spacing: 0.5px;
-      }
-      .sidebar .nav {
-        flex-direction: column;
-        gap: 0.1rem;
-      }
-      .sidebar .nav-item {
-        width: 100%;
-      }
-      .sidebar-toggle-btn {
-        background: #343a40;
-        border: none;
-        color: #fff;
-        padding: 0.65rem 0.9rem;
-        border-radius: 0 0.5rem 0.5rem 0;
-        font-size: 1.3rem;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        position: fixed;
-        top: 1.1rem;
-        left: 0.2rem;
-        z-index: 1100;
-        transition: left 0.2s;
-      }
-      .sidebar.collapsed ~ .sidebar-toggle-btn {
-        left: 0.2rem;
-      }
-      .sidebar:not(.collapsed) ~ .sidebar-toggle-btn {
-        left: 260px;
-      }
-      .header {
-        height: 64px;
-        background: #fff;
-        border-bottom: 1px solid #dee2e6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: sticky;
-        top: 0;
-        z-index: 1020;
-        padding: 0 1rem;
-      }
-      .header .logo {
-        font-size: 1.7rem;
-        font-weight: 700;
-        letter-spacing: 2px;
-        color: #343a40;
-        user-select: none;
-      }
-      .main-content {
-        margin-left: 260px;
-        padding: 2.5rem 2rem 2rem 2rem;
-        transition: margin-left 0.2s;
-      }
-      .sidebar.collapsed ~ .main-content {
-        margin-left: 0;
-      }
-      @media (max-width: 991.98px) {
-        .sidebar {
-          transform: translateX(-100%);
-        }
-        .sidebar:not(.collapsed) {
-          transform: translateX(0);
-        }
-        .main-content {
-          margin-left: 0;
-        }
-        .sidebar:not(.collapsed) ~ .main-content {
-          margin-left: 260px; 
-        }
-        .sidebar-toggle-btn {
-          left: 0.2rem !important; 
-        }
-         .sidebar:not(.collapsed) ~ .sidebar-toggle-btn {
-          left: 260px !important; 
-        }
-      }
-      .table-link {
-        text-decoration: underline;
-        color: inherit;
-        cursor: pointer;
-      }
-      .table-responsive {
-        max-height: 520px; 
-        min-height: 350px; 
-        overflow-y: auto;
-      }
-      .pagination { margin-bottom: 0; }
-      .filter-bar { gap: 0.7rem; flex-wrap: wrap; }
-      .filter-bar .form-select, .filter-bar .form-control { min-width: 120px; max-width: 220px; }
-      .filter-bar .form-control[name="search"] { min-width: 220px; max-width: 320px;}
-      @media (max-width: 575.98px) {
-        .main-content { padding: 1rem 0.5rem; }
-        .filter-bar .form-select, .filter-bar .form-control, .filter-bar .form-control[name="search"] {
-            min-width: 100px; max-width: 100%;
-        }
-      }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}" />
 </head>
 <body>
     <div th:replace="~{fragments/sidebar :: layout}"></div>
@@ -205,12 +59,12 @@
               </ul>
           </nav>
           <a  th:href="@{/employee/new}" sec:authorize="hasRole('ADMIN')" class="btn btn-primary ms-2" id="addBtn">추가</a>
-          
         </div>
       </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
 
     <script th:inline="javascript">
       /*<![CDATA[*/
@@ -223,32 +77,6 @@
       let currentPage = 1;
       const pageSize = 10;
       let filteredEmployees = [...initialEmployees];
-
-      const sidebar = document.getElementById("sidebar");
-      const sidebarToggle = document.getElementById("sidebarToggle");
-      function setSidebarCollapsed(collapsed) {
-        sidebar.classList.toggle("collapsed", collapsed);
-      }
-      sidebarToggle.addEventListener("click", () => {
-        setSidebarCollapsed(!sidebar.classList.contains("collapsed"));
-      });
-      document.addEventListener("click", (e) => {
-        if (
-          window.innerWidth < 992 &&
-          !sidebar.classList.contains("collapsed")
-        ) {
-          if (
-            !sidebar.contains(e.target) &&
-            !sidebarToggle.contains(e.target)
-          ) {
-            setSidebarCollapsed(true);
-          }
-        }
-      });
-      setSidebarCollapsed(window.innerWidth < 992);
-      window.addEventListener("resize", () => {
-         setSidebarCollapsed(window.innerWidth < 992);
-      });
 
       function applyFiltersAndSearch() {
         const categoryValue = document.getElementById("categoryFilter").value;
@@ -286,7 +114,6 @@
         pageData.forEach(emp => {
           const detailUrl = `${employeeDetailBaseUrl}${emp.empId}`; // empId 사용
 
-          // 작업 열이 제거되었으므로 해당 부분 HTML 생성 안함
           const row = `
             <tr>
               <td>${emp.empNo || ''}</td>

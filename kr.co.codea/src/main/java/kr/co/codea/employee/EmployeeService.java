@@ -30,4 +30,6 @@ public interface EmployeeService {
 
     // 사원 등록
     EmployeeDto registerEmployee(EmployeeDto employeeDto) throws Exception;
+    
+    String generateEmployeeId();
 }
