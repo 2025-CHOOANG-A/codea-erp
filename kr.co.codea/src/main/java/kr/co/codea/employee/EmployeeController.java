@@ -3,25 +3,30 @@ package kr.co.codea.employee;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.validation.Valid;
 import kr.co.codea.auth.dto.UserDetailsDto;
+import lombok.RequiredArgsConstructor;
 
-@Slf4j
+/**
+ * 사원 관리 기능을 담당하는 Spring MVC 컨트롤러 클래스입니다.
+ * 사원 목록 조회, 등록, 상세조회, 수정, 삭제 기능을 제공합니다.
+ */
 @Controller
 @RequestMapping("/employee")
 @RequiredArgsConstructor
@@ -29,7 +34,9 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    /** 사원 목록 조회 */
+    /**
+     * 전체 사원 목록을 조회하여 뷰에 전달합니다.
+     */
     @GetMapping
     public String listEmployees(Model model) {
         List<EmployeeDto> employees = employeeService.getAllEmployeesForList();
@@ -37,17 +44,26 @@ public class EmployeeController {
         return "employee/employee_list";
     }
 
-    /** 신규 사원 등록 폼 요청 */
+    /**
+     * 신규 사원 등록 폼을 보여줍니다. (관리자 전용)
+     */
     @GetMapping("/new")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showRegistrationForm(Model model) {
         EmployeeDto employeeDto = new EmployeeDto();
-        employeeDto.setEmpStatus(true); // 기본값 설정
+        employeeDto.setEmpStatus(true);
+
+
+        String generatedEmpNo = employeeService.generateEmployeeId();
+        employeeDto.setEmpNo(generatedEmpNo);
         model.addAttribute("employeeDto", employeeDto);
+        model.addAttribute("generatedEmployeeId", generatedEmpNo);
         return "employee/employee_write";
     }
 
-    /** 신규 사원 등록 처리 */
+    /**
+     * 신규 사원 등록을 처리합니다. (관리자 전용)
+     */
     @PostMapping("/register")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String registerEmployee(@Valid @ModelAttribute("employeeDto") EmployeeDto employeeDto,
@@ -56,16 +72,12 @@ public class EmployeeController {
                                    RedirectAttributes redirectAttributes,
                                    Model model) {
 
-        // 비밀번호 확인 일치 검사
         if (employeeDto.getEmpPw() != null && !employeeDto.getEmpPw().equals(confirmPassword)) {
             bindingResult.rejectValue("empPw", "password.mismatch", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         }
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("employeeDto", employeeDto);
-            if (bindingResult.hasGlobalErrors()) {
-                model.addAttribute("errorMessage", bindingResult.getGlobalError().getDefaultMessage());
-            }
             return "employee/employee_write";
         }
 
@@ -73,10 +85,6 @@ public class EmployeeController {
             employeeService.registerEmployee(employeeDto);
             redirectAttributes.addFlashAttribute("successMessage", "사원(사번: " + employeeDto.getEmpNo() + ") 등록 완료");
             return "redirect:/employee";
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("employeeDto", employeeDto);
-            model.addAttribute("errorMessage", e.getMessage());
-            return "employee/employee_write";
         } catch (Exception e) {
             model.addAttribute("employeeDto", employeeDto);
             model.addAttribute("errorMessage", "사원 등록 중 오류 발생: " + e.getMessage());
@@ -84,7 +92,9 @@ public class EmployeeController {
         }
     }
 
-    /** 사원 상세 정보 조회 */
+    /**
+     * 사원 상세 정보를 조회하여 뷰에 전달합니다.
+     */
     @GetMapping("/{empId}")
     public String viewEmployee(@PathVariable("empId") Long empId, Model model, RedirectAttributes redirectAttributes) {
         Optional<EmployeeDetailViewModel> viewModelOpt = employeeService.getEmployeeDetailForView(empId);
@@ -98,7 +108,9 @@ public class EmployeeController {
         }).orElse("redirect:/employee");
     }
 
-    /** 사원 정보 수정 폼 요청 */
+    /**
+     * 사원 정보 수정 폼을 보여줍니다.
+     */
     @GetMapping("/{empId}/edit")
     public String showEditForm(@PathVariable("empId") Long empId,
                                Model model,
@@ -111,11 +123,7 @@ public class EmployeeController {
         }
 
         EmployeeDetailViewModel employeeView = viewModelOpt.get();
-        EmployeeDto formBackingDto = new EmployeeDto();
-
-        if (employeeView.getGeneralInfo() != null) {
-            formBackingDto = employeeView.getGeneralInfo(); // 필요한 값만 복사
-        }
+        EmployeeDto formBackingDto = employeeView.getGeneralInfo() != null ? employeeView.getGeneralInfo() : new EmployeeDto();
 
         model.addAttribute("employeeDto", formBackingDto);
         model.addAttribute("currentAdminCode", employeeView.getAccountInfo() != null ? employeeView.getAccountInfo().getAdminCode() : "");
@@ -138,7 +146,9 @@ public class EmployeeController {
         return "employee/employee_modify";
     }
 
-    /** 사원 정보 수정 처리 */
+    /**
+     * 사원 정보 수정을 처리합니다.
+     */
     @PostMapping("/{empId}/edit")
     public String updateEmployee(@PathVariable("empId") Long empId,
                                  @ModelAttribute("employeeDto") EmployeeDto employeeDto,
@@ -151,7 +161,7 @@ public class EmployeeController {
                                  @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
                                  Authentication authentication) {
 
-        employeeDto.setEmpId(empId); // ID 명시적 설정
+        employeeDto.setEmpId(empId);
 
         if (bindingResult.hasErrors()) {
             populateEditFormModel(empId, model, authentication, employeeDto);
@@ -162,18 +172,15 @@ public class EmployeeController {
         try {
             boolean isAdmin = false;
             boolean isEditingSelf = false;
-            Long currentUserId = null;
 
             if (authentication != null && authentication.isAuthenticated()) {
                 isAdmin = authentication.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
                 Object principal = authentication.getPrincipal();
                 if (principal instanceof UserDetailsDto user) {
-                    currentUserId = user.getEmpId();
-                    isEditingSelf = currentUserId != null && currentUserId.equals(empId);
+                    isEditingSelf = user.getEmpId() != null && user.getEmpId().equals(empId);
                 }
             }
 
-            // 관리자만 adminCode 및 empStatus 변경 가능
             if (isAdmin) {
                 employeeDto.setAdminRoleUpdateIntent(true);
                 employeeDto.setAdminCode((adminCode != null && !adminCode.isEmpty()) ? adminCode : null);
@@ -184,7 +191,6 @@ public class EmployeeController {
                 employeeDto.setAdminRoleUpdateIntent(false);
             }
 
-            // 비밀번호 변경 조건 확인
             if (newPassword != null && !newPassword.trim().isEmpty()) {
                 if (isAdmin || isEditingSelf) {
                     if (!newPassword.equals(confirmPassword)) {
@@ -200,11 +206,7 @@ public class EmployeeController {
 
                     PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
                     employeeDto.setEmpPw(passwordEncoder.encode(newPassword));
-                } else {
-                    employeeDto.setEmpPw(null); // 권한 없음 → 비밀번호 변경 무시
                 }
-            } else {
-                employeeDto.setEmpPw(null); // 변경 없음 → null
             }
 
             employeeService.updateEmployee(employeeDto, authentication);
@@ -218,7 +220,9 @@ public class EmployeeController {
         }
     }
 
-    /** 수정 폼 렌더링 시 필요한 모델 속성 설정용 헬퍼 */
+    /**
+     * 수정 폼 렌더링 시 필요한 모델 속성을 설정합니다.
+     */
     private void populateEditFormModel(Long empId, Model model, Authentication authentication, EmployeeDto submittedDto) {
         model.addAttribute("employeeDto", submittedDto);
 
@@ -242,17 +246,15 @@ public class EmployeeController {
             EmployeeDetailViewModel viewModel = viewModelOpt.get();
             model.addAttribute("currentAdminCode", viewModel.getAccountInfo() != null ? viewModel.getAccountInfo().getAdminCode() : "");
             model.addAttribute("currentEmpStatus", viewModel.getAccountInfo() != null && viewModel.getAccountInfo().isEnabled());
-
-            if (submittedDto.getEmpImg() == null && viewModel.getGeneralInfo() != null) {
-                submittedDto.setEmpImg(viewModel.getGeneralInfo().getEmpImg());
-            }
         } else {
             model.addAttribute("currentAdminCode", "");
             model.addAttribute("currentEmpStatus", true);
         }
     }
 
-    /** 사원 삭제 처리 */
+    /**
+     * 사원 삭제를 처리합니다. (관리자 전용)
+     */
     @PostMapping("/{empId}/delete")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String deleteEmployee(@PathVariable("empId") Long empId,

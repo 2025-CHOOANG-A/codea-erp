@@ -1,397 +1,259 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>사원 정보 수정 - CodeA</title>
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-            rel="stylesheet"/>
-    <style>
-        body {
-            min-height: 100vh;
-            background-color: #f8f9fa;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>사원 정보 수정 - CodeA</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+	rel="stylesheet" />
+<style>
+body {
+	min-height: 100vh;
+	background-color: #f8f9fa;
+}
 
-        .header {
-            height: 64px;
-            background: #fff;
-            border-bottom: 1px solid #dee2e6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: sticky;
-            top: 0;
-            z-index: 1020;
-            padding: 0 1rem;
-        }
+.header {
+	height: 64px;
+	background: #fff;
+	border-bottom: 1px solid #dee2e6;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
 
-        .header .logo {
-            font-size: 1.7rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: #343a40;
-            user-select: none;
-        }
+.logo {
+	font-size: 1.7rem;
+	font-weight: 700;
+	color: #343a40;
+	text-decoration: none;
+}
 
-        .main-content-wrapper {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
+.main-content-wrapper {
+	padding-top: 2rem;
+	padding-bottom: 2rem;
+}
 
-        .profile-img-wrapper {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 1.5rem;
-            margin-top: 1.5rem;
-        }
+.form-label {
+	font-weight: 500;
+}
 
-        .profile-img-preview {
-            width: 120px;
-            height: 160px;
-            object-fit: cover;
-            border-radius: 0.5rem;
-            border: 3px solid #e9ecef;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            display: block;
-        }
+.password-match-success {
+	color: #28a745;
+	font-size: 0.875rem;
+	margin-top: 0.25rem;
+}
 
-        .profile-img-upload-btn {
-            position: absolute;
-            right: 8px;
-            bottom: 8px;
-            background: #fff;
-            border: 2px solid #dee2e6;
-            border-radius: 50%;
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            cursor: pointer;
-            transition: background 0.2s, border 0.2s;
-            z-index: 2;
-        }
-
-        .profile-img-upload-btn:hover {
-            background: #f1f3f5;
-            border-color: #adb5bd;
-        }
-
-        .profile-img-upload-btn input[type="file"] {
-            display: none;
-        }
-
-        .form-label {
-            font-weight: 500;
-        }
-
-        .password-match-success {
-            color: #28a745;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-
-        .password-match-error {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-    </style>
+.password-match-error {
+	color: #dc3545;
+	font-size: 0.875rem;
+	margin-top: 0.25rem;
+}
+</style>
 </head>
 <body>
-    <header class="header">
-        <a th:href="@{/index}" style="text-decoration: none;"><span class="logo">CodeA</span></a>
-    </header>
+	<header class="header">
+		<a th:href="@{/index}" class="logo">CodeA</a>
+	</header>
 
-    <div class="main-content-wrapper">
-        <div class="container" style="max-width: 700px;">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white border-bottom-0">
-                    <h4 class="mb-0 fw-bold text-center mt-3" th:text="${pageTitle ?: '사원 정보 수정'}">사원 정보 수정</h4>
-                </div>
-                <div class="card-body p-4">
-                    <div th:if="${successMessage}"
-                         class="alert alert-success alert-dismissible fade show"
-                         role="alert">
-                        <span th:text="${successMessage}"></span>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                aria-label="Close"></button>
-                    </div>
-                    <div th:if="${errorMessage}"
-                         class="alert alert-danger alert-dismissible fade show"
-                         role="alert">
-                        <span th:text="${errorMessage}"></span>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                aria-label="Close"></button>
-                    </div>
+	<div class="main-content-wrapper">
+		<div class="container" style="max-width: 700px;">
+			<div class="card shadow-sm mb-4">
+				<div class="card-header bg-white border-bottom-0 text-center">
+					<h4 class="fw-bold mt-3" th:text="${pageTitle ?: '사원 정보 수정'}">사원
+						정보 수정</h4>
+				</div>
+				<div class="card-body p-4">
+					<div th:if="${successMessage}"
+						class="alert alert-success alert-dismissible fade show"
+						role="alert">
+						<span th:text="${successMessage}"></span>
+						<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+					</div>
+					<div th:if="${errorMessage}"
+						class="alert alert-danger alert-dismissible fade show"
+						role="alert">
+						<span th:text="${errorMessage}"></span>
+						<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+					</div>
 
-                    <form
-                            th:action="@{/employee/{empId}/edit(empId=${employeeDto.empId})}"
-                            th:object="${employeeDto}" method="post"
-                            enctype="multipart/form-data" autocomplete="off">
+					<form
+						th:action="@{/employee/{empId}/edit(empId=${employeeDto.empId})}"
+						th:object="${employeeDto}" method="post" autocomplete="off">
 
-                        <div class="d-flex flex-column align-items-center mb-3">
-                            <div class="profile-img-wrapper">
-                                <img id="profileImgPreview"
-                                     th:src="*{empImg != null && !#strings.isEmpty(empImg) ? empImg : '/images/default_profile.png'}"
-                                     alt="프로필 이미지 미리보기" class="profile-img-preview shadow-sm"/> <label
-                                    class="profile-img-upload-btn" title="사진 변경"> <input
-                                    type="file" id="profileImgFile" name="profileImgFile"
-                                    accept="image/*"/> <svg xmlns="http://www.w3.org/2000/svg"
-                                                            width="22" height="22" fill="#495057" viewBox="0 0 16 16">
-                                <path
-                                        d="M10.5 2a.5.5 0 0 1 .5.5V3h1A2.5 2.5 0 0 1 14.5 5.5v6A2.5 2.5 0 0 1 12 14H4a2.5 2.5 0 0 1-2.5-2.5v-6A2.5 2.5 0 0 1 4 3h1v-.5a.5.5 0 0 1 1 0V3h4v-.5a.5.5 0 0 1 .5-.5zM4 4a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 4 13h8a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 12 4H4zm4 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
-                            </svg>
-                            </label>
-                            </div>
-                        </div>
+						<div class="mb-3 row">
+							<label class="col-sm-3 col-form-label form-label">사원번호</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control-plaintext"
+									th:value="*{empNo}" readonly />
+							</div>
+						</div>
 
-                        <div class="mb-3 row">
-                            <label class="col-sm-3 col-form-label form-label">사원번호</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext"
-                                       th:value="*{empNo}" readonly/>
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label class="col-sm-3 col-form-label form-label">이름</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext"
-                                       th:value="*{empName}" readonly/>
-                            </div>
-                        </div>
 
-                        <div class="mb-3 row">
-                            <label for="email" class="col-sm-3 col-form-label form-label">이메일</label>
-                            <div class="col-sm-9">
-                                <input type="text" th:field="*{email}" class="form-control"
-                                       id="email"
-                                       th:disabled="${!((isAdmin != null and isAdmin) or (isEditingSelf != null and isEditingSelf))}"/>
-                                <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}"
-                                     class="text-danger small"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="hp" class="col-sm-3 col-form-label form-label">전화번호</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control" id="hp" th:field="*{hp}"
-                                       th:disabled="${!((isAdmin != null and isAdmin) or (isEditingSelf != null and isEditingSelf))}"/>
-                                <div th:if="${#fields.hasErrors('hp')}" th:errors="*{hp}"
-                                     class="text-danger small"></div>
-                            </div>
-                        </div>
+						<div class="mb-3 row">
+							<label class="col-sm-3 col-form-label form-label">이름</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control-plaintext"
+									th:value="*{empName}" readonly />
+							</div>
+						</div>
 
-                        <div class="mb-3 row">
-                            <label for="empDept" class="col-sm-3 col-form-label form-label">부서</label>
-                            <div class="col-sm-9">
-                                <select class="form-select" id="empDept" th:field="*{empDept}"
-                                        th:disabled="${!(isAdmin != null and isAdmin)}">
-                                    <option value="">부서 선택</option>
-                                    <option value="영업부">영업부</option>
-                                    <option value="생산부">생산부</option>
-                                    <option value="구매부">구매부</option>
-                                    <option value="자재부">자재부</option>
-                                    <option value="관리부">관리부</option>
-                                    <option value="개발부">개발부</option>
-                                </select>
-                                <div th:if="${#fields.hasErrors('empDept')}"
-                                     th:errors="*{empDept}" class="text-danger small"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="empPosition"
-                                   class="col-sm-3 col-form-label form-label">직책</label>
-                            <div class="col-sm-9">
-                                <select class="form-select" id="empPosition"
-                                        th:field="*{empPosition}"
-                                        th:disabled="${!(isAdmin != null and isAdmin)}">
-                                    <option value="">직책 선택</option>
-                                    <option value="사원">사원</option>
-                                    <option value="주임">주임</option>
-                                    <option value="대리">대리</option>
-                                    <option value="과장">과장</option>
-                                    <option value="차장">차장</option>
-                                    <option value="부장">부장</option>
-                                    <option value="팀장">팀장</option>
-                                    <option value="실장">실장</option>
-                                    <option value="이사">이사</option>
-                                    <option value="상무">상무</option>
-                                    <option value="전무">전무</option>
-                                    <option value="부사장">부사장</option>
-                                    <option value="사장">사장</option>
-                                </select>
-                                <div th:if="${#fields.hasErrors('empPosition')}"
-                                     th:errors="*{empPosition}" class="text-danger small"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="tel" class="col-sm-3 col-form-label form-label">내선번호</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control" id="tel"
-                                       th:field="*{tel}"
-                                       th:disabled="${!(isAdmin != null and isAdmin)}"/>
-                                <div th:if="${#fields.hasErrors('tel')}" th:errors="*{tel}"
-                                     class="text-danger small"></div>
-                            </div>
-                        </div>
+						<div class="mb-3 row">
+							<label for="email" class="col-sm-3 col-form-label form-label">이메일</label>
+							<div class="col-sm-9">
+								<input type="text" th:field="*{email}" class="form-control"
+									id="email" th:disabled="${!(isAdmin or isEditingSelf)}" />
+								<div th:if="${#fields.hasErrors('email')}" th:errors="*{email}"
+									class="text-danger small"></div>
+							</div>
+						</div>
 
-                        <div th:if="${isAdmin != null and isAdmin}">
-                            <hr class="my-4">
-                            <h5>계정 정보 (관리자용)</h5>
-                            <div class="mb-3 row">
-                                <label for="adminCodeParam"
-                                       class="col-sm-3 col-form-label form-label">계정 권한</label>
-                                <div class="col-sm-9">
-                                    <select class="form-select" id="adminCodeParam" name="adminCode"> <option value="" th:selected="${currentAdminCode == null or #strings.isEmpty(currentAdminCode)}">일반 사용자 (ROLE_USER)</option>
-                                        <option value="ADMIN" th:selected="${currentAdminCode == 'ADMIN'}">관리자 (ROLE_ADMIN)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mb-3 row">
-                                <label for="empStatusParam"
-                                       class="col-sm-3 col-form-label form-label">계정 활성 상태</label>
-                                <div class="col-sm-9">
-                                    <select class="form-select" id="empStatusParam" name="empStatus"> <option th:value="true" th:selected="${currentEmpStatus != null and currentEmpStatus == true}">활성</option>
-                                        <option th:value="false" th:selected="${currentEmpStatus == null or currentEmpStatus == false}">비활성</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+						<div class="mb-3 row">
+							<label for="hp" class="col-sm-3 col-form-label form-label">전화번호</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control" id="hp" th:field="*{hp}"
+									th:disabled="${!(isAdmin or isEditingSelf)}" />
+								<div th:if="${#fields.hasErrors('hp')}" th:errors="*{hp}"
+									class="text-danger small"></div>
+							</div>
+						</div>
 
-                        <div th:if="${(isAdmin != null and isAdmin) or (isEditingSelf != null and isEditingSelf)}">
-                            <hr class="my-4">
-                            <h5>비밀번호 재설정</h5>
-                            <div class="alert alert-info" role="alert">
-                                <small>비밀번호를 변경하려면 아래 필드를 입력하세요. 비워두면 기존 비밀번호가 유지됩니다.</small>
-                            </div>
-                            <div class="mb-3 row">
-                                <label for="newPassword"
-                                       class="col-sm-3 col-form-label form-label">새 비밀번호</label>
-                                <div class="col-sm-9">
-                                    <input type="password" class="form-control" id="newPassword"
-                                           name="newPassword" autocomplete="new-password"/>
-                                    <small class="text-muted">8자 이상, 영문, 숫자, 특수문자 조합을 권장합니다.</small>
-                                </div>
-                            </div>
-                            <div class="mb-3 row">
-                                <label for="confirmPassword"
-                                       class="col-sm-3 col-form-label form-label">비밀번호 확인</label>
-                                <div class="col-sm-9">
-                                    <input type="password" class="form-control"
-                                           id="confirmPassword" name="confirmPassword"
-                                           autocomplete="new-password"/>
-                                    <div id="passwordMatchMessage"></div>
-                                </div>
-                            </div>
-                        </div>
+						<div class="mb-3 row">
+							<label for="empDept" class="col-sm-3 col-form-label form-label">부서</label>
+							<div class="col-sm-9">
+								<select class="form-select" id="empDept" th:field="*{empDept}"
+									th:disabled="${!isAdmin}">
+									<option value="">부서 선택</option>
+									<option value="영업부">영업부</option>
+									<option value="생산부">생산부</option>
+									<option value="구매부">구매부</option>
+									<option value="자재부">자재부</option>
+									<option value="관리부">관리부</option>
+									<option value="개발부">개발부</option>
+								</select>
+							</div>
+						</div>
 
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary">저장</button>
-                            <a th:href="@{/employee/{empId}(empId=${employeeDto.empId})}"
-                               class="btn btn-secondary">취소</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+						<div class="mb-3 row">
+							<label for="empPosition"
+								class="col-sm-3 col-form-label form-label">직책</label>
+							<div class="col-sm-9">
+								<select class="form-select" id="empPosition"
+									th:field="*{empPosition}" th:disabled="${!isAdmin}">
+									<option value="">직책 선택</option>
+									<option value="사원">사원</option>
+									<option value="주임">주임</option>
+									<option value="대리">대리</option>
+									<option value="과장">과장</option>
+									<option value="차장">차장</option>
+									<option value="부장">부장</option>
+									<option value="팀장">팀장</option>
+									<option value="실장">실장</option>
+									<option value="이사">이사</option>
+									<option value="상무">상무</option>
+									<option value="전무">전무</option>
+									<option value="부사장">부사장</option>
+									<option value="사장">사장</option>
+								</select>
+							</div>
+						</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // 프로필 이미지 미리보기 스크립트
-        const profileImgFileInput = document.getElementById("profileImgFile");
-        const profileImgPreview = document.getElementById("profileImgPreview");
+						<div class="mb-3 row">
+							<label for="tel" class="col-sm-3 col-form-label form-label">내선번호</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control" id="tel"
+									th:field="*{tel}" th:disabled="${!isAdmin}" />
+							</div>
+						</div>
 
-        if (profileImgFileInput && profileImgPreview) {
-            profileImgFileInput.addEventListener("change", function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (ev) {
-                        profileImgPreview.src = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+						<div th:if="${isAdmin}">
+							<hr class="my-4">
+							<h5>계정 정보 (관리자용)</h5>
+							<div class="mb-3 row">
+								<label class="col-sm-3 col-form-label form-label">계정 권한</label>
+								<div class="col-sm-9">
+									<select class="form-select" name="adminCode">
+										<option value="" th:selected="${currentAdminCode == null}">일반
+											사용자 (ROLE_USER)</option>
+										<option value="ADMIN"
+											th:selected="${currentAdminCode == 'ADMIN'}">관리자
+											(ROLE_ADMIN)</option>
+									</select>
+								</div>
+							</div>
+							<div class="mb-3 row">
+								<label class="col-sm-3 col-form-label form-label">계정 활성
+									상태</label>
+								<div class="col-sm-9">
+									<select class="form-select" name="empStatus">
+										<option value="true" th:selected="${currentEmpStatus == true}">활성</option>
+										<option value="false"
+											th:selected="${currentEmpStatus == false}">비활성</option>
+									</select>
+								</div>
+							</div>
+						</div>
+
+						<div th:if="${isAdmin or isEditingSelf}">
+							<hr class="my-4">
+							<h5>비밀번호 재설정</h5>
+							<div class="mb-3 row">
+								<label class="col-sm-3 col-form-label form-label">새 비밀번호</label>
+								<div class="col-sm-9">
+									<input type="password" class="form-control" name="newPassword"
+										id="newPassword" />
+								</div>
+							</div>
+							<div class="mb-3 row">
+								<label class="col-sm-3 col-form-label form-label">비밀번호
+									확인</label>
+								<div class="col-sm-9">
+									<input type="password" class="form-control"
+										name="confirmPassword" id="confirmPassword" />
+									<div id="passwordMatchMessage"></div>
+								</div>
+							</div>
+						</div>
+
+						<div class="d-flex justify-content-end gap-2 mt-4">
+							<button type="submit" class="btn btn-primary">저장</button>
+							<a th:href="@{/employee/{empId}(empId=${employeeDto.empId})}"
+								class="btn btn-secondary">취소</a>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const passwordMatchMessage = document.getElementById('passwordMatchMessage');
+
+    function checkPasswordMatch() {
+        if (!newPasswordInput || !confirmPasswordInput || !passwordMatchMessage) return;
+
+        const newPwd = newPasswordInput.value;
+        const confirmPwd = confirmPasswordInput.value;
+
+        if (newPwd === '' && confirmPwd === '') {
+            passwordMatchMessage.textContent = '';
+            passwordMatchMessage.className = '';
+        } else if (newPwd === confirmPwd) {
+            passwordMatchMessage.textContent = '비밀번호가 일치합니다.';
+            passwordMatchMessage.className = 'password-match-success';
+        } else {
+            passwordMatchMessage.textContent = '비밀번호가 일치하지 않습니다.';
+            passwordMatchMessage.className = 'password-match-error';
         }
+    }
 
-        // 비밀번호 일치 확인
-        const newPasswordInput = document.getElementById('newPassword'); // 변수명 변경 (getElementById 중복 방지)
-        const confirmPasswordInput = document.getElementById('confirmPassword'); // 변수명 변경
-        const passwordMatchMessageDiv = document.getElementById('passwordMatchMessage'); // 변수명 변경
-
-        function checkPasswordMatch() {
-            if (newPasswordInput && confirmPasswordInput && passwordMatchMessageDiv) {
-                const newPwd = newPasswordInput.value;
-                const confirmPwd = confirmPasswordInput.value;
-
-                if (newPwd === '' && confirmPwd === '') {
-                    passwordMatchMessageDiv.textContent = '';
-                    passwordMatchMessageDiv.className = ''; // 클래스 초기화
-                    return true;
-                }
-
-                // 새 비밀번호가 입력된 경우에만 확인 메시지 표시 (선택적: 둘 다 입력됐을 때만 표시하도록 할 수도 있음)
-                // 또는 confirmPassword가 입력될 때만 newPassword와 비교
-                if (newPwd !== '' || confirmPwd !== '') { // 둘 중 하나라도 입력이 시작되면
-                    if (newPwd === confirmPwd) {
-                        passwordMatchMessageDiv.textContent = '비밀번호가 일치합니다.';
-                        passwordMatchMessageDiv.className = 'password-match-success';
-                        return true;
-                    } else {
-                        passwordMatchMessageDiv.textContent = '비밀번호가 일치하지 않습니다.';
-                        passwordMatchMessageDiv.className = 'password-match-error';
-                        return false;
-                    }
-                } else { // 둘 다 비어있는 초기 상태
-                     passwordMatchMessageDiv.textContent = '';
-                     passwordMatchMessageDiv.className = '';
-                }
-            }
-            return true; // 필드가 없는 경우 등
-        }
-
-        if (newPasswordInput) {
-            newPasswordInput.addEventListener('input', checkPasswordMatch);
-        }
-        if (confirmPasswordInput) {
-            confirmPasswordInput.addEventListener('input', checkPasswordMatch);
-        }
-
-        // 폼 제출 시 비밀번호 최종 확인
-        const employeeForm = document.querySelector('form'); // 변수명 변경
-        if (employeeForm) {
-            employeeForm.addEventListener('submit', function (e) {
-                if (newPasswordInput && confirmPasswordInput) { // 필드가 존재하는 경우에만
-                    const newPwdValue = newPasswordInput.value; // 변수명 변경
-                    const confirmPwdValue = confirmPasswordInput.value; // 변수명 변경
-
-                    // 새 비밀번호 필드 중 하나만 입력된 경우
-                    if ((newPwdValue !== '' && confirmPwdValue === '') || (newPwdValue === '' && confirmPwdValue !== '')) {
-                        e.preventDefault(); // 폼 제출 중단
-                        alert('새 비밀번호와 비밀번호 확인을 모두 입력하시거나, 모두 비워두세요.');
-                        if (newPwdValue !== '' && confirmPwdValue === '') {
-                            confirmPasswordInput.focus();
-                        } else {
-                            newPasswordInput.focus();
-                        }
-                        return false;
-                    }
-
-                    // 둘 다 입력되었는데 일치하지 않는 경우
-                    if (newPwdValue !== '' && confirmPwdValue !== '' && newPwdValue !== confirmPwdValue) {
-                        e.preventDefault(); // 폼 제출 중단
-                        alert('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.');
-                        confirmPasswordInput.focus();
-                        return false;
-                    }
-                }
-            });
-        }
-    </script>
+    if (newPasswordInput) newPasswordInput.addEventListener('input', checkPasswordMatch);
+    if (confirmPasswordInput) confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+</script>
 </body>
 </html>
