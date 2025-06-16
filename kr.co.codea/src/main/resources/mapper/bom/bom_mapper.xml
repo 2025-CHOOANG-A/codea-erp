@@ -2,72 +2,48 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.bom.bom_mapper">
 
-<insert id="insert_bom_header"
-        parameterType="kr.co.codea.bom.bomDTO">
-  INSERT INTO BOM_HEADER (
-    ITEM_ID,
-    VERSION,
-    DESCRIPTION,
-    CREATED_AT
-  ) VALUES (
-   #{itemId},
-   #{version},
-   #{description},
-    SYSDATE
-  )
+
+<!-- DB 자동 생성 ID를 받아오는 방식 -->
+<insert id="insert_bom_header" parameterType="kr.co.codea.bom.bomDTO" 
+        useGeneratedKeys="true" keyProperty="bomHeaderId" keyColumn="BOM_HEADER_ID">
+    INSERT INTO BOM_HEADER (
+        ITEM_ID,
+        VERSION,
+        DESCRIPTION,
+        CREATED_AT
+    ) VALUES (
+        #{itemId},
+        #{version},
+        #{description},
+        SYSDATE
+    )
 </insert>
 
-  <!-- 2) DETAIL 단건 -->
-  <insert id="insert_bom_detail"
-          parameterType="kr.co.codea.bom.bomDTO"
-          keyProperty="detailId"
-          keyColumn="DETAIL_ID">
-
-    <selectKey resultType="String"
-               keyProperty="detailId"
-               order="BEFORE">
-      SELECT TO_CHAR(BOM_DETAIL_SEQ.NEXTVAL) FROM DUAL
-    </selectKey>
-
+<!-- 2. BOM_DETAIL 단건 등록 (수정된 버전) -->
+<insert id="insert_bom_detail" parameterType="kr.co.codea.bom.bomDTO">
     INSERT INTO BOM_DETAIL (
-      DETAIL_ID,
-      BOM_HEADER_ID,
-      CHILD_ID,
-      QUANTITY,
-      PRICE,
-      LOSS_RATE
-    ) VALUES (
-      #{detailId},
-      #{bomHeaderId},
-      #{childId},
-      #{quantity},
-      #{price},
-      #{lossRate}
-    )
-  </insert>
-
-  <!-- 3) 여러 건 넣기 -->
-  <insert id="insert_bom_details" parameterType="java.util.List">
-    <foreach collection="list"
-             item="d"
-             separator=";">
-      INSERT INTO BOM_DETAIL (
-        DETAIL_ID,
         BOM_HEADER_ID,
         CHILD_ID,
         QUANTITY,
         PRICE,
         LOSS_RATE
-      ) VALUES (
-         #{detailId},
-         #{bomHeaderId},
-         #{childId},
-         #{quantity},
-         #{price},
-         #{lossRate}
+    ) VALUES (
+        #{bomHeaderId},          <!-- BOM_HEADER_ID: 문자열 -->
+        #{childId},              <!-- CHILD_ID: 숫자 -->
+        #{quantity},             <!-- QUANTITY: 숫자 -->
+        #{price},                <!-- PRICE: 숫자 -->
+        0                        <!-- LOSS_RATE: 기본값 0 -->
     )
-    </foreach>
-  </insert>
+</insert>
+
+
+
+<!--원자재 아이템 아이디 출력을 위해 필요  -->
+<select id="selectItemIdByCode" parameterType="String" resultType="String">
+  SELECT ITEM_ID
+  FROM ITEM
+  WHERE ITEM_CODE = #{materialCode}
+</select>
   
  <!--BOM 전체삭제 -->  
 
@@ -133,7 +109,7 @@
 <select id="bom_item_type_j" parameterType="string" resultType="kr.co.codea.bom.bomDTO" resultMap="bomItemResultMap">
 SELECT 
     B.BOM_HEADER_ID     AS bomCode,
-    A.ITEM_ID           AS itemId,          
+    A.ITEM_ID ,            
     A.ITEM_CODE         AS materialCode,   
     A.ITEM_NAME         AS materialName,   
     A.SPEC              AS spec,          

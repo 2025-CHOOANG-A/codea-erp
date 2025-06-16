@@ -188,13 +188,13 @@
                   <th>단위(EA)</th>
                   <th>단가</th>
                   <th>자재소요량</th>
-                  <th>수정</th>
+                  <!-- 수정 헤더 제거됨 -->
                   </tr>
   </thead>
   <tbody>
     <!-- 리스트가 비었을 때 -->
     <tr th:if="${#lists.isEmpty(detail)}">
-      <td colspan="9" class="text-center">등록된 자재가 없습니다.</td>
+      <td colspan="8" class="text-center">등록된 자재가 없습니다.</td>
     </tr>
 
     <!-- 리스트가 있을 때 -->
@@ -202,25 +202,14 @@
       <td>
         <input type="checkbox" th:value="${material.materialCode}" />
       </td>
-      <td th:text="${material.bomCode}">BOM_CODE</td>
-      <td th:text="${material.materialCode}">MAT_CODE</td>
-      <td th:text="${material.materialName}">MAT_NAME</td>
-      <td th:text="${material.spec}">SPEC</td>
-      <td th:text="${material.unitCode}">UNIT</td>
-      <td th:text="${material.price}">PRICE</td>
-      <td th:text="${material.quantity}">QTY</td>
-      <td>
-        <button
-          type="button"
-          class="btn btn-outline-secondary btn-sm btn-edit-material"
-          th:attr="data-index=${stat.index}"
-          data-bs-toggle="modal"
-          data-bs-target="#materialAddModal"
-        >
-        <input type="hidden" id="bomCodeInput" th:value="${bomCode}" />
-          수정
-        </button>
-       </td>
+      <td th:text="${material.bomCode}"></td>
+      <td th:text="${material.materialCode}"></td>
+      <td th:text="${material.materialName}"></td>
+      <td th:text="${material.spec}"></td>
+      <td th:text="${material.unitCode}"></td>
+      <td th:text="${material.price}"></td>
+      <td th:text="${material.quantity}"></td>
+      <!-- 수정 버튼 td 제거됨 -->
      </tr>
    </tbody>
  </table>
@@ -238,7 +227,8 @@
         </div>
       </div>
     </main>
-    <!-- Material Add/Edit Modal -->
+    
+    <!-- Material Add Modal (수정 기능 제거) -->
     <div
       class="modal fade"
       id="materialAddModal"
@@ -261,7 +251,7 @@
               ></button>
             </div>
             <div class="modal-body">
-              <input type="hidden" name="editIdx" id="editIdx" />
+              <!-- editIdx 필드 제거 -->
               <div class="mb-2">
                 <label class="form-label">BOM 코드</label>
                 <input
@@ -401,7 +391,6 @@
      th:data-name="${mat2.materialName}"
      th:data-spec="${mat2.spec}"
      th:data-unit="${mat2.j_unitName}"
-     th:data-price="${mat2.price}"
      onclick="selectMaterial(this)"
      style="cursor: pointer;">
     <td th:text="${mat2.materialCode}"></td>
@@ -418,10 +407,6 @@
       </div>
     </div>
     
-    
-    
-
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/bom_edit.js?v=1"></script>
     <script th:src="@{/js/sidebar.js}"></script>
