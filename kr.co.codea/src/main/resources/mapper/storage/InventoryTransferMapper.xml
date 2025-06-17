@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.codea.storage.InventoryTransferMapper">
+
+    <!-- 재고 이동 목록 조회 -->
+    <select id="selectTransferList" parameterType="kr.co.codea.storage.InventoryTransferDTO" resultType="kr.co.codea.storage.InventoryTransferDTO">
+        SELECT *
+        FROM (
+            SELECT
+                it.TRANSFER_ID, it.TRANSFER_NO, it.ITEM_ID, it.FROM_WH_ID,
+                it.TO_WH_ID, it.QUANTITY, it.STATUS, it.REMARK, it.CREATED_AT,
+                it.EMP_ID as empId,
+                i.ITEM_CODE, i.ITEM_NAME,
+                cc.CODE as itemUnit,
+                fw.WH_NAME as fromWhName,
+                tw.WH_NAME as toWhName,
+                e.EMP_NAME,
+                ROW_NUMBER() OVER (ORDER BY it.TRANSFER_ID DESC) as rnum
+            FROM INVENTORY_TRANSFER it
+            JOIN ITEM i ON it.ITEM_ID = i.ITEM_ID
+            JOIN WAREHOUSE fw ON it.FROM_WH_ID = fw.WH_ID
+            JOIN WAREHOUSE tw ON it.TO_WH_ID = tw.WH_ID
+            JOIN EMPLOYEE e ON it.EMP_ID = e.EMP_ID
+            LEFT JOIN COMMON_CODE cc ON i.UNIT_CODE = cc.CODE_ID AND cc.CODE_TYPE = 'UNIT_CODE'
+            <where>
+                <if test="keyword != null and keyword != ''">
+                    AND (it.TRANSFER_NO LIKE '%' || #{keyword} || '%' OR
+                         i.ITEM_NAME LIKE '%' || #{keyword} || '%')
+                </if>
+            </where>
+        )
+        WHERE rnum BETWEEN #{offset} + 1 AND #{offset} + #{size}
+    </select>
+
+    <!-- 재고 이동 총 개수 -->
+    <select id="selectTransferCount" parameterType="kr.co.codea.storage.InventoryTransferDTO" resultType="int">
+        SELECT COUNT(*)
+        FROM INVENTORY_TRANSFER it
+        JOIN ITEM i ON it.ITEM_ID = i.ITEM_ID
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (it.TRANSFER_NO LIKE '%' || #{keyword} || '%' OR
+                     i.ITEM_NAME LIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 창고별 품목 재고 조회 -->
+    <select id="selectWarehouseItems" resultType="kr.co.codea.storage.InventoryTransferDTO">
+        SELECT
+            inv.ITEM_ID as itemId,
+            i.ITEM_CODE as itemCode,
+            i.ITEM_NAME as itemName,
+            cc.CODE as itemUnit,
+            inv.CURRENT_QTY as currentStock,
+            inv.EXPECTED_QTY as expectedStock,
+            inv.ALLOCATED_QTY as allocatedStock,
+            (inv.CURRENT_QTY + inv.EXPECTED_QTY - inv.ALLOCATED_QTY) as availableStock
+        FROM INVENTORY inv
+        JOIN ITEM i ON inv.ITEM_ID = i.ITEM_ID
+        LEFT JOIN COMMON_CODE cc ON i.UNIT_CODE = cc.CODE_ID AND cc.CODE_TYPE = 'UNIT_CODE'
+        WHERE inv.WH_ID = #{whId}
+        <if test="keyword != null and keyword != ''">
+            AND (i.ITEM_CODE LIKE '%' || #{keyword} || '%' OR
+                 i.ITEM_NAME LIKE '%' || #{keyword} || '%')
+        </if>
+        AND (inv.CURRENT_QTY + inv.EXPECTED_QTY - inv.ALLOCATED_QTY) > 0
+        ORDER BY i.ITEM_NAME
+    </select>
+
+    <!-- 품목의 가용 재고 조회 -->
+    <select id="getItemAvailableStock" resultType="java.lang.Integer">
+        SELECT (CURRENT_QTY + EXPECTED_QTY - ALLOCATED_QTY) as availableStock
+        FROM INVENTORY
+        WHERE ITEM_ID = #{itemId} AND WH_ID = #{whId}
+    </select>
+
+
+    <!-- 재고 이동 상세 조회 -->
+    <select id="selectTransferDetail" parameterType="int" resultType="kr.co.codea.storage.InventoryTransferDTO">
+        SELECT
+            it.TRANSFER_ID, it.TRANSFER_NO, it.ITEM_ID, it.FROM_WH_ID,
+            it.TO_WH_ID, it.QUANTITY, it.STATUS, it.REMARK, it.CREATED_AT,
+            it.EMP_ID as empId,
+            i.ITEM_CODE, i.ITEM_NAME,
+            cc.CODE as itemUnit,
+            fw.WH_NAME as fromWhName,
+            tw.WH_NAME as toWhName,
+            e.EMP_NAME
+        FROM INVENTORY_TRANSFER it
+        JOIN ITEM i ON it.ITEM_ID = i.ITEM_ID
+        JOIN WAREHOUSE fw ON it.FROM_WH_ID = fw.WH_ID
+        JOIN WAREHOUSE tw ON it.TO_WH_ID = tw.WH_ID
+        JOIN EMPLOYEE e ON it.EMP_ID = e.EMP_ID
+        LEFT JOIN COMMON_CODE cc ON i.UNIT_CODE = cc.CODE_ID AND cc.CODE_TYPE = 'UNIT_CODE'
+        WHERE it.TRANSFER_ID = #{transferId}
+    </select>
+
+    <!-- 재고 이동 요청 등록 -->
+    <insert id="insertTransfer" parameterType="kr.co.codea.storage.InventoryTransferDTO">
+        <!-- FIX: 이동 번호(transferNo) 자동 생성을 위한 selectKey 추가 -->
+        <selectKey keyProperty="transferNo" resultType="String" order="BEFORE">
+            SELECT 'IT' || TO_CHAR(SYSDATE, 'YYYY') || LPAD(SEQ_INVENTORY_TRANSFER_NO.NEXTVAL, 5, '0') FROM DUAL
+        </selectKey>
+        INSERT INTO INVENTORY_TRANSFER (
+            TRANSFER_NO, ITEM_ID, FROM_WH_ID, TO_WH_ID,
+            QUANTITY, STATUS, REMARK, EMP_ID, TRANSFER_DATE, CREATED_AT
+        ) VALUES (
+            #{transferNo}, #{itemId}, #{fromWhId}, #{toWhId},
+            #{quantity}, '대기', #{remark}, #{empId}, SYSDATE, SYSDATE
+        )
+    </insert>
+
+    <!-- 재고 이동 요청 취소 -->
+    <update id="cancelTransfer">
+        UPDATE INVENTORY_TRANSFER
+        SET STATUS = '취소',
+            UPDATED_AT = SYSDATE
+        WHERE TRANSFER_ID = #{transferId}
+    </update>
+
+</mapper>

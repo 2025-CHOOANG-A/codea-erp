@@ -1,103 +1,207 @@
 <div th:fragment="contentFragment">
     <th:block th:fragment="headFragment">
         <link rel="stylesheet" th:href="@{/css/storage_write.css}" />
-        </th:block>
+    </th:block>
 
     <div class="main-content" id="mainContent" style="max-width: 900px; margin: 40px auto 0 auto;">
         <h5 class="fw-bold mb-3">창고 정보 수정</h5>
-        <form id="warehouseForm" novalidate method="post" th:action="@{/storage/{id}(id=${storage.whId})}">
-            <input type="hidden" name="_method" value="put">
+        
+        <form id="warehouseForm" novalidate>
             <input type="hidden" id="whId" name="whId" th:value="${storage.whId}">
 
             <div class="table-responsive">
                 <table class="table table-bordered align-middle mb-0" style="background: #fafbfc;">
                     <tbody>
                         <tr>
-                            <th class="bg-light text-end" style="width:180px;"><label for="whCode" class="form-label mb-0">창고 코드<span class="form-required">*</span></label></th>
+                            <th class="bg-light text-end" style="width:180px;">
+                                <label for="whCode" class="form-label mb-0">창고 코드<span class="text-danger">*</span></label>
+                            </th>
                             <td>
-                                <input type="text" class="form-control" id="whCode" name="whCode" placeholder="창고 코드" required th:value="${storage.whCode}">
+                                <input type="text" class="form-control" id="whCode" name="whCode" 
+                                       required th:value="${storage.whCode}">
                                 <div class="invalid-feedback">창고 코드를 입력해주세요.</div>
                             </td>
                         </tr>
                         <tr>
-                            <th class="bg-light text-end"><label for="whName" class="form-label mb-0">창고 명<span class="form-required">*</span></label></th>
+                            <th class="bg-light text-end">
+                                <label for="whName" class="form-label mb-0">창고명<span class="text-danger">*</span></label>
+                            </th>
                             <td>
-                                <input type="text" class="form-control" id="whName" name="whName" placeholder="창고 명" required th:value="${storage.whName}">
+                                <input type="text" class="form-control" id="whName" name="whName" 
+                                       required th:value="${storage.whName}">
                                 <div class="invalid-feedback">창고명을 입력해주세요.</div>
                             </td>
                         </tr>
                         <tr>
-                            <th class="bg-light text-end"><label for="postCode" class="form-label mb-0">우편번호<span class="form-required">*</span></label></th>
+                            <th class="bg-light text-end">
+                                <label for="postCode" class="form-label mb-0">우편번호<span class="text-danger">*</span></label>
+                            </th>
                             <td>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="postCode" name="postCode" placeholder="우편번호" **readonly** required th:value="${storage.postCode}">
+                                    <input type="text" class="form-control" id="postCode" name="postCode" 
+                                           readonly required th:value="${storage.postCode}">
                                     <button class="btn btn-primary" type="button" onclick="searchPostcode()">검색</button>
                                 </div>
                                 <div class="invalid-feedback">우편번호를 검색해주세요.</div>
                             </td>
                         </tr>
                         <tr>
-                            <th class="bg-light text-end"><label for="address" class="form-label mb-0">창고 주소<span class="form-required">*</span></label></th>
+                            <th class="bg-light text-end">
+                                <label for="address" class="form-label mb-0">주소<span class="text-danger">*</span></label>
+                            </th>
                             <td>
-                                <input type="text" class="form-control" id="address" name="address" placeholder="주소" **readonly** required th:value="${storage.address}">
+                                <input type="text" class="form-control" id="address" name="address" 
+                                       readonly required th:value="${storage.address}">
                                 <div class="invalid-feedback">주소를 검색해주세요.</div>
                             </td>
                         </tr>
                         <tr>
-                            <th class="bg-light text-end"><label for="addressDetail" class="form-label mb-0">상세주소<span class="form-required">*</span></label></th>
+                            <th class="bg-light text-end">
+                                <label for="addressDetail" class="form-label mb-0">상세주소<span class="text-danger">*</span></label>
+                            </th>
                             <td>
-                                <input type="text" class="form-control" id="addressDetail" name="addressDetail" placeholder="상세주소" required th:value="${storage.addressDetail}">
+                                <input type="text" class="form-control" id="addressDetail" name="addressDetail" 
+                                       required th:value="${storage.addressDetail}">
                                 <div class="invalid-feedback">상세 주소를 입력해주세요.</div>
                             </td>
                         </tr>
                         <tr>
-                            <th class="bg-light text-end"><label for="empName" class="form-label mb-0">담당자 명<span class="form-required">*</span></label></th>
+                            <th class="bg-light text-end">
+                                <label for="empName" class="form-label mb-0">담당자명<span class="text-danger">*</span></label>
+                            </th>
                             <td>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="empName" name="empName" placeholder="담당자 명" required **readonly** th:value="${storage.empName}">
+                                    <input type="text" class="form-control" id="empName" name="empName" 
+                                           readonly required th:value="${storage.empName}">
                                     <button class="btn btn-outline-secondary" type="button" id="searchEmployeeBtn">검색</button>
                                     <button class="btn btn-outline-danger" type="button" id="clearEmployeeBtn">X</button>
                                 </div>
-                                <div class="invalid-feedback">담당자 명을 입력해주세요.</div>
+                                <div class="invalid-feedback">담당자를 선택해주세요.</div>
                             </td>
                         </tr>
                         <tr>
-                            <th class="bg-light text-end"><label for="empNo" class="form-label mb-0">담당자 사번<span class="form-required">*</span></label></th>
+                            <th class="bg-light text-end">
+                                <label for="empNo" class="form-label mb-0">담당자 사번<span class="text-danger">*</span></label>
+                            </th>
                             <td>
-                                <input type="text" class="form-control" id="empNo" name="empNo" placeholder="담당자 사번" required **readonly** th:value="${storage.empNo}">
-                                <div class="invalid-feedback">담당자 코드를 입력해주세요.</div>
+                                <input type="text" class="form-control" id="empNo" name="empNo" 
+                                       readonly required th:value="${storage.empNo}">
+                                <div class="invalid-feedback">담당자 사번이 필요합니다.</div>
                             </td>
                         </tr>
                         <tr>
-                            <th class="bg-light text-end"><label for="tel" class="form-label mb-0">창고 전화번호<span class="form-required">*</span></label></th>
+                            <th class="bg-light text-end">
+                                <label for="remark" class="form-label mb-0">비고</label>
+                            </th>
                             <td>
-                                <input type="tel" class="form-control" id="tel" name="tel" placeholder="창고 전화번호 (예: 010-1234-5678)" required th:value="${storage.tel}">
-                                <div class="invalid-feedback">창고 전화번호를 입력해주세요.</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light text-end"><label for="remark" class="form-label mb-0">비고</label></th>
-                            <td>
-                                <textarea class="form-control" id="remark" name="remark" rows="3" maxlength="100" placeholder="비고" th:text="${storage.remark}"></textarea>
+                                <textarea class="form-control" id="remark" name="remark" rows="3" 
+                                          th:text="${storage.remark}"></textarea>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div id="formMessage" class="mt-3"></div>
-
             <div class="btn-group-bottom">
                 <button type="submit" class="btn btn-dark">수정</button>
-                <button type="button" class="btn btn-light border" id="cancelBtn">취소</button>
+                <button type="button" class="btn btn-light border" onclick="location.href='/storage'">취소</button>
             </div>
         </form>
     </div>
 
-    <div class="modal fade" id="customAlertModal" tabindex="-1" aria-labelledby="customAlertModalLabel" aria-hidden="true"></div>
-    <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true"></div>
-    <div class="modal fade" id="employeeSearchModal" tabindex="-1" aria-labelledby="employeeSearchModalLabel" aria-hidden="true"></div>
+    <!-- 사원 검색 모달 -->
+    <div class="modal fade" id="employeeSearchModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">담당자 검색</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control mb-3" id="employeeSearchInput" placeholder="사원명 또는 사번">
+                    <div id="employeeSearchResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-    <script th:src="@{/js/storage_write.js}"></script>
+    <script>
+    // 간단한 수정 스크립트
+    document.getElementById('warehouseForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const whId = data.whId;
+        
+        try {
+            const response = await fetch(`/storage/${whId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('수정되었습니다.');
+                location.href = '/storage';
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('수정 중 오류가 발생했습니다.');
+        }
+    });
+    
+    // 우편번호 검색
+    function searchPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById('postCode').value = data.zonecode;
+                document.getElementById('address').value = data.address;
+                document.getElementById('addressDetail').focus();
+            }
+        }).open();
+    }
+    
+    // 사원 검색
+    document.getElementById('searchEmployeeBtn').addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('employeeSearchModal'));
+        modal.show();
+    });
+    
+    document.getElementById('employeeSearchInput').addEventListener('keyup', async function() {
+        const query = this.value;
+        if (query.length < 2) return;
+        
+        try {
+            const response = await fetch(`/storage/api/employees/search?query=${query}`);
+            const employees = await response.json();
+            
+            let html = '';
+            employees.forEach(emp => {
+                html += `<div class="list-group-item list-group-item-action" style="cursor:pointer" onclick="selectEmployee('${emp.empNo}', '${emp.empName}')">
+                    ${emp.empName} (${emp.empNo})
+                </div>`;
+            });
+            
+            document.getElementById('employeeSearchResults').innerHTML = html;
+        } catch (error) {
+            console.error('사원 검색 오류:', error);
+        }
+    });
+    
+    function selectEmployee(empNo, empName) {
+        document.getElementById('empNo').value = empNo;
+        document.getElementById('empName').value = empName;
+        bootstrap.Modal.getInstance(document.getElementById('employeeSearchModal')).hide();
+    }
+    
+    document.getElementById('clearEmployeeBtn').addEventListener('click', function() {
+        document.getElementById('empNo').value = '';
+        document.getElementById('empName').value = '';
+    });
+    </script>
 </div>

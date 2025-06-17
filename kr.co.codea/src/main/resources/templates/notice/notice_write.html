@@ -3,27 +3,24 @@
     <th:block th:fragment="headFragment">
         <style>
             body {
-                min-height: 100vh;
-                background: #f8f9fa;
+                background: #ffffff;
             }
             .main-content {
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 64px 0.75rem 0;
+                padding: 64px 1rem 0;
             }
             .write-form {
-                background: #fff;
-                border-radius: 0.5rem;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-                padding: 2rem;
+                padding: 1.5rem 0;
             }
             .form-label {
                 font-weight: 600;
                 color: #333;
+                margin-bottom: 0.75rem;
             }
             .content-textarea {
-                min-height: 400px;
+                min-height: 500px;
                 resize: vertical;
+                font-family: inherit;
+                line-height: 1.6;
             }
             .form-actions {
                 display: flex;
@@ -34,32 +31,30 @@
                 border-top: 1px solid #e9ecef;
             }
             @media (max-width: 767.98px) {
-                .main-content { padding: 64px 0.3rem 0; }
-                .write-form { padding: 1.5rem; }
+                .main-content { 
+                    padding: 64px 0.5rem 0; 
+                }
                 .form-actions {
                     flex-direction: column;
+                }
+                .content-textarea {
+                    min-height: 400px;
                 }
             }
         </style>
     </th:block>
 
     <main class="main-content">
-        <div class="container">
+        <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">
-                    <i class="bi bi-pencil-square text-primary me-2"></i>
-                    공지사항 작성
-                </h2>
+                <h2 class="mb-0">공지사항 작성</h2>
             </div>
 
             <div class="write-form">
                 <form th:action="@{/notice/write}" method="post" th:object="${notice}">
                     <!-- 제목 입력 -->
                     <div class="mb-4">
-                        <label for="title" class="form-label">
-                            <i class="bi bi-card-heading me-1"></i>
-                            제목
-                        </label>
+                        <label for="title" class="form-label">제목</label>
                         <input type="text" 
                                class="form-control" 
                                id="title" 
@@ -72,10 +67,7 @@
 
                     <!-- 내용 입력 -->
                     <div class="mb-4">
-                        <label for="content" class="form-label">
-                            <i class="bi bi-text-paragraph me-1"></i>
-                            내용
-                        </label>
+                        <label for="content" class="form-label">내용</label>
                         <textarea class="form-control content-textarea" 
                                   id="content" 
                                   name="content"
@@ -83,17 +75,13 @@
                                   placeholder="공지사항 내용을 입력하세요"
                                   required></textarea>
                         <div class="form-text">
-                            <i class="bi bi-info-circle me-1"></i>
                             줄바꿈은 자동으로 적용됩니다.
                         </div>
                     </div>
 
                     <!-- 작성자 정보 (읽기 전용) -->
                     <div class="mb-4">
-                        <label class="form-label">
-                            <i class="bi bi-person-circle me-1"></i>
-                            작성자
-                        </label>
+                        <label class="form-label">작성자</label>
                         <input type="text" 
                                class="form-control" 
                                value="관리자" 
@@ -102,12 +90,10 @@
 
                     <!-- 버튼 영역 -->
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-check-lg me-1"></i>
+                        <button type="submit" class="btn btn-primary">
                             등록하기
                         </button>
-                        <a href="/notice/list" class="btn btn-outline-secondary btn-lg">
-                            <i class="bi bi-x-lg me-1"></i>
+                        <a href="/notice/list" class="btn btn-outline-secondary">
                             취소
                         </a>
                     </div>
@@ -149,7 +135,7 @@
                 }
             });
 
-            // 실시간 글자 수 표시 (선택사항)
+            // 실시간 글자 수 표시
             titleInput.addEventListener('input', function() {
                 const currentLength = this.value.length;
                 const maxLength = 200;

@@ -1,113 +1,38 @@
-// js/storage_write.js
+// storage_write.js - 창고 등록/수정 페이지
 
-// 커스텀 알림 모달 표시 함수 (alert() 대체)
-function showCustomAlert(message) {
-    const modalElement = document.getElementById('customAlertModal');
-    if (!modalElement) {
-        console.error("customAlertModal 요소를 찾을 수 없습니다.");
-        return;
-    }
+// 전역 변수
+let isFormSubmitting = false;
 
-    // 모달 내용 동적 생성
-    modalElement.innerHTML = `
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="customAlertModalLabel">알림</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="customAlertModalBody">
-                    ${message}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">확인</button>
-                </div>
-            </div>
-        </div>
-    `;
-    const customAlertModal = new bootstrap.Modal(modalElement);
-    customAlertModal.show();
-}
+// 폼 요소들
+const warehouseForm = document.getElementById('warehouseForm');
+const cancelBtn = document.getElementById('cancelBtn');
+const searchEmployeeBtn = document.getElementById('searchEmployeeBtn');
+const clearEmployeeBtn = document.getElementById('clearEmployeeBtn');
+const remarkTextarea = document.getElementById('remark');
+const remarkCount = document.getElementById('remarkCount');
 
-// 커스텀 확인 모달 표시 함수 (confirm() 대체)
-function showCustomConfirm(message) {
-    return new Promise((resolve) => {
-        const modalElement = document.getElementById('customConfirmModal');
-        if (!modalElement) {
-            console.error("customConfirmModal 요소를 찾을 수 없습니다.");
-            resolve(confirm(message)); // 요소가 없으면 기본 confirm 사용
-            return;
-        }
-
-        // 모달 내용 동적 생성
-        modalElement.innerHTML = `
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="customConfirmModalLabel">확인</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="customConfirmModalBody">
-                        ${message}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="confirmCancelBtn">취소</button>
-                        <button type="button" class="btn btn-primary" id="confirmOkBtn">확인</button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        const customConfirmModal = new bootstrap.Modal(modalElement);
-        const okBtn = document.getElementById('confirmOkBtn');
-        const cancelBtn = document.getElementById('confirmCancelBtn');
-
-        // 이벤트 리스너를 한 번만 등록하고, 모달이 닫힐 때 제거하는 함수
-        const handleOk = () => {
-            customConfirmModal.hide();
-            resolve(true);
-        };
-
-        const handleCancel = () => {
-            customConfirmModal.hide();
-            resolve(false);
-        };
-
-        // 기존 리스너가 혹시 남아있을까봐 제거하고 다시 등록
-        okBtn.removeEventListener('click', handleOk);
-        cancelBtn.removeEventListener('click', handleCancel);
-
-        okBtn.addEventListener('click', handleOk);
-        cancelBtn.addEventListener('click', handleCancel);
-
-        customConfirmModal.show();
-
-        // 모달이 완전히 닫힐 때 이벤트 리스너를 정리하여 메모리 누수 방지
-        modalElement.addEventListener('hidden.bs.modal', () => {
-            okBtn.removeEventListener('click', handleOk);
-            cancelBtn.removeEventListener('click', handleCancel);
-        }, { once: true }); // 이 리스너는 한 번만 실행되도록
-    });
-}
-
-// Daum 우편번호 검색 함수 (이전과 동일)
+// 우편번호 검색
 function searchPostcode() {
     new daum.Postcode({
         oncomplete: function(data) {
-            var addr = ''; // 주소 변수
-            var extraAddr = ''; // 참고항목 변수
+            // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+            
+            // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+            // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+            let addr = ''; // 주소 변수
+            let extraAddr = ''; // 참고항목 변수
 
-            // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-            if (data.userSelectedType === 'R') { // 도로명 주소를 선택 했을경우
+            //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+            if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
                 addr = data.roadAddress;
-            } else { // 지번 주소를 선택 했을경우(J)
+            } else { // 사용자가 지번 주소를 선택했을 경우(J)
                 addr = data.jibunAddress;
             }
 
             // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
             if(data.userSelectedType === 'R'){
                 // 법정동명이 있을 경우 추가한다. (법정리는 제외)
-                // 법정동의 경우 마지막 글자가 "동" "로" "가" 인 경우만.
+                // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
                 if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
                     extraAddr += data.bname;
                 }
@@ -119,436 +44,418 @@ function searchPostcode() {
                 if(extraAddr !== ''){
                     extraAddr = ' (' + extraAddr + ')';
                 }
-                // 조합된 참고항목을 상세주소 필드에 넣는다.
-                document.getElementById('addressDetail').value = extraAddr;
-            } else {
-                document.getElementById('addressDetail').value = '';
             }
 
             // 우편번호와 주소 정보를 해당 필드에 넣는다.
             document.getElementById('postCode').value = data.zonecode;
-            document.getElementById('address').value = addr;
+            document.getElementById('address').value = addr + extraAddr;
+            
             // 커서를 상세주소 필드로 이동한다.
             document.getElementById('addressDetail').focus();
-
-            // 유효성 검사 피드백 제거
+            
+            // 유효성 검사 상태 업데이트
             document.getElementById('postCode').classList.remove('is-invalid');
-            const postcodeFeedback = document.getElementById('postCode').nextElementSibling;
-            if (postcodeFeedback && postcodeFeedback.classList.contains('invalid-feedback')) {
-                 postcodeFeedback.style.display = 'none';
-            }
             document.getElementById('address').classList.remove('is-invalid');
-            const addressFeedback = document.getElementById('address').nextElementSibling;
-            if (addressFeedback && addressFeedback.classList.contains('invalid-feedback')) {
-                addressFeedback.style.display = 'none';
-            }
         }
     }).open();
 }
 
-// 사원 검색 관련 전역 변수
-let employeeSearchDebounceTimer;
-const EMPLOYEE_SEARCH_DEBOUNCE_DELAY = 300; // 0.3초 디바운싱
-
-// 사원 검색 모달 열기 함수
+// 사원 검색 모달 열기
 function openEmployeeSearchModal() {
-    const modalElement = document.getElementById('employeeSearchModal');
-    if (!modalElement) {
-        console.error("employeeSearchModal 요소를 찾을 수 없습니다.");
+    const modal = new bootstrap.Modal(document.getElementById('employeeSearchModal'));
+    modal.show();
+    
+    // 모달이 열린 후 검색 입력 필드에 포커스
+    document.getElementById('employeeSearchModal').addEventListener('shown.bs.modal', function() {
+        document.getElementById('employeeSearchInput').focus();
+    });
+}
+
+// 사원 검색 실행
+async function searchEmployees() {
+    const query = document.getElementById('employeeSearchInput').value.trim();
+    const resultsDiv = document.getElementById('employeeSearchResults');
+    
+    if (!query) {
+        showEmployeeSearchMessage('검색어를 입력하세요.', 'warning');
         return;
     }
+    
+    try {
+        // 로딩 표시
+        resultsDiv.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">검색 중...</span>
+                </div>
+                <div class="mt-2">검색 중...</div>
+            </div>
+        `;
+        
+        const response = await fetch(`/storage/api/employees/search?query=${encodeURIComponent(query)}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const employees = await response.json();
+        
+        if (employees.length === 0) {
+            showEmployeeSearchMessage('검색 결과가 없습니다.', 'info');
+            return;
+        }
+        
+        // 검색 결과 표시
+        let html = '<div class="list-group">';
+        employees.forEach(emp => {
+            html += `
+                <button type="button" class="list-group-item list-group-item-action" 
+                        onclick="selectEmployee('${emp.empNo}', '${emp.empName}')">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">${emp.empName}</h6>
+                        <small class="text-muted">${emp.empNo}</small>
+                    </div>
+                </button>
+            `;
+        });
+        html += '</div>';
+        
+        resultsDiv.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Employee search error:', error);
+        showEmployeeSearchMessage('검색 중 오류가 발생했습니다.', 'danger');
+    }
+}
 
-    // 모달 내용 동적 생성
-    modalElement.innerHTML = `
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="employeeSearchModalLabel">사원 검색</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="employeeSearchInput" placeholder="사원명 또는 사번 입력">
-                        <button class="btn btn-outline-secondary" type="button" id="executeEmployeeSearchBtn">검색</button>
-                    </div>
-                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-hover table-sm">
-                            <thead>
-                                <tr>
-                                    <th>사원명</th>
-                                    <th>사번</th>
-                                    <th>선택</th>
-                                </tr>
-                            </thead>
-                            <tbody id="employeeSearchResults">
-                                <tr><td colspan="3" class="text-center text-secondary">검색 결과가 없습니다.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                </div>
+// 사원 검색 메시지 표시
+function showEmployeeSearchMessage(message, type) {
+    const resultsDiv = document.getElementById('employeeSearchResults');
+    const iconClass = type === 'danger' ? 'exclamation-triangle' : 
+                     type === 'warning' ? 'exclamation-circle' : 'info-circle';
+    
+    resultsDiv.innerHTML = `
+        <div class="text-center py-4">
+            <i class="bi bi-${iconClass} display-4 text-${type}"></i>
+            <div class="mt-2">${message}</div>
+        </div>
+    `;
+}
+
+// 사원 선택
+function selectEmployee(empNo, empName) {
+    document.getElementById('empNo').value = empNo;
+    document.getElementById('empName').value = empName;
+    
+    // 유효성 검사 상태 업데이트
+    document.getElementById('empNo').classList.remove('is-invalid');
+    document.getElementById('empName').classList.remove('is-invalid');
+    
+    // 모달 닫기
+    const modal = bootstrap.Modal.getInstance(document.getElementById('employeeSearchModal'));
+    modal.hide();
+    
+    showToast('담당자가 선택되었습니다.', 'success');
+}
+
+// 사원 정보 초기화
+function clearEmployee() {
+    document.getElementById('empNo').value = '';
+    document.getElementById('empName').value = '';
+    document.getElementById('empNo').classList.remove('is-invalid');
+    document.getElementById('empName').classList.remove('is-invalid');
+}
+
+// 폼 유효성 검사
+function validateForm() {
+    let isValid = true;
+    const requiredFields = [
+        { id: 'whCode', message: '창고 코드를 입력해주세요.' },
+        { id: 'whName', message: '창고명을 입력해주세요.' },
+        { id: 'postCode', message: '우편번호를 검색해주세요.' },
+        { id: 'address', message: '주소를 검색해주세요.' },
+        { id: 'addressDetail', message: '상세주소를 입력해주세요.' },
+        { id: 'empName', message: '담당자를 선택해주세요.' },
+        { id: 'empNo', message: '담당자 사번이 필요합니다.' }
+    ];
+    
+    requiredFields.forEach(field => {
+        const element = document.getElementById(field.id);
+        if (!element.value.trim()) {
+            element.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            element.classList.remove('is-invalid');
+        }
+    });
+    
+    // 창고 코드 형식 검사 (영문+숫자)
+    const whCode = document.getElementById('whCode').value.trim();
+    if (whCode && !/^[A-Za-z0-9]+$/.test(whCode)) {
+        document.getElementById('whCode').classList.add('is-invalid');
+        showToast('창고 코드는 영문과 숫자만 사용할 수 있습니다.', 'warning');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+// 폼 제출 처리
+async function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    if (isFormSubmitting) {
+        return;
+    }
+    
+    if (!validateForm()) {
+        showToast('필수 항목을 모두 입력해주세요.', 'warning');
+        return;
+    }
+    
+    isFormSubmitting = true;
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    try {
+        // 버튼 비활성화 및 로딩 표시
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
+        
+        // 폼 데이터 준비
+        const formData = new FormData(warehouseForm);
+        const data = Object.fromEntries(formData.entries());
+        
+        // API 호출
+        const isUpdate = document.getElementById('whId') && document.getElementById('whId').value;
+        const url = isUpdate ? `/storage/${data.whId}` : '/storage';
+        const method = isUpdate ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            showToast(result.message || '저장되었습니다.', 'success');
+            
+            // 성공 시 목록으로 이동
+            setTimeout(() => {
+                window.location.href = '/storage?success=' + encodeURIComponent(result.message);
+            }, 1500);
+        } else {
+            throw new Error(result.message || '저장 중 오류가 발생했습니다.');
+        }
+        
+    } catch (error) {
+        console.error('Form submission error:', error);
+        showToast(error.message || '저장 중 오류가 발생했습니다.', 'danger');
+    } finally {
+        isFormSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
+// 취소 버튼 처리
+function handleCancel() {
+    if (confirm('작성 중인 내용이 있습니다. 정말 취소하시겠습니까?')) {
+        window.location.href = '/storage';
+    }
+}
+
+// 비고 글자 수 카운트
+function updateRemarkCount() {
+    if (remarkTextarea && remarkCount) {
+        const currentLength = remarkTextarea.value.length;
+        remarkCount.textContent = currentLength;
+        
+        if (currentLength > 500) {
+            remarkCount.style.color = '#dc3545';
+            remarkTextarea.classList.add('is-invalid');
+        } else {
+            remarkCount.style.color = currentLength > 400 ? '#fd7e14' : '#6c757d';
+            remarkTextarea.classList.remove('is-invalid');
+        }
+    }
+}
+
+// 토스트 알림 표시
+function showToast(message, type = 'info') {
+    // 기존 토스트 제거
+    const existingToasts = document.querySelectorAll('.custom-toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toastId = 'toast-' + Date.now();
+    const toastHtml = `
+        <div class="toast custom-toast position-fixed top-0 end-0 m-3" id="${toastId}" role="alert" style="z-index: 9999;">
+            <div class="toast-header bg-${type} text-white">
+                <i class="bi bi-${getToastIcon(type)} me-2"></i>
+                <strong class="me-auto">${getToastTitle(type)}</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
             </div>
         </div>
     `;
-
-    const employeeSearchModal = new bootstrap.Modal(modalElement);
-    employeeSearchModal.show();
-
-    // 모달이 열릴 때 검색 입력 필드에 포커스
-    const employeeSearchInput = document.getElementById('employeeSearchInput');
-    if (employeeSearchInput) {
-        employeeSearchInput.focus();
-        // DOMContentLoaded에서 등록된 이벤트 리스너를 다시 연결
-        employeeSearchInput.removeEventListener('keyup', handleEmployeeSearchInputKeyup); // 기존 리스너 제거
-        employeeSearchInput.addEventListener('keyup', handleEmployeeSearchInputKeyup); // 새 리스너 등록
-    }
-
-    // 모달 내 '검색' 버튼에도 이벤트 리스너 다시 연결
-    const executeEmployeeSearchBtn = document.getElementById('executeEmployeeSearchBtn');
-    if (executeEmployeeSearchBtn) {
-        executeEmployeeSearchBtn.removeEventListener('click', handleExecuteEmployeeSearchClick); // 기존 리스너 제거
-        executeEmployeeSearchBtn.addEventListener('click', handleExecuteEmployeeSearchClick); // 새 리스너 등록
-    }
-
-    // 사원 검색 결과 테이블에 이벤트 리스너 다시 연결
-    const employeeSearchResultsTableBody = document.getElementById('employeeSearchResults');
-    if (employeeSearchResultsTableBody) {
-        employeeSearchResultsTableBody.removeEventListener('click', handleEmployeeSearchResultsClick); // 기존 리스너 제거
-        employeeSearchResultsTableBody.addEventListener('click', handleEmployeeSearchResultsClick); // 새 리스너 등록
-    }
-
-    // 모달 열릴 때 이전 검색 결과 초기화 (이전 검색어가 있다면 초기 검색)
-    const initialQuery = employeeSearchInput ? employeeSearchInput.value.trim() : '';
-    if (initialQuery) {
-        searchEmployees(initialQuery);
-    } else {
-        const employeeSearchResults = document.getElementById('employeeSearchResults');
-        if (employeeSearchResults) {
-            employeeSearchResults.innerHTML = '<tr><td colspan="3" class="text-center text-secondary">검색 결과가 없습니다.</td></tr>';
-        }
-    }
-}
-
-// 사원 검색 실행 함수 (API 호출)
-async function searchEmployees(query) {
-    const employeeSearchResultsBody = document.getElementById('employeeSearchResults');
-    if(!employeeSearchResultsBody) return;
-
-    employeeSearchResultsBody.innerHTML = '<tr><td colspan="3" class="text-center text-secondary">검색 중...</td></tr>';
-
-    if (!query || query.length < 2) {
-        employeeSearchResultsBody.innerHTML = '<tr><td colspan="3" class="text-center text-secondary">두 글자 이상 입력해주세요.</td></tr>';
-        return;
-    }
-
-    try {
-        // ✨ 컨트롤러 @RequestMapping("/storage")와 @GetMapping("/api/employees/search")에 맞춰 경로 수정
-        // URL을 다시 한번 정확하게 확인해주세요.
-        const response = await fetch(`/storage/api/employees/search?query=${encodeURIComponent(query)}`);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('사원 검색 실패:', response.status, errorText);
-            employeeSearchResultsBody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">사원 검색에 실패했습니다. (HTTP ' + response.status + ')</td></tr>';
-            return;
-        }
-
-        const employees = await response.json();
-
-        employeeSearchResultsBody.innerHTML = '';
-
-        if (employees && employees.length > 0) {
-            employees.forEach(emp => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${emp.empName || ''}</td>
-                    <td>${emp.empNo || ''}</td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-outline-success select-employee-btn"
-                                data-emp-name="${emp.empName || ''}"
-                                data-emp-no="${emp.empNo || ''}">선택</button>
-                    </td>
-                `;
-                employeeSearchResultsBody.appendChild(row);
-            });
-        } else {
-            employeeSearchResultsBody.innerHTML = '<tr><td colspan="3" class="text-center text-secondary">검색 결과가 없습니다.</td></tr>';
-        }
-
-    } catch (error) {
-        console.error('사원 검색 중 오류 발생:', error);
-        employeeSearchResultsBody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">사원 검색 중 네트워크 오류가 발생했습니다.</td></tr>';
-    }
-}
-
-// 사원 선택 처리 함수 (이전과 동일)
-function selectEmployee(empName, empNo) {
-    const empNameInput = document.getElementById('empName');
-    const empNoInput = document.getElementById('empNo');
-    const clearEmployeeBtn = document.getElementById('clearEmployeeBtn');
-
-    if (empNameInput) {
-        empNameInput.value = empName;
-        empNameInput.classList.remove('is-invalid');
-        const feedback = empNameInput.nextElementSibling;
-        if (feedback && feedback.classList.contains('invalid-feedback')) {
-            feedback.style.display = 'none';
-        }
-    }
-    if (empNoInput) {
-        empNoInput.value = empNo;
-        empNoInput.classList.remove('is-invalid');
-        const feedback = empNoInput.nextElementSibling;
-        if (feedback && feedback.classList.contains('invalid-feedback')) {
-            feedback.style.display = 'none';
-        }
-    }
-    if (clearEmployeeBtn) {
-        clearEmployeeBtn.style.display = 'inline-block';
-    }
-
-    const employeeSearchModal = bootstrap.Modal.getInstance(document.getElementById('employeeSearchModal'));
-    if (employeeSearchModal) {
-        employeeSearchModal.hide();
-    }
-}
-
-// 담당자 초기화 (X 버튼 클릭 시) (이전과 동일)
-function clearEmployeeSelection() {
-    const empNameInput = document.getElementById('empName');
-    const empNoInput = document.getElementById('empNo');
-    const clearEmployeeBtn = document.getElementById('clearEmployeeBtn');
-
-    if (empNameInput) {
-        empNameInput.value = '';
-        empNameInput.classList.remove('is-invalid');
-        const feedback = empNameInput.nextElementSibling;
-        if (feedback && feedback.classList.contains('invalid-feedback')) {
-            feedback.style.display = 'none';
-        }
-    }
-    if (empNoInput) {
-        empNoInput.value = '';
-        empNoInput.classList.remove('is-invalid');
-        const feedback = empNoInput.nextElementSibling;
-        if (feedback && feedback.classList.contains('invalid-feedback')) {
-            feedback.style.display = 'none';
-        }
-    }
-    if (clearEmployeeBtn) {
-        clearEmployeeBtn.style.display = 'none';
-    }
-}
-
-// 입력 필드 값에 따라 'X' 버튼 가시성 업데이트 (이전과 동일)
-function updateClearButtonVisibility() {
-    const empNameInput = document.getElementById('empName');
-    const empNoInput = document.getElementById('empNo');
-    const clearEmployeeBtn = document.getElementById('clearEmployeeBtn');
-
-    if (empNameInput && empNoInput && clearEmployeeBtn) {
-        if (empNameInput.value.trim() !== '' || empNoInput.value.trim() !== '') {
-            clearEmployeeBtn.style.display = 'inline-block';
-        } else {
-            clearEmployeeBtn.style.display = 'none';
-        }
-    }
-}
-
-// 창고 등록 및 수정 처리 함수 (이전과 동일)
-async function submitWarehouseForm() {
-    const warehouseForm = document.getElementById("warehouseForm");
-    const formMessageDiv = document.getElementById("formMessage");
-
-    if (!warehouseForm) {
-        console.error("Error: warehouseForm not found.");
-        return;
-    }
-
-    formMessageDiv.innerHTML = '';
-
-    const requiredFields = [
-        "whCode", "whName", "postCode", "address", "addressDetail",
-        "empName", "empNo", "tel",
-    ];
-    let valid = true;
-    let firstInvalid = null;
-
-    requiredFields.forEach((id) => {
-        const el = document.getElementById(id);
-        const feedback = el.nextElementSibling;
-
-        if (el && !el.value.trim()) {
-            el.classList.add("is-invalid");
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.style.display = 'block';
-            }
-            if (!firstInvalid) firstInvalid = el;
-            valid = false;
-        } else if (el) {
-            el.classList.remove("is-invalid");
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.style.display = 'none';
-            }
-        }
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: type === 'success' ? 3000 : 5000
     });
-
-    if (!valid) {
-        formMessageDiv.innerHTML = '<div class="alert alert-danger" role="alert">필수 입력 항목을 모두 입력해 주세요.</div>';
-        if (firstInvalid) firstInvalid.focus();
-        return;
-    }
-
-    const hiddenMethodField = warehouseForm.querySelector('input[name="_method"]');
-    const whIdField = document.getElementById('whId');
-
-    const isUpdateMode = hiddenMethodField && hiddenMethodField.value.toLowerCase() === 'put';
-    const currentWhId = whIdField ? whIdField.value : null;
-
-    let apiPath;
-    let httpMethod;
-    let confirmMessage;
-    let successMessage;
-    let failMessage;
-
-    if (isUpdateMode && currentWhId) {
-        apiPath = `/storage/${currentWhId}`;
-        httpMethod = 'PUT';
-        confirmMessage = "창고 정보를 수정하시겠습니까?";
-        successMessage = "창고 정보가 성공적으로 수정되었습니다.";
-        failMessage = "창고 수정에 실패했습니다.";
-    } else {
-        apiPath = '/storage';
-        httpMethod = 'POST';
-        confirmMessage = "창고 정보를 등록하시겠습니까?";
-        successMessage = "창고 정보가 성공적으로 등록되었습니다.";
-        failMessage = "창고 등록에 실패했습니다.";
-    }
-
-    const confirmed = await showCustomConfirm(confirmMessage);
-    if (!confirmed) {
-        return;
-    }
-
-    const formData = new FormData(warehouseForm);
-    const jsonData = {};
-    formData.forEach((value, key) => {
-        jsonData[key] = value;
+    toast.show();
+    
+    // 토스트가 숨겨진 후 DOM에서 제거
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
     });
+}
 
-    if (jsonData._method) {
-        delete jsonData._method;
+// 토스트 아이콘 반환
+function getToastIcon(type) {
+    switch(type) {
+        case 'success': return 'check-circle';
+        case 'danger': return 'exclamation-triangle';
+        case 'warning': return 'exclamation-circle';
+        case 'info': return 'info-circle';
+        default: return 'info-circle';
     }
+}
 
-    try {
-        const response = await fetch(apiPath, {
-            method: httpMethod,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(jsonData)
+// 토스트 제목 반환
+function getToastTitle(type) {
+    switch(type) {
+        case 'success': return '성공';
+        case 'danger': return '오류';
+        case 'warning': return '경고';
+        case 'info': return '정보';
+        default: return '알림';
+    }
+}
+
+// 실시간 유효성 검사
+function setupRealTimeValidation() {
+    const inputs = warehouseForm.querySelectorAll('input[required], textarea[required]');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
         });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Server response was not OK:", response.status, errorText);
-            let errorMessage = '서버 오류가 발생했습니다.';
-            try {
-                const errorData = JSON.parse(errorText);
-                errorMessage = errorData.message || errorMessage;
-            } catch (e) {
-                errorMessage = `서버 응답 오류 (HTTP ${response.status}). 자세한 내용은 콘솔을 확인하세요.`;
+        
+        input.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.classList.add('is-invalid');
             }
+        });
+    });
+}
 
-            formMessageDiv.innerHTML = `<div class="alert alert-danger" role="alert">${failMessage}: ${errorMessage}</div>`;
-            showCustomAlert(`${failMessage}: ${errorMessage}`);
-            return;
-        }
-
-        const result = await response.json();
-
-        if (response.status === 200 || response.status === 201) {
-            formMessageDiv.innerHTML = `<div class="alert alert-success" role="alert">${successMessage}</div>`;
-            showCustomAlert(successMessage);
-            setTimeout(() => {
-                location.href = '/storage';
-            }, 1000);
-        } else {
-            formMessageDiv.innerHTML = `<div class="alert alert-danger" role="alert">${failMessage}: ${result.message || '알 수 없는 오류'}</div>`;
-            showCustomAlert(`${failMessage}: ${result.message || '알 수 없는 오류'}`);
-        }
-
-    } catch (error) {
-        console.error("Error during warehouse operation:", error);
-        formMessageDiv.innerHTML = '<div class="alert alert-danger" role="alert">네트워크 오류 또는 서버 응답 처리 중 문제가 발생했습니다.</div>';
-        showCustomAlert("네트워크 오류가 발생했습니다.");
+// URL 파라미터에서 메시지 처리
+function handleUrlMessages() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    
+    if (error) {
+        showToast(decodeURIComponent(error), 'danger');
+        // URL에서 파라미터 제거
+        const url = new URL(window.location);
+        url.searchParams.delete('error');
+        window.history.replaceState({}, '', url);
     }
 }
 
-// 이벤트 핸들러를 별도의 함수로 분리하여 동적으로 생성되는 요소에 재연결 가능하도록 함
-const handleEmployeeSearchInputKeyup = (event) => {
-    clearTimeout(employeeSearchDebounceTimer);
-    const query = event.target.value.trim();
-    employeeSearchDebounceTimer = setTimeout(() => {
-        searchEmployees(query);
-    }, EMPLOYEE_SEARCH_DEBOUNCE_DELAY);
-};
+// 브라우저 뒤로가기 방지
+function preventBackNavigation() {
+    let formChanged = false;
+    
+    // 폼 변경 감지
+    const inputs = warehouseForm.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            formChanged = true;
+        });
+    });
+    
+    // 페이지 이탈 시 경고
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged && !isFormSubmitting) {
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        }
+    });
+}
 
-const handleExecuteEmployeeSearchClick = () => {
-    const employeeSearchInput = document.getElementById('employeeSearchInput');
-    if (employeeSearchInput) {
-        searchEmployees(employeeSearchInput.value.trim());
+// Enter 키로 사원 검색
+function handleEmployeeSearchEnter(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        searchEmployees();
     }
-};
-
-const handleEmployeeSearchResultsClick = (event) => {
-    const selectButton = event.target.closest('.select-employee-btn');
-    if (selectButton) {
-        const empName = selectButton.dataset.empName;
-        const empNo = selectButton.dataset.empNo;
-        selectEmployee(empName, empNo);
-    }
-};
-
+}
 
 // DOMContentLoaded 이벤트 리스너
-document.addEventListener("DOMContentLoaded", () => {
-    const warehouseForm = document.getElementById("warehouseForm");
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Storage write page loaded');
+    
+    // URL 메시지 처리
+    handleUrlMessages();
+    
+    // 폼 제출 이벤트
     if (warehouseForm) {
-        warehouseForm.addEventListener("submit", function(event) {
-            event.preventDefault();
-            submitWarehouseForm();
-        });
+        warehouseForm.addEventListener('submit', handleFormSubmit);
     }
-
-    const cancelBtn = document.getElementById("cancelBtn");
+    
+    // 취소 버튼 이벤트
     if (cancelBtn) {
-        cancelBtn.addEventListener("click", async () => { // async 추가
-            const confirmed = await showCustomConfirm("작성을 취소하고 목록으로 돌아가시겠습니까?");
-            if (confirmed) {
-                location.href = '/storage';
-            }
-        });
+        cancelBtn.addEventListener('click', handleCancel);
     }
-
-    const searchEmployeeBtn = document.getElementById('searchEmployeeBtn');
+    
+    // 사원 검색 버튼 이벤트
     if (searchEmployeeBtn) {
-        searchEmployeeBtn.addEventListener('click', () => {
-            openEmployeeSearchModal(); // 모달 오픈 및 내용 동적 생성
-        });
+        searchEmployeeBtn.addEventListener('click', openEmployeeSearchModal);
     }
-
-    // 사원 정보 초기화 (X 버튼) 관련 로직 (이전과 동일)
-    const clearEmployeeBtn = document.getElementById('clearEmployeeBtn');
-    const empNameInput = document.getElementById('empName');
-    const empNoInput = document.getElementById('empNo');
-
-    if (clearEmployeeBtn && empNameInput && empNoInput) {
-        updateClearButtonVisibility(); // 페이지 로드 시 초기 가시성 설정
-        empNameInput.addEventListener('input', updateClearButtonVisibility);
-        empNoInput.addEventListener('input', updateClearButtonVisibility);
-        clearEmployeeBtn.addEventListener('click', clearEmployeeSelection);
+    
+    // 사원 정보 초기화 버튼 이벤트
+    if (clearEmployeeBtn) {
+        clearEmployeeBtn.addEventListener('click', clearEmployee);
     }
+    
+    // 비고 글자수 카운트 이벤트
+    if (remarkTextarea) {
+        remarkTextarea.addEventListener('input', updateRemarkCount);
+        updateRemarkCount(); // 초기 카운트 설정
+    }
+    
+    // 사원 검색 Enter 키 이벤트
+    const employeeSearchInput = document.getElementById('employeeSearchInput');
+    if (employeeSearchInput) {
+        employeeSearchInput.addEventListener('keypress', handleEmployeeSearchEnter);
+    }
+    
+    // 실시간 유효성 검사 설정
+    setupRealTimeValidation();
+    
+    // 브라우저 뒤로가기 방지 설정
+    preventBackNavigation();
+    
+    // 툴팁 초기화
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    console.log('All event listeners attached successfully');
 });

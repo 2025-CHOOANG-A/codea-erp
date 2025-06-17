@@ -3,27 +3,36 @@
     <th:block th:fragment="headFragment">
         <style>
             body {
-                min-height: 100vh;
-                background: #f8f9fa;
+                background: #ffffff;
             }
             .main-content {
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 64px 0.75rem 0;
+                padding: 64px 1rem 0;
+            }
+            .notice-header {
+                padding: 1.5rem 0;
+                border-bottom: 1px solid #dee2e6;
+                margin-bottom: 1.5rem;
+            }
+            .notice-meta {
+                display: flex;
+                gap: 1.5rem;
+                margin-top: 0.5rem;
+                color: #6c757d;
+                font-size: 0.9rem;
             }
             .edit-form {
-                background: #fff;
-                border-radius: 0.5rem;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-                padding: 2rem;
+                padding: 1.5rem 0;
             }
             .form-label {
                 font-weight: 600;
                 color: #333;
+                margin-bottom: 0.75rem;
             }
             .content-textarea {
-                min-height: 400px;
+                min-height: 500px;
                 resize: vertical;
+                font-family: inherit;
+                line-height: 1.6;
             }
             .form-actions {
                 display: flex;
@@ -33,43 +42,36 @@
                 padding-top: 1.5rem;
                 border-top: 1px solid #e9ecef;
             }
-            .notice-info {
-                background: #f8f9fa;
-                border-radius: 0.375rem;
-                padding: 1rem;
-                margin-bottom: 1.5rem;
-                border-left: 4px solid #0d6efd;
-            }
             @media (max-width: 767.98px) {
-                .main-content { padding: 64px 0.3rem 0; }
-                .edit-form { padding: 1.5rem; }
+                .main-content { 
+                    padding: 64px 0.5rem 0; 
+                }
+                .notice-meta { 
+                    flex-direction: column; 
+                    gap: 0.3rem;
+                }
                 .form-actions {
                     flex-direction: column;
+                }
+                .content-textarea {
+                    min-height: 400px;
                 }
             }
         </style>
     </th:block>
 
     <main class="main-content">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">
-                    <i class="bi bi-pencil text-warning me-2"></i>
-                    공지사항 수정
-                </h2>
-            </div>
-
-            <!-- 기존 공지사항 정보 -->
-            <div class="notice-info">
-                <div class="row">
-                    <div class="col-md-6">
-                        <small class="text-muted">작성일:</small>
-                        <div th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <small class="text-muted">조회수:</small>
-                        <div th:text="${notice.views}"></div>
-                    </div>
+        <div class="container-fluid">
+            <!-- 공지사항 헤더 -->
+            <div class="notice-header">
+                <h3 class="mb-3" th:text="${notice.title}">공지사항 제목</h3>
+                <div class="notice-meta">
+                    <span>작성자: <span th:text="${notice.authorName ?: '관리자'}">작성자</span></span>
+                    <span>작성일: <span th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span></span>
+                    <span>조회수: <span th:text="${notice.views}">조회수</span></span>
+                    <span th:if="${notice.updatedAt != null and !#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm').equals(#temporals.format(notice.updatedAt, 'yyyy-MM-dd HH:mm'))}">
+                        수정일: <span th:text="${#temporals.format(notice.updatedAt, 'yyyy-MM-dd HH:mm')}">수정일</span>
+                    </span>
                 </div>
             </div>
 
@@ -77,10 +79,7 @@
                 <form th:action="@{/notice/{id}/edit(id=${notice.noticeId})}" method="post" th:object="${notice}">
                     <!-- 제목 수정 -->
                     <div class="mb-4">
-                        <label for="title" class="form-label">
-                            <i class="bi bi-card-heading me-1"></i>
-                            제목
-                        </label>
+                        <label for="title" class="form-label">제목</label>
                         <input type="text" 
                                class="form-control" 
                                id="title" 
@@ -93,10 +92,7 @@
 
                     <!-- 내용 수정 -->
                     <div class="mb-4">
-                        <label for="content" class="form-label">
-                            <i class="bi bi-text-paragraph me-1"></i>
-                            내용
-                        </label>
+                        <label for="content" class="form-label">내용</label>
                         <textarea class="form-control content-textarea" 
                                   id="content" 
                                   name="content"
@@ -104,32 +100,26 @@
                                   placeholder="공지사항 내용을 입력하세요"
                                   required></textarea>
                         <div class="form-text">
-                            <i class="bi bi-info-circle me-1"></i>
                             줄바꿈은 자동으로 적용됩니다.
                         </div>
                     </div>
 
                     <!-- 수정자 정보 (읽기 전용) -->
                     <div class="mb-4">
-                        <label class="form-label">
-                            <i class="bi bi-person-circle me-1"></i>
-                            수정자
-                        </label>
+                        <label class="form-label">수정자</label>
                         <input type="text" 
                                class="form-control" 
-                               value="관리자" 
+                               th:value="${notice.authorName ?: '관리자'}" 
                                readonly />
                     </div>
 
                     <!-- 버튼 영역 -->
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-check-lg me-1"></i>
+                        <button type="submit" class="btn btn-primary">
                             수정하기
                         </button>
                         <a th:href="@{/notice/{id}(id=${notice.noticeId})}" 
-                           class="btn btn-outline-secondary btn-lg">
-                            <i class="bi bi-x-lg me-1"></i>
+                           class="btn btn-outline-secondary">
                             취소
                         </a>
                     </div>
