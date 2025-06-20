@@ -10,55 +10,155 @@
   <style>
     body {
       min-height: 100vh;
-      background: #f8f9fa;
+      background: #f5f6fa;
       padding-top: 64px;
     }
     .main-content {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 0.75rem;
+      padding: 1.5rem 1rem;
     }
-    .notice-card .table thead {
-      display: none;
+    
+    /* 공통 카드 스타일 */
+    .custom-card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      background: #ffffff;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    
+    /* 공지사항 카드 */
+    .notice-card .card-header {
+      background: #f8f9fa;
+      border: none;
+      border-bottom: 1px solid #e9ecef;
+      padding: 0.75rem 1.25rem;
+      color: #495057;
+    }
+    .notice-card .card-header h5 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .notice-card .btn-outline-primary {
+      border: 1px solid #007bff;
+      color: #007bff;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    .notice-card .btn-outline-primary:hover {
+      background: #007bff;
+      border-color: #007bff;
+      color: white;
+    }
+    
+    .notice-card .table {
+      margin: 0;
+    }
+    .notice-card .table th {
+      background: #f8f9fa;
+      font-weight: 600;
+      border-top: none;
+      border-bottom: 1px solid #e9ecef;
+      text-align: center;
+      padding: 0.6rem 0.5rem;
+      font-size: 0.9rem;
+      color: #495057;
     }
     .notice-card .table td {
       vertical-align: middle;
-      font-size: 1rem;
-      padding: 0.7rem 0.3rem;
+      font-size: 0.9rem;
+      padding: 0.6rem 0.5rem;
+      text-align: center;
+      border-bottom: 1px solid #f1f3f4;
+    }
+    .notice-card .table td:nth-child(2) {
+      text-align: left;
+    }
+    .notice-card .table tbody tr:hover {
+      background: #f8f9fa;
     }
     .notice-card .table a {
-      color: #212529 !important; /* 검정 */
-      text-decoration: none !important;
+      color: #2c3e50;
+      text-decoration: none;
       font-weight: 500;
     }
     .notice-card .table a:hover {
-      text-decoration: underline !important;
+      color: #495057;
     }
-    @media (max-width: 767.98px) {
-      .main-content { padding: 0 0.3rem; }
-      .notice-card .table td { font-size: 0.98rem; }
+    
+    /* 입고 카드 */
+    .receiving-card .card-header {
+      background: #007bff;
+      border: none;
+      padding: 0.75rem 1.25rem;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
     }
-    /* 입고/출고 카드 */
-    .inout-row > .col-md-12 {
-      padding-left: 0;
-      padding-right: 0;
+    
+    /* 출고 카드 */
+    .shipping-card .card-header {
+      background: #6c757d;
+      border: none;
+      padding: 0.75rem 1.25rem;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
     }
-    .inout-row .card {
-      margin-bottom: 0;
-      border-radius: 0 0 0.75rem 0.75rem;
+    
+    .inout-card .card-body {
+      padding: 0;
     }
-    .inout-card .table th,
-    .inout-card .table td {
-      font-size: 1.02rem;
-      padding: 0.65rem 0.2rem;
-      text-align: center;
+    .inout-card .table {
+      margin: 0;
     }
     .inout-card .table th {
-      background: #f4f4f4;
+      background: #f8f9fa;
+      font-weight: 600;
+      border-top: none;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 0.9rem;
+      padding: 0.6rem 0.5rem;
+      text-align: center;
+      color: #495057;
     }
+    .inout-card .table td {
+      font-size: 0.9rem;
+      padding: 0.6rem 0.5rem;
+      text-align: center;
+      border-bottom: 1px solid #f1f3f4;
+      vertical-align: middle;
+    }
+    .inout-card .table tbody tr:hover {
+      background: #f8f9fa;
+    }
+    
     @media (max-width: 991.98px) {
-      .main-content { max-width: 100%; }
-      .inout-card .table th, .inout-card .table td { font-size: 0.95rem; }
+      .main-content { 
+        max-width: 100%; 
+        padding: 1rem 0.75rem;
+      }
+      .col-md-6 {
+        margin-bottom: 1rem;
+      }
+    }
+    
+    @media (max-width: 767.98px) {
+      .main-content { 
+        padding: 1rem 0.5rem;
+      }
+      .notice-card .table th, 
+      .notice-card .table td,
+      .inout-card .table th, 
+      .inout-card .table td { 
+        font-size: 0.8rem; 
+        padding: 0.5rem 0.3rem;
+      }
     }
   </style>
 </head>
@@ -67,120 +167,111 @@
   <div th:replace="~{fragments/sidebar :: layout}"></div>
 
   <div class="main-content">
-    <!-- 공지사항 5건 -->
+    <!-- 공지사항 -->
+    <div class="card custom-card notice-card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5>공지사항</h5>
+        <a href="/notice/list" class="btn btn-outline-primary">전체보기</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th style="width:60px">번호</th>
+              <th>제목</th>
+              <th style="width:100px">작성자</th>
+              <th style="width:110px">작성일</th>
+              <th style="width:70px">조회수</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${recentNotices == null or #lists.isEmpty(recentNotices)}">
+              <td colspan="5" class="text-center text-muted py-3">등록된 공지사항이 없습니다.</td>
+            </tr>
+            <tr th:each="notice, iterStat : ${recentNotices}" th:unless="${recentNotices == null or #lists.isEmpty(recentNotices)}">
+              <td th:text="${#lists.size(recentNotices) - iterStat.index}"></td>
+              <td>
+                <a th:href="@{/notice/{id}(id=${notice.noticeId})}" 
+                   th:text="${notice.title}">
+                </a>
+              </td>
+              <td>관리자</td>
+              <td th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}"></td>
+              <td th:text="${notice.views}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-<section class="mb-4 mt-3">
-  <div class="card shadow-sm notice-card">
-    <div class="card-header bg-white d-flex align-items-center justify-content-between">
-      <h5 class="mb-0">공지사항</h5>
-      <a href="/notice/list" class="btn btn-sm btn-outline-primary">전체보기</a>
+    <!-- 입출고 현황 -->
+    <div class="row g-3">
+      <!-- 입고 -->
+      <div class="col-md-6">
+        <div class="card custom-card inout-card receiving-card h-100">
+          <div class="card-header">최근 입고</div>
+          <div class="card-body">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>입고번호</th>
+                  <th>일자</th>
+                  <th>제품명</th>
+                  <th>수량</th>
+                  <th>창고</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="item : ${recentReceivingList}">
+                  <td th:text="${item.inoutId}"></td>
+                  <td th:text="${item.inoutTime.substring(0, 10)}"></td>
+                  <td th:text="${item.itemName}"></td>
+                  <td th:text="${item.quantity}"></td>
+                  <td th:text="${item.whName}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentReceivingList)}">
+                  <td colspan="5" class="text-center text-muted py-3">최근 입고 내역이 없습니다.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 출고 -->
+      <div class="col-md-6">
+        <div class="card custom-card inout-card shipping-card h-100">
+          <div class="card-header">최근 출고</div>
+          <div class="card-body">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>출고번호</th>
+                  <th>일자</th>
+                  <th>제품명</th>
+                  <th>수량</th>
+                  <th>창고</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="item : ${recentShipmentList}">
+                  <td th:text="${item.inoutId}"></td>
+                  <td th:text="${item.inoutTime.substring(0, 10)}"></td>
+                  <td th:text="${item.itemName}"></td>
+                  <td th:text="${item.quantity}"></td>
+                  <td th:text="${item.whName}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentShipmentList)}">
+                  <td colspan="5" class="text-center text-muted py-3">최근 출고 내역이 없습니다.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="table-responsive">
-      <table class="table mb-0">
-        <thead>
-          <tr>
-            <th style="width:60px">번호</th>
-            <th>제목</th>
-            <th style="width:120px">작성자</th>
-            <th style="width:140px">작성일</th>
-            <th style="width:80px">조회수</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:if="${recentNotices == null or #lists.isEmpty(recentNotices)}">
-            <td colspan="5" class="text-center text-muted">등록된 공지사항이 없습니다.</td>
-          </tr>
-          <tr th:each="notice : ${recentNotices}" th:unless="${recentNotices == null or #lists.isEmpty(recentNotices)}">
-            <td th:text="${notice.noticeId}"></td>
-            <td>
-              <a th:href="@{/notice/{id}(id=${notice.noticeId})}" 
-                 style="color: #212529 !important; text-decoration: none !important; font-weight: 500;"
-                 th:text="${notice.title}">
-              </a>
-            </td>
-            <td th:text="${notice.authorName ?: '관리자'}"></td>
-            <td th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}"></td>
-            <td th:text="${notice.views}"></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+
   </div>
-</section>
-    
-    
-    
-    <!-- 입출고: 공지사항과 폭 동일하게 한 줄로 split -->
-    <div class="row g-4 inout-row">
-      <div class="col-md-12">
-        <div class="row g-4">
-          <!-- 입고 리스트 -->
-          <div class="col-md-6">
-            <div class="card h-100 shadow inout-card">
-              <div class="card-header bg-primary text-white">최근 입고</div>
-              <div class="card-body p-2">
-                <table class="table table-hover mb-0">
-                  <thead>
-                    <tr>
-                      <th>입고번호</th>
-                      <th>일자</th>
-                      <th>제품명</th>
-                      <th>수량</th>
-                      <th>창고</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr th:each="item : ${recentReceivingList}">
-                      <td th:text="${item.inoutId}"></td>
-                      <td th:text="${item.inoutTime.substring(0, 10)}"></td>
-                      <td th:text="${item.itemName}"></td>
-                      <td th:text="${item.quantity}"></td>
-                      <td th:text="${item.whName}"></td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(recentReceivingList)}">
-                      <td colspan="5" class="text-center text-muted">최근 입고 내역이 없습니다.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <!-- 출고 리스트 -->
-          <div class="col-md-6">
-            <div class="card h-100 shadow inout-card">
-              <div class="card-header bg-success text-white">최근 출고</div>
-              <div class="card-body p-2">
-                <table class="table table-hover mb-0">
-                  <thead>
-                    <tr>
-                      <th>출고번호</th>
-                      <th>일자</th>
-                      <th>제품명</th>
-                      <th>수량</th>
-                      <th>창고</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr th:each="item : ${recentShipmentList}">
-                      <td th:text="${item.inoutId}"></td>
-                      <td th:text="${item.inoutTime.substring(0, 10)}"></td>
-                      <td th:text="${item.itemName}"></td>
-                      <td th:text="${item.quantity}"></td>
-                      <td th:text="${item.whName}"></td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(recentShipmentList)}">
-                      <td colspan="5" class="text-center text-muted">최근 출고 내역이 없습니다.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div> <!-- row -->
-      </div> <!-- col-md-12 -->
-    </div> <!-- inout-row -->
-
-  </div> <!-- main-content -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script th:src="@{/js/sidebar.js}"></script>
 </body>

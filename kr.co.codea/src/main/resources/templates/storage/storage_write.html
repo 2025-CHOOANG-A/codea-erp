@@ -4,100 +4,257 @@
     </th:block>
 
     <div class="main-content" id="mainContent" style="max-width: 900px; margin: 40px auto 0 auto;">
-        <h5 class="fw-bold mb-3" th:text="${formTitle ?: '창고 정보 등록'}">창고 정보 등록</h5>
-        <form id="warehouseForm" novalidate method="post">
-            <input type="hidden" id="whId" name="whId" th:if="${storage != null}" th:value="${storage?.whId}">
-            <input type="hidden" name="_method" value="put" th:if="${storage != null}">
+        <!-- 헤더 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-building me-2"></i>
+                <span th:text="${formTitle ?: '창고 정보 등록'}">창고 정보 등록</span>
+            </h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/storage" class="text-decoration-none">창고 목록</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page" 
+                        th:text="${storage != null ? '수정' : '등록'}">등록</li>
+                </ol>
+            </nav>
+        </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle mb-0" style="background: #fafbfc;">
-                    <tbody>
-                        <tr>
-                            <th class="bg-light text-end" style="width:180px;"><label for="whCode" class="form-label mb-0">창고 코드<span class="form-required">*</span></label></th>
-                            <td>
-                                <input type="text" class="form-control" id="whCode" name="whCode" placeholder="창고 코드" required th:value="${storage?.whCode}">
-                                <div class="invalid-feedback">창고 코드를 입력해주세요.</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light text-end"><label for="whName" class="form-label mb-0">창고 명<span class="form-required">*</span></label></th>
-                            <td>
-                                <input type="text" class="form-control" id="whName" name="whName" placeholder="창고 명" required th:value="${storage?.whName}">
-                                <div class="invalid-feedback">창고명을 입력해주세요.</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light text-end"><label for="postCode" class="form-label mb-0">우편번호<span class="form-required">*</span></label></th>
-                            <td>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="postCode" name="postCode" placeholder="우편번호" readonly required th:value="${storage?.postCode}">
-                                    <button class="btn btn-primary" type="button" onclick="searchPostcode()">검색</button>
-                                </div>
-                                <div class="invalid-feedback">우편번호를 검색해주세요.</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light text-end"><label for="address" class="form-label mb-0">창고 주소<span class="form-required">*</span></label></th>
-                            <td>
-                                <input type="text" class="form-control" id="address" name="address" placeholder="주소" readonly required th:value="${storage?.address}">
-                                <div class="invalid-feedback">주소를 검색해주세요.</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light text-end"><label for="addressDetail" class="form-label mb-0">상세주소<span class="form-required">*</span></label></th>
-                            <td>
-                                <input type="text" class="form-control" id="addressDetail" name="addressDetail" placeholder="상세주소" required th:value="${storage?.addressDetail}">
-                                <div class="invalid-feedback">상세 주소를 입력해주세요.</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light text-end"><label for="empName" class="form-label mb-0">담당자 명<span class="form-required">*</span></label></th>
-                            <td>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="empName" name="empName" placeholder="담당자 명" required readonly th:value="${storage?.empName}">
-                                    <button class="btn btn-outline-secondary" type="button" id="searchEmployeeBtn">검색</button>
-                                    <button class="btn btn-outline-danger" type="button" id="clearEmployeeBtn">X</button>
-                                </div>
-                                <div class="invalid-feedback">담당자 명을 입력해주세요.</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light text-end"><label for="empNo" class="form-label mb-0">담당자 사번<span class="form-required">*</span></label></th>
-                            <td>
-                                <input type="text" class="form-control" id="empNo" name="empNo" placeholder="담당자 사번" required readonly th:value="${storage?.empNo}">
-                                <div class="invalid-feedback">담당자 코드를 입력해주세요.</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light text-end"><label for="tel" class="form-label mb-0">창고 전화번호<span class="form-required">*</span></label></th>
-                            <td>
-                                <input type="tel" class="form-control" id="tel" name="tel" placeholder="창고 전화번호 (예: 010-1234-5678)" required th:value="${storage?.tel}">
-                                <div class="invalid-feedback">창고 전화번호를 입력해주세요.</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="bg-light text-end"><label for="remark" class="form-label mb-0">비고</label></th>
-                            <td>
-                                <textarea class="form-control" id="remark" name="remark" rows="3" maxlength="100" placeholder="비고" th:text="${storage?.remark}"></textarea>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <form id="warehouseForm" novalidate method="post">
+            <!-- 수정인 경우 hidden 필드들 -->
+            <div th:if="${storage != null}">
+                <input type="hidden" name="_method" value="put">
+                <input type="hidden" id="whId" name="whId" th:value="${storage.whId}">
             </div>
 
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-1"></i>기본 정보
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <tbody>
+                                <!-- 창고 코드 -->
+                                <tr>
+                                    <th class="text-end align-middle" style="width:180px;">
+                                        <label for="whCode" class="form-label mb-0">
+                                            창고 코드<span class="text-danger">*</span>
+                                        </label>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" id="whCode" name="whCode" 
+                                               placeholder="예: WH001" required maxlength="20"
+                                               th:value="${storage?.whCode}">
+                                        <div class="invalid-feedback">창고 코드를 입력해주세요.</div>
+                                        <small class="form-text text-muted">영문+숫자 조합, 최대 20자</small>
+                                    </td>
+                                </tr>
+
+                                <!-- 창고명 -->
+                                <tr>
+                                    <th class="text-end align-middle">
+                                        <label for="whName" class="form-label mb-0">
+                                            창고명<span class="text-danger">*</span>
+                                        </label>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" id="whName" name="whName" 
+                                               placeholder="예: 서울 1창고" required maxlength="100"
+                                               th:value="${storage?.whName}">
+                                        <div class="invalid-feedback">창고명을 입력해주세요.</div>
+                                    </td>
+                                </tr>
+
+                                <!-- 우편번호 -->
+                                <tr>
+                                    <th class="text-end align-middle">
+                                        <label for="postCode" class="form-label mb-0">
+                                            우편번호<span class="text-danger">*</span>
+                                        </label>
+                                    </th>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="postCode" name="postCode" 
+                                                   placeholder="우편번호" readonly required maxlength="5"
+                                                   th:value="${storage?.postCode}">
+                                            <button class="btn btn-primary" type="button" onclick="searchPostcode()">
+                                                <i class="bi bi-search me-1"></i>검색
+                                            </button>
+                                        </div>
+                                        <div class="invalid-feedback">우편번호를 검색해주세요.</div>
+                                    </td>
+                                </tr>
+
+                                <!-- 주소 -->
+                                <tr>
+                                    <th class="text-end align-middle">
+                                        <label for="address" class="form-label mb-0">
+                                            주소<span class="text-danger">*</span>
+                                        </label>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" id="address" name="address" 
+                                               placeholder="주소" readonly required maxlength="200"
+                                               th:value="${storage?.address}">
+                                        <div class="invalid-feedback">주소를 검색해주세요.</div>
+                                    </td>
+                                </tr>
+
+                                <!-- 상세주소 -->
+                                <tr>
+                                    <th class="text-end align-middle">
+                                        <label for="addressDetail" class="form-label mb-0">
+                                            상세주소<span class="text-danger">*</span>
+                                        </label>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" id="addressDetail" name="addressDetail" 
+                                               placeholder="상세주소" required maxlength="200"
+                                               th:value="${storage?.addressDetail}">
+                                        <div class="invalid-feedback">상세 주소를 입력해주세요.</div>
+                                    </td>
+                                </tr>
+
+                                <!-- 담당자명 -->
+                                <tr>
+                                    <th class="text-end align-middle">
+                                        <label for="empName" class="form-label mb-0">
+                                            담당자명<span class="text-danger">*</span>
+                                        </label>
+                                    </th>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="empName" name="empName" 
+                                                   placeholder="담당자명" required readonly 
+                                                   th:value="${storage?.empName}">
+                                            <button class="btn btn-outline-secondary" type="button" id="searchEmployeeBtn">
+                                                <i class="bi bi-search me-1"></i>검색
+                                            </button>
+                                            <button class="btn btn-outline-danger" type="button" id="clearEmployeeBtn">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                        <div class="invalid-feedback">담당자를 선택해주세요.</div>
+                                    </td>
+                                </tr>
+
+                                <!-- 담당자 사번 -->
+                                <tr>
+                                    <th class="text-end align-middle">
+                                        <label for="empNo" class="form-label mb-0">
+                                            담당자 사번<span class="text-danger">*</span>
+                                        </label>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" id="empNo" name="empNo" 
+                                               placeholder="담당자 사번" required readonly 
+                                               th:value="${storage?.empNo}">
+                                        <div class="invalid-feedback">담당자 사번이 필요합니다.</div>
+                                    </td>
+                                </tr>
+
+                                <!-- 비고 -->
+                                <tr>
+                                    <th class="text-end align-top" style="padding-top: 0.75rem;">
+                                        <label for="remark" class="form-label mb-0">비고</label>
+                                    </th>
+                                    <td>
+                                        <textarea class="form-control" id="remark" name="remark" rows="4" 
+                                                  maxlength="500" placeholder="창고 관련 특이사항을 입력하세요."
+                                                  th:text="${storage?.remark}"></textarea>
+                                        <div class="form-text">
+                                            <span id="remarkCount">0</span>/500자
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 수정 시 추가 정보 표시 -->
+            <div class="card mt-3" th:if="${storage != null}">
+                <div class="card-header bg-light">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-clock-history me-1"></i>등록/수정 정보
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">등록일시</small>
+                            <div th:if="${storage.createdAt}" 
+                                 th:text="${#temporals.format(storage.createdAt, 'yyyy-MM-dd HH:mm:ss')}">
+                                등록일시
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">수정일시</small>
+                            <div th:if="${storage.updatedAt}" 
+                                 th:text="${#temporals.format(storage.updatedAt, 'yyyy-MM-dd HH:mm:ss')}">
+                                수정일시
+                            </div>
+                            <div th:unless="${storage.updatedAt}" class="text-muted">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 메시지 영역 -->
             <div id="formMessage" class="mt-3"></div>
 
-            <div class="btn-group-bottom">
-                <button type="submit" class="btn btn-dark" th:text="${submitButtonText ?: '등록'}">등록</button>
-                <button type="button" class="btn btn-light border" id="cancelBtn">취소</button>
+            <!-- 버튼 영역 -->
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" class="btn btn-outline-secondary" id="cancelBtn">
+                    <i class="bi bi-arrow-left me-1"></i>취소
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>
+                    <span th:text="${submitButtonText ?: '등록'}">등록</span>
+                </button>
             </div>
         </form>
     </div>
 
+    <!-- 모달들 -->
     <div class="modal fade" id="customAlertModal" tabindex="-1" aria-labelledby="customAlertModalLabel" aria-hidden="true"></div>
     <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true"></div>
-    <div class="modal fade" id="employeeSearchModal" tabindex="-1" aria-labelledby="employeeSearchModalLabel" aria-hidden="true"></div>
+    
+    <!-- 사원 검색 모달 -->
+    <div class="modal fade" id="employeeSearchModal" tabindex="-1" aria-labelledby="employeeSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeSearchModalLabel">
+                        <i class="bi bi-person-search me-2"></i>담당자 검색
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="employeeSearchInput" 
+                               placeholder="사원명 또는 사번으로 검색">
+                        <button class="btn btn-primary" type="button" onclick="searchEmployees()">
+                            <i class="bi bi-search me-1"></i>검색
+                        </button>
+                    </div>
+                    <div id="employeeSearchResults">
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-search display-4"></i>
+                            <div class="mt-2">사원명 또는 사번을 입력하여 검색하세요.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- 다음 우편번호 서비스 -->
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script th:src="@{/js/storage_write.js}"></script>
 </div>

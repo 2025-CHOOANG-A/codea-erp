@@ -1,116 +1,374 @@
 <div th:fragment="contentFragment">
-
-<th:block th:fragment="headFragment">
-    <link rel="stylesheet" th:href="@{/css/storage_list.css}" />
-</th:block>
+    <th:block th:fragment="headFragment">
+        <link rel="stylesheet" th:href="@{/css/storage_list.css}" />
+    </th:block>
 
     <main class="main-content">
-      <div class="container">
-        <h2 class="mb-4">창고 목록</h2>
-        <form id="filterForm" class="filter-bar">
-<!--           <select
-            id="categoryFilter"
-            class="form-select"
-            aria-label="분류 선택"
-          >
-            <option value="all">전체</option>
-            <option value="customer">고객사</option>
-            <option value="supplier">구매처</option>
-          </select> -->
-          <input
-            type="text"
-            name="keyword"
-            id="warehouseCodeInput"
-            class="form-control"
-            placeholder="창고 코드,이름 검색"
-            maxlength="20"
-            th:value="${searchDto.keyword}"
-          />
-<!--           <select id="sortName" class="form-select" aria-label="정렬">
-</select> -->
-          <button id="searchBtn" type="submit" class="btn btn-primary">검색</button>
-        </form>
+        <div class="container">
+            <h2 class="mb-4">창고 목록</h2>
+            
+            <!-- 검색 폼 -->
+            <form id="filterForm" class="filter-bar" th:action="@{/storage}" method="get">
+                <input type="text" name="keyword" class="form-control" placeholder="창고 코드, 이름 검색" maxlength="20" th:value="${searchDto.keyword}" />
+                <select name="size" class="form-select" onchange="this.form.submit()">
+                    <option value="10" th:selected="${searchDto.size == 10}">10개씩</option>
+                    <option value="20" th:selected="${searchDto.size == 20}">20개씩</option>
+                    <option value="50" th:selected="${searchDto.size == 50}">50개씩</option>
+                </select>
+                <button id="searchBtn" type="submit" class="btn btn-primary">검색</button>
+            </form>
 
-        <div class="table-responsive">
-          <table
-            id="warehouseTable"
-            class="table table-hover align-middle mb-0"
-          >
-            <thead class="table-light">
-              <tr>
-             	 <th scope="col">NO</th>
-                <th scope="col">창고 코드</th>
-                <th scope="col">창고명</th>
-                <th scope="col">창고 주소</th>
-                <th scope="col">담당자 명</th>
-                <th scope="col">비고</th>
-                <th scope="col">상세</th>
-              </tr>
-            </thead>
-            <tbody>
-           	<tr th:if="${storage.isEmpty()}" id="noDataRow">
-			 <td colspan="7" class="text-center text-secondary">데이터가 없습니다.</td>
-           </tr>
-           	<th:block th:unless="${storage.isEmpty()}">
-				<tr th:each="list, i : ${storage}">
-				<td th:text="${i.size - i.index}"></td>
-				<td th:text="${list.whCode}"></td>
-				<td th:text="${list.whName}"></td>
-				<td th:text="${list.address}"></td>
-				<td th:text="${list.empName}"></td>
-				<td th:text="${list.remark}"></td>
-				<td>
-				    <span th:unless="${list.remark}">-</span> <button type="button" class="btn btn-outline-secondary btn-sm detail-btn"
-				     th:data-wh-id="${list.whId}" th:text="'상세 보기'"></button>
-				</td>
-			</tr>
-			</th:block>
-           
-            </tbody>
-          </table>
-        </div>
+            <!-- 테이블 -->
+            <div class="table-responsive">
+                <table id="warehouseTable" class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">NO</th>
+                            <th scope="col">창고 코드</th>
+                            <th scope="col">창고명</th>
+                            <th scope="col">창고 주소</th>
+                            <th scope="col">담당자 명</th>
+                            <th scope="col">재고 현황</th>
+                            <th scope="col">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${storage.isEmpty()}">
+                            <td colspan="7" class="text-center text-secondary py-4">데이터가 없습니다.</td>
+                        </tr>
+                        <tr th:each="list, i : ${storage}"
+                            th:data-wh-id="${list.whId}"
+                            th:data-wh-code="${list.whCode}"
+                            th:data-wh-name="${list.whName}">
+                            <td th:text="${totalCount - ((currentPage - 1) * pageSize) - i.index}"></td>
+                            <td><span class="badge bg-secondary" th:text="${list.whCode}"></span></td>
+                            <td>
+                                <a href="javascript:void(0)" class="text-decoration-none fw-medium text-primary warehouse-name-link" th:text="${list.whName}"></a>
+                            </td>
+                            <td th:text="${list.address}"></td>
+                            <td th:text="${list.empName}"></td>
+                            <td>
+                                <div th:if="${list.totalItems != null and list.totalItems > 0}">
+                                    <small>현재: <span class="text-success" th:text="${#numbers.formatInteger(list.currentStock, 0, 'COMMA')}"></span></small><br>
+                                    <small>가용: <span class="text-primary" th:text="${#numbers.formatInteger(list.availableStock, 0, 'COMMA')}"></span></small><br>
+                                    <small class="text-muted"><span th:text="${list.totalItems}"></span>개 품목</small>
+                                </div>
+                                <small class="text-muted" th:unless="${list.totalItems != null and list.totalItems > 0}">재고 없음</small>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-info btn-sm detail-btn" title="상세 정보"><i class="bi bi-info-circle"></i></button>
+                                    <a th:href="@{/storage/{id}/edit(id=${list.whId})}" class="btn btn-outline-primary btn-sm" title="수정"><i class="bi bi-pencil"></i></a>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm inventory-list-btn" title="재고 목록"><i class="bi bi-boxes"></i></button>
+                                    <button type="button" class="btn btn-outline-success btn-sm transfer-btn" title="재고 이동"><i class="bi bi-arrow-left-right"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="table-footer-row">
-          <nav>
-            <ul id="pagination" class="pagination justify-content-center mb-0">
-              </ul>
-          </nav>
-          <div>
-            <a th:href="@{/storage/write}" class="btn btn-primary add-btn">등록</a>
-<!--             <button type="button" class="btn btn-outline-danger delete-btn">
-              삭제
-            </button> -->
-          </div>
+            <!-- 페이징 (생략 - 필요시 추가) -->
+
+            <div class="table-footer-row mt-3">
+                <div></div>
+                <div><a th:href="@{/storage/write}" class="btn btn-primary add-btn">등록</a></div>
+            </div>
         </div>
-      </div>
     </main>
 
-    <div
-      class="modal fade"
-      id="detailModal"
-      tabindex="-1"
-      aria-labelledby="detailModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="detailModalLabel">창고 상세 정보</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="닫기"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <table class="table table-bordered">
-              <tbody id="modalDetailBody">
-              </tbody>
-            </table>
-          </div>
+    <!-- 재고 목록 모달 -->
+    <div class="modal fade" id="inventoryListModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-boxes me-2"></i><span id="inventoryModalTitle">창고 재고 목록</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>품목코드</th>
+                                    <th>품목명</th>
+                                    <th class="text-end">현재고</th>
+                                    <th class="text-end">가용재고</th>
+                                    <th>단위</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryListTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-   <script th:src="@{/js/storage_list.js}"></script>
+
+    <!-- 재고 이동 모달 -->
+    <div class="modal fade" id="inventoryTransferModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-arrow-left-right me-2"></i>재고 이동 요청</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="transferForm" onsubmit="return false;">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">출발 창고</label>
+                                <select class="form-select" id="fromWarehouse" onchange="loadFromWarehouseItems()" required>
+                                    <option value="">창고를 선택하세요</option>
+                                    <option th:each="wh : ${storage}" th:value="${wh.whId}" th:text="|'[${wh.whCode}] ${wh.whName}'|"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">목적지 창고</label>
+                                <select class="form-select" id="toWarehouse" required>
+                                    <option value="">창고를 선택하세요</option>
+                                    <option th:each="wh : ${storage}" th:value="${wh.whId}" th:text="|'[${wh.whCode}] ${wh.whName}'|"></option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="fromWarehouseInventory" style="display: none;">
+                            <h6 class="mb-2">출발 창고 재고 목록 <small class="text-muted">(가용재고 > 0)</small></h6>
+                            <div class="table-responsive" style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: .25rem;">
+                                <table class="table table-hover table-sm mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>선택</th>
+                                            <th>품목코드</th>
+                                            <th>품목명</th>
+                                            <th class="text-end">가용재고</th>
+                                            <th>단위</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="fromWarehouseTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3 mt-3 align-items-end">
+                             <div class="col-md-7">
+                                <label class="form-label">선택된 품목</label>
+                                <input type="text" class="form-control" id="selectedItemDisplay" readonly placeholder="위 목록에서 품목을 선택하세요">
+                                <input type="hidden" id="selectedItemId">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">이동 요청 수량</label>
+                                <input type="number" class="form-control" id="transferQuantity" min="1" required>
+                            </div>
+                            <div class="col-md-2">
+                                <small>가용재고: <span id="availableStock" class="fw-bold">-</span></small>
+                            </div>
+                        </div>
+                         <div class="mb-3">
+                            <label class="form-label">이동 사유 (비고)</label>
+                            <textarea class="form-control" id="transferRemark" rows="2" placeholder="재고 이동 요청 사유를 입력하세요"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="executeTransfer()">
+                        <i class="bi bi-check-circle me-1"></i>요청 등록
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let targetWhIdForModal = null;
+
+        function formatNumber(num) {
+            if (num === null || num === undefined) return '0';
+            return num.toLocaleString('ko-KR');
+        }
+
+        async function showInventoryListModal(whId, whName) {
+            const modalEl = document.getElementById('inventoryListModal');
+            if (!modalEl) return;
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+            document.getElementById('inventoryModalTitle').textContent = `[${whName}] 재고 목록`;
+            const tableBody = document.getElementById('inventoryListTableBody');
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="spinner-border spinner-border-sm"></div></td></tr>';
+            
+            try {
+                const response = await fetch(`/inventory-transfer/api/warehouse/${whId}/items`);
+                if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
+                const items = await response.json();
+                
+                tableBody.innerHTML = '';
+                if (items.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">보유 재고가 없습니다.</td></tr>';
+                } else {
+                    items.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.itemCode || '-'}</td>
+                            <td>${item.itemName || '-'}</td>
+                            <td class="text-end">${formatNumber(item.currentStock)}</td>
+                            <td class="text-end fw-bold">${formatNumber(item.availableStock)}</td>
+                            <td>${item.itemUnit || '-'}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading inventory list:', error);
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">재고 목록을 불러오는 데 실패했습니다.</td></tr>';
+            }
+            modal.show();
+        }
+
+        async function loadFromWarehouseItems() {
+            const fromWhId = document.getElementById('fromWarehouse').value;
+            const inventoryDiv = document.getElementById('fromWarehouseInventory');
+            const tableBody = document.getElementById('fromWarehouseTableBody');
+            
+            document.getElementById('selectedItemDisplay').value = '';
+            document.getElementById('selectedItemId').value = '';
+            document.getElementById('availableStock').textContent = '-';
+            document.getElementById('transferQuantity').value = '';
+
+            if (!fromWhId) {
+                inventoryDiv.style.display = 'none';
+                return;
+            }
+            
+            inventoryDiv.style.display = 'block';
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="spinner-border spinner-border-sm"></div></td></tr>';
+            
+            try {
+                const response = await fetch(`/inventory-transfer/api/warehouse/${fromWhId}/items`);
+                if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
+                const items = await response.json();
+                
+                tableBody.innerHTML = '';
+                if (items.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">이동 가능한 재고가 없습니다.</td></tr>';
+                } else {
+                    items.forEach(item => {
+                        const row = document.createElement('tr');
+                        const itemJsonString = JSON.stringify(item).replace(/"/g, '&quot;');
+                        row.innerHTML = `
+                            <td><input type="radio" name="transferItem" class="form-check-input" onchange="selectTransferItem(${itemJsonString})"></td>
+                            <td>${item.itemCode || '-'}</td>
+                            <td>${item.itemName || '-'}</td>
+                            <td class="text-end fw-bold">${formatNumber(item.availableStock)}</td>
+                            <td>${item.itemUnit || '-'}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading warehouse items:', error);
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">재고를 불러오는 데 실패했습니다.</td></tr>';
+            }
+        }
+
+        function selectTransferItem(item) {
+            document.getElementById('selectedItemId').value = item.itemId;
+            document.getElementById('selectedItemDisplay').value = `[${item.itemCode}] ${item.itemName}`;
+            document.getElementById('availableStock').textContent = formatNumber(item.availableStock);
+            const quantityInput = document.getElementById('transferQuantity');
+            quantityInput.max = item.availableStock;
+            quantityInput.value = '1';
+            quantityInput.focus();
+        }
+
+        async function executeTransfer() {
+            const payload = {
+                itemId: parseInt(document.getElementById('selectedItemId').value) || null,
+                fromWhId: parseInt(document.getElementById('fromWarehouse').value) || null,
+                toWhId: parseInt(document.getElementById('toWarehouse').value) || null,
+                quantity: parseInt(document.getElementById('transferQuantity').value) || null,
+                remark: document.getElementById('transferRemark').value.trim(),
+            };
+
+            if (!payload.fromWhId) return alert('출발 창고를 선택해주세요.');
+            if (!payload.toWhId) return alert('목적지 창고를 선택해주세요.');
+            if (payload.fromWhId === payload.toWhId) return alert('출발 창고와 목적지 창고는 같을 수 없습니다.');
+            if (!payload.itemId) return alert('이동할 품목을 선택해주세요.');
+            if (!payload.quantity || payload.quantity <= 0) return alert('이동 수량을 1 이상 입력해주세요.');
+
+            const maxQuantity = parseInt(document.getElementById('transferQuantity').max);
+            if (payload.quantity > maxQuantity) {
+                return alert(`요청 수량이 가용 재고(${formatNumber(maxQuantity)})를 초과할 수 없습니다.`);
+            }
+
+            if (!confirm("재고 이동을 요청하시겠습니까?")) return;
+
+            try {
+                const response = await fetch('/inventory-transfer/api/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert(`재고 이동 요청이 등록되었습니다. (이동번호: ${result.transferNo})`);
+                    bootstrap.Modal.getInstance(document.getElementById('inventoryTransferModal')).hide();
+                    location.reload();
+                } else {
+                    alert(`요청 실패: ${result.message || '알 수 없는 오류가 발생했습니다.'}`);
+                }
+            } catch (error) {
+                console.error('Error during transfer execution:', error);
+                alert('요청 처리 중 오류가 발생했습니다. 관리자에게 문의하세요.');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const transferModalEl = document.getElementById('inventoryTransferModal');
+            if (!transferModalEl) return;
+            const transferModal = new bootstrap.Modal(transferModalEl);
+
+            document.querySelectorAll('.transfer-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    targetWhIdForModal = this.closest('tr').dataset.whId;
+                    transferModal.show();
+                });
+            });
+
+            // '재고 목록' 버튼 이벤트 리스너 추가
+            document.querySelectorAll('.inventory-list-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const whId = row.dataset.whId;
+                    const whName = row.dataset.whName;
+                    showInventoryListModal(whId, whName);
+                });
+            });
+
+            transferModalEl.addEventListener('show.bs.modal', function () {
+                document.getElementById('transferForm').reset();
+                document.getElementById('fromWarehouseInventory').style.display = 'none';
+
+                if (targetWhIdForModal) {
+                    const fromSelect = document.getElementById('fromWarehouse');
+                    fromSelect.value = targetWhIdForModal;
+                    if (fromSelect.value === targetWhIdForModal) {
+                        loadFromWarehouseItems();
+                    }
+                }
+            });
+
+            transferModalEl.addEventListener('hidden.bs.modal', function () {
+                targetWhIdForModal = null;
+            });
+        });
+    </script>
+</div>

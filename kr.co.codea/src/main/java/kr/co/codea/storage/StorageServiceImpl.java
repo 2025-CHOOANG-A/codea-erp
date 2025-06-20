@@ -1,0 +1,49 @@
+package kr.co.codea.storage;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class StorageServiceImpl implements StorageService {
+    private final StorageMapper mapper;
+    
+    public StorageServiceImpl(StorageMapper mapper) {
+        this.mapper = mapper;
+    }
+    
+    @Override
+    public List<StorageDTO> storageListByKeyword(StorageDTO dto) {
+        return mapper.selectStorageList(dto);
+    }
+    
+    @Override
+    public List<StorageDTO> storageListWithInventory(StorageDTO dto) {
+        return mapper.selectStorageWithInventory(dto);
+    }
+    
+    @Override
+    public int getStorageCount(StorageDTO dto) {
+        return mapper.selectStorageCount(dto);
+    }
+    
+    @Override
+    public StorageDTO getStorageDetailById(Integer whId) {
+        return mapper.selectStorageDetailById(whId);
+    }
+    
+    @Override
+    public int insertStorageList(StorageDTO dto) {
+        return mapper.insertStorageList(dto);
+    }
+    
+    @Override
+    public List<StorageDTO> searchEmpNo(String query) {
+        return mapper.searchEmpNo(query);
+    }
+    
+    @Override
+    public int updateStorage(StorageDTO dto) {
+        return mapper.updateStorage(dto);
+    }
+}
