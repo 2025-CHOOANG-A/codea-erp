@@ -22,7 +22,6 @@ public class NoticeController {
 
     private final NoticeService noticeService;
     
-    
     /**
      * 현재 로그인한 사용자의 EMP_ID 가져오기
      */
@@ -49,7 +48,6 @@ public class NoticeController {
                 .anyMatch(grantedAuthority -> 
                     grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
     }
-    
 
     /**
      * 공지사항 목록 페이지
@@ -76,7 +74,7 @@ public class NoticeController {
      * 공지사항 상세 보기
      */
     @GetMapping("/{noticeId}")
-    public String noticeDetail(@PathVariable (value = "noticeId")Long noticeId, Model model) {
+    public String noticeDetail(@PathVariable("noticeId") Long noticeId, Model model) {
         // 조회수 증가
         noticeService.increaseViews(noticeId);
         
@@ -86,6 +84,7 @@ public class NoticeController {
         }
         
         model.addAttribute("notice", notice);
+        model.addAttribute("isAdmin", isAdmin());
         model.addAttribute("templateName", "notice/notice_detail");
         model.addAttribute("fragmentName", "contentFragment");
         
@@ -133,7 +132,7 @@ public class NoticeController {
      */
     @GetMapping("/{noticeId}/edit")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String noticeEdit(@PathVariable Long noticeId, Model model) {
+    public String noticeEdit(@PathVariable("noticeId") Long noticeId, Model model) {
         NoticeDTO notice = noticeService.getNoticeById(noticeId);
         if (notice == null) {
             return "redirect:/notice/list?error=notfound";
@@ -151,7 +150,7 @@ public class NoticeController {
      */
     @PostMapping("/{noticeId}/edit")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String noticeUpdate(@PathVariable Long noticeId, NoticeDTO dto) {
+    public String noticeUpdate(@PathVariable("noticeId") Long noticeId, NoticeDTO dto) {
         dto.setNoticeId(noticeId);
         
         if (noticeService.updateNotice(dto)) {
@@ -167,7 +166,7 @@ public class NoticeController {
     @PostMapping("/{noticeId}/delete")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> noticeDelete(@PathVariable Long noticeId) {
+    public ResponseEntity<Map<String, Object>> noticeDelete(@PathVariable("noticeId") Long noticeId) {
         Map<String, Object> result = new HashMap<>();
         
         if (noticeService.deleteNotice(noticeId)) {

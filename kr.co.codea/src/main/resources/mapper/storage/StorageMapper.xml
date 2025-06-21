@@ -1,106 +1,172 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.codea.storage.StorageMapper">
 
-<!-- <resultMap id="storageDTOMap" type="kr.co.codea.storage.StorageDTO">
-        <id property="whId" column="WH_ID"/>
-        <result property="whCode" column="WH_CODE"/>
-        <result property="whName" column="WH_NAME"/>
-        <result property="address" column="ADDRESS"/>
-        <result property="addressDetail" column="ADDRESS_DETAIL"/>
-        <result property="tel" column="TEL"/> <result property="postCode" column="POST_CODE"/>
-        <result property="remark" column="REMARK"/>
-        <result property="empNo" column="EMP_NO"/>
-        <result property="empName" column="EMP_NAME"/>
-        <result property="empTel" column="EMPTEL"/> </resultMap> -->
-        
-        
-
-<!-- 공통코드 검색 api -->
-<resultMap id="CommonCode" type="kr.co.codea.client.CommonCodeDTO">
-    <id property="codeId" column="CODE_ID"/>
-    <result property="codeType" column="CODE_TYPE"/>
-    <result property="code" column="CODE"/>
-    <result property="codeDesc" column="CODE_DESC"/>
-</resultMap>
-
-  <!--사원검색 -->
-      <select id="searchEmpNo" resultType="kr.co.codea.storage.StorageDTO">
+    <!--사원검색 -->
+    <select id="searchEmpNo" resultType="kr.co.codea.storage.StorageDTO">
         SELECT
-            EMP_NO,   EMP_NAME  FROM
-            EMPLOYEE  <where>
+            EMP_NO, EMP_NAME 
+        FROM EMPLOYEE 
+        <where>
             <if test="query != null and !query.isEmpty()">
                 (LOWER(EMP_NAME) LIKE '%' || LOWER(#{query}) || '%' OR
-                 LOWER(EMP_NO) LIKE '%' || LOWER(#{query}) || '%')
+                LOWER(EMP_NO) LIKE '%' || LOWER(#{query}) || '%')
             </if>
         </where>
         ORDER BY EMP_NO ASC
     </select>
-    
-<!--창고 리스트 + 검색  -->
-    <select id="selectStorageList" resultType="kr.co.codea.storage.StorageDTO"> SELECT
+
+    <!-- 창고 리스트 총 개수 조회 -->
+    <select id="selectStorageCount" resultType="int">
+        SELECT COUNT(*)
+        FROM WAREHOUSE w
+        JOIN EMPLOYEE e ON w.EMP_NO = e.EMP_NO
+        <where>
+            <if test="dto.keyword != null and dto.keyword != ''">
+                AND (w.WH_CODE LIKE '%' || #{dto.keyword} || '%' OR 
+                     w.WH_NAME LIKE '%' || #{dto.keyword} || '%')
+            </if>
+        </where>
+    </select>
+
+    <!--창고 리스트 + 검색 + 페이징 (Oracle 방식) -->
+    <select id="selectStorageList" resultType="kr.co.codea.storage.StorageDTO">
+        SELECT *
+        FROM (
+            SELECT 
+                w.WH_ID,
+                w.WH_CODE,
+                w.WH_NAME,
+                w.ADDRESS,
+                w.ADDRESS_DETAIL,
+                w.REMARK,
+                w.EMP_NO,
+                w.POST_CODE,
+                w.CREATED_AT,
+                w.UPDATED_AT,
+                e.EMP_NAME,
+                e.TEL as empTel,
+                ROW_NUMBER() OVER (ORDER BY w.WH_ID DESC) as rnum
+            FROM WAREHOUSE w
+            JOIN EMPLOYEE e ON w.EMP_NO = e.EMP_NO
+            <where>
+                <if test="dto.keyword != null and dto.keyword != ''">
+                    AND (w.WH_CODE LIKE '%' || #{dto.keyword} || '%' OR 
+                         w.WH_NAME LIKE '%' || #{dto.keyword} || '%')
+                </if>
+            </where>
+        )
+        WHERE rnum BETWEEN #{dto.offset} + 1 AND #{dto.offset} + #{dto.size}
+    </select>
+
+    <!-- 창고별 재고 현황 포함 조회 -->
+    <select id="selectStorageWithInventory" resultType="kr.co.codea.storage.StorageDTO">
+        SELECT 
             w.WH_ID,
             w.WH_CODE,
             w.WH_NAME,
             w.ADDRESS,
             w.ADDRESS_DETAIL,
-            w.TEL,
-            w.POST_CODE,
             w.REMARK,
             w.EMP_NO,
-            e.EMP_NAME 
-            FROM WAREHOUSE w
+            w.POST_CODE,
+            w.CREATED_AT,
+            w.UPDATED_AT,
+            e.EMP_NAME,
+            e.TEL as empTel,
+            COALESCE(inv_summary.total_items, 0) as totalItems,
+            COALESCE(inv_summary.current_stock, 0) as currentStock,
+            COALESCE(inv_summary.expected_stock, 0) as expectedStock,
+            COALESCE(inv_summary.allocated_stock, 0) as allocatedStock,
+            COALESCE(inv_summary.available_stock, 0) as availableStock
+        FROM (
+            SELECT *
+            FROM (
+                SELECT 
+                    w2.*,
+                    ROW_NUMBER() OVER (ORDER BY w2.WH_ID DESC) as rnum
+                FROM WAREHOUSE w2
+                <where>
+                    <if test="dto.keyword != null and dto.keyword != ''">
+                        AND (w2.WH_CODE LIKE '%' || #{dto.keyword} || '%' OR 
+                             w2.WH_NAME LIKE '%' || #{dto.keyword} || '%')
+                    </if>
+                </where>
+            )
+            WHERE rnum BETWEEN #{dto.offset} + 1 AND #{dto.offset} + #{dto.size}
+        ) w
         JOIN EMPLOYEE e ON w.EMP_NO = e.EMP_NO
-        <where>
-            <if test="dto.keyword != null and dto.keyword != ''">
-                AND (WH_CODE LIKE '%' || #{dto.keyword} || '%' OR WH_NAME LIKE '%' || #{dto.keyword} || '%' )
-            </if>
-        </where>
-       ORDER BY WH_ID DESC
+        LEFT JOIN (
+            SELECT 
+                WH_ID,
+                COUNT(*) as total_items,
+                SUM(CURRENT_QTY) as current_stock,
+                SUM(EXPECTED_QTY) as expected_stock,
+                SUM(ALLOCATED_QTY) as allocated_stock,
+                SUM(CURRENT_QTY + EXPECTED_QTY - ALLOCATED_QTY) as available_stock
+            FROM INVENTORY 
+            GROUP BY WH_ID
+        ) inv_summary ON w.WH_ID = inv_summary.WH_ID
+        ORDER BY w.WH_ID DESC
     </select>
 
-<!--창고 상세정보  -->
+    <!--창고 상세정보 -->
+    <select id="selectStorageDetailById" resultType="kr.co.codea.storage.StorageDTO">
+        SELECT
+            w.WH_ID,
+            w.WH_CODE,
+            w.WH_NAME,
+            w.ADDRESS,
+            w.ADDRESS_DETAIL,
+            w.REMARK,
+            w.EMP_NO,
+            w.POST_CODE,
+            w.CREATED_AT,
+            w.UPDATED_AT,
+            e.EMP_NAME,
+            e.TEL as empTel,
+            COALESCE(inv_summary.total_items, 0) as totalItems,
+            COALESCE(inv_summary.current_stock, 0) as currentStock,
+            COALESCE(inv_summary.expected_stock, 0) as expectedStock,
+            COALESCE(inv_summary.allocated_stock, 0) as allocatedStock,
+            COALESCE(inv_summary.available_stock, 0) as availableStock
+        FROM WAREHOUSE w
+        JOIN EMPLOYEE e ON w.EMP_NO = e.EMP_NO
+        LEFT JOIN (
+            SELECT 
+                WH_ID,
+                COUNT(*) as total_items,
+                SUM(CURRENT_QTY) as current_stock,
+                SUM(EXPECTED_QTY) as expected_stock,
+                SUM(ALLOCATED_QTY) as allocated_stock,
+                SUM(CURRENT_QTY + EXPECTED_QTY - ALLOCATED_QTY) as available_stock
+            FROM INVENTORY 
+            GROUP BY WH_ID
+        ) inv_summary ON w.WH_ID = inv_summary.WH_ID
+        WHERE w.WH_ID = #{whId}
+    </select>
 
-<select id="selectStorageDetailById" resultType="kr.co.codea.storage.StorageDTO">
-SELECT
-	w.WH_ID,
-	w.WH_CODE,
-	w.WH_NAME,
-	w.ADDRESS,
-	w.ADDRESS_DETAIL,
-	w.TEL,
-	w.POST_CODE,
-	w.REMARK,
-	w.EMP_NO,
-	e.EMP_NAME,
-	e.TEL as empTel
-FROM WAREHOUSE w
-JOIN EMPLOYEE e ON w.EMP_NO = e.EMP_NO
-WHERE w.WH_ID = #{whId}
-</select>
+    <!-- 창고업데이트 -->
+    <update id="updateStorage">
+        UPDATE WAREHOUSE
+        SET
+            WH_CODE = #{whCode},
+            WH_NAME = #{whName},
+            REMARK = #{remark},
+            EMP_NO = #{empNo},
+            ADDRESS = #{address},
+            ADDRESS_DETAIL = #{addressDetail},
+            POST_CODE = #{postCode}
+        WHERE WH_ID = #{whId}
+    </update>
 
-<!-- 창고업데이트 -->
-<update id="updateStorage">
-UPDATE WAREHOUSE
-SET
-    WH_CODE = #{whCode},
-    WH_NAME = #{whName},
-    REMARK = #{remark},
-    TEL = #{tel},
-    EMP_NO = #{empNo}
-WHERE WH_ID = #{whId}
-</update>
-
-
-
-<!-- 창고등록 -->
-<insert id="insertStorageList" parameterType="kr.co.codea.storage.StorageDTO">
-INSERT INTO WAREHOUSE
-( WH_CODE, WH_NAME, ADDRESS, ADDRESS_DETAIL, REMARK, TEL, POST_CODE, EMP_NO )
-VALUES
-( #{whCode}, #{whName}, #{address}, #{addressDetail}, #{remark}, #{tel}, #{postCode}, #{empNo} )
-
-</insert>
+    <!-- 창고등록 -->
+    <insert id="insertStorageList" parameterType="kr.co.codea.storage.StorageDTO">
+        INSERT INTO WAREHOUSE
+        ( WH_CODE, WH_NAME, ADDRESS, ADDRESS_DETAIL, REMARK, POST_CODE, EMP_NO )
+        VALUES
+        ( #{whCode}, #{whName}, #{address}, #{addressDetail}, #{remark}, #{postCode}, #{empNo} )
+    </insert>
 </mapper>
