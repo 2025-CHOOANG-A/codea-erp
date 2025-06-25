@@ -48,16 +48,19 @@ public class InventoryTransferServiceImpl implements InventoryTransferService {
         }
         
         // 2. 재고 이동 '요청' 등록 (상태: '대기')
-        // 이 단계에서 INOUT 테이블에 가출고/가입고가 등록되는 로직을 추가할 수 있습니다.
-        // 현재는 INVENTORY_TRANSFER 테이블에만 기록합니다.
+        // TRANSFER_NO는 데이터베이스 트리거에서 자동 생성됩니다
         int insertResult = mapper.insertTransfer(dto);
         if (insertResult == 0) {
             throw new RuntimeException("재고 이동 요청 등록에 실패했습니다. 트랜잭션이 롤백됩니다.");
         }
         
+        // 3. 생성된 데이터를 다시 조회하여 TRANSFER_NO 가져오기
+        InventoryTransferDTO createdTransfer = mapper.selectTransferDetail(dto.getTransferId());
+        String transferNo = createdTransfer != null ? createdTransfer.getTransferNo() : "생성됨";
+        
         result.put("success", true);
         result.put("message", "재고 이동 요청이 성공적으로 등록되었습니다.");
-        result.put("transferNo", dto.getTransferNo());
+        result.put("transferNo", transferNo);
         
         return result;
     }

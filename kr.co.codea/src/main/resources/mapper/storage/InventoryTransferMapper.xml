@@ -77,7 +77,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE ITEM_ID = #{itemId} AND WH_ID = #{whId}
     </select>
 
-
     <!-- 재고 이동 상세 조회 -->
     <select id="selectTransferDetail" parameterType="int" resultType="kr.co.codea.storage.InventoryTransferDTO">
         SELECT
@@ -98,17 +97,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE it.TRANSFER_ID = #{transferId}
     </select>
 
-    <!-- 재고 이동 요청 등록 -->
-    <insert id="insertTransfer" parameterType="kr.co.codea.storage.InventoryTransferDTO">
-        <!-- FIX: 이동 번호(transferNo) 자동 생성을 위한 selectKey 추가 -->
-        <selectKey keyProperty="transferNo" resultType="String" order="BEFORE">
-            SELECT 'IT' || TO_CHAR(SYSDATE, 'YYYY') || LPAD(SEQ_INVENTORY_TRANSFER_NO.NEXTVAL, 5, '0') FROM DUAL
-        </selectKey>
+    <!-- 재고 이동 요청 등록 - selectKey 제거, 트리거에서 TRANSFER_NO 자동 생성 -->
+    <insert id="insertTransfer" parameterType="kr.co.codea.storage.InventoryTransferDTO" 
+            useGeneratedKeys="true" keyProperty="transferId" keyColumn="TRANSFER_ID">
         INSERT INTO INVENTORY_TRANSFER (
-            TRANSFER_NO, ITEM_ID, FROM_WH_ID, TO_WH_ID,
+            ITEM_ID, FROM_WH_ID, TO_WH_ID,
             QUANTITY, STATUS, REMARK, EMP_ID, TRANSFER_DATE, CREATED_AT
         ) VALUES (
-            #{transferNo}, #{itemId}, #{fromWhId}, #{toWhId},
+            #{itemId}, #{fromWhId}, #{toWhId},
             #{quantity}, '대기', #{remark}, #{empId}, SYSDATE, SYSDATE
         )
     </insert>
