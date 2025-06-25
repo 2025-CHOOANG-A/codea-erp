@@ -1,14 +1,14 @@
-// storage_list.js - 간소화된 버전 (기존 스타일 유지)
+// storage_list.js - 창고 목록 페이지 전체 기능
 
+// DOM 요소 참조
 const searchBtn = document.getElementById("searchBtn");
 const filterForm = document.getElementById("filterForm");
+let targetWhIdForModal = null;
 
-// 검색 버튼 클릭 이벤트 리스너
-if (searchBtn) {
-    searchBtn.addEventListener("click", function(e) {
-        e.preventDefault();
-        submitSearchForm();
-    });
+// 숫자 포맷팅 함수
+function formatNumber(num) {
+    if (num === null || num === undefined) return '0';
+    return num.toLocaleString('ko-KR');
 }
 
 // 검색 제출 함수
@@ -28,7 +28,7 @@ function submitSearchForm() {
     }
 }
 
-// 상세보기 모달 표시
+// 창고 상세보기 모달 표시
 async function showDetail(whId) {
     if (!whId) {
         console.error("Error: whId is missing for detail view.");
@@ -49,7 +49,7 @@ async function showDetail(whId) {
 
         const item = await response.json();
 
-        // 모달 내용 설정
+        // 모달 기본 정보 설정
         const modalBody = document.getElementById("modalDetailBody");
         modalBody.innerHTML = `
             <tr><th>창고 ID</th><td>${item.whId || '-'}</td></tr>
@@ -106,10 +106,26 @@ async function showDetail(whId) {
             editBtn.href = `/storage/${item.whId}/edit`;
         }
         if (inventoryBtn) {
-            inventoryBtn.href = `/inventory?whId=${item.whId}`;
+            // 재고 관리 버튼을 클릭하면 재고 이동 모달로 이동
+            inventoryBtn.onclick = function(e) {
+                e.preventDefault();
+                // 상세 모달 닫기
+                bootstrap.Modal.getInstance(document.getElementById("detailModal")).hide();
+                // 재고 이동 모달 열기 (해당 창고를 출발 창고로 미리 선택)
+                targetWhIdForModal = item.whId;
+                const transferModal = new bootstrap.Modal(document.getElementById('inventoryTransferModal'));
+                transferModal.show();
+                
+                // 모달이 완전히 열린 후 창고 선택 및 재고 로드
+                setTimeout(() => {
+                    const fromSelect = document.getElementById('fromWarehouse');
+                    fromSelect.value = item.whId;
+                    loadFromWarehouseItems();
+                }, 300);
+            };
         }
 
-        // Bootstrap 모달 인스턴스 생성 및 표시
+        // 모달 표시
         const detailModal = new bootstrap.Modal(document.getElementById("detailModal"));
         detailModal.show();
         
@@ -119,69 +135,149 @@ async function showDetail(whId) {
     }
 }
 
-// 숫자 포맷팅 함수
-function formatNumber(num) {
-    if (num === null || num === undefined) return '0';
-    return new Intl.NumberFormat('ko-KR').format(num);
+// 재고 목록 모달 표시
+async function showInventoryListModal(whId, whName) {
+    const modalEl = document.getElementById('inventoryListModal');
+    if (!modalEl) return;
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    document.getElementById('inventoryModalTitle').textContent = `[${whName}] 재고 목록`;
+    const tableBody = document.getElementById('inventoryListTableBody');
+    tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="spinner-border spinner-border-sm"></div></td></tr>';
+    
+    try {
+        const response = await fetch(`/inventory-transfer/api/warehouse/${whId}/items`);
+        if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
+        const items = await response.json();
+        
+        tableBody.innerHTML = '';
+        if (items.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">보유 재고가 없습니다.</td></tr>';
+        } else {
+            items.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.itemCode || '-'}</td>
+                    <td>${item.itemName || '-'}</td>
+                    <td class="text-end">${formatNumber(item.currentStock)}</td>
+                    <td class="text-end fw-bold">${formatNumber(item.availableStock)}</td>
+                    <td>${item.itemUnit || '-'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading inventory list:', error);
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">재고 목록을 불러오는 데 실패했습니다.</td></tr>';
+    }
+    modal.show();
 }
 
-// DOMContentLoaded 이벤트 리스너
-document.addEventListener("DOMContentLoaded", () => {
-    // 폼 제출 시 기본 동작 방지
-    if (filterForm) {
-        filterForm.addEventListener("submit", function (e) {
-            e.preventDefault();
-            submitSearchForm();
-        });
+// 출발 창고 재고 목록 로드
+async function loadFromWarehouseItems() {
+    const fromWhId = document.getElementById('fromWarehouse').value;
+    const inventoryDiv = document.getElementById('fromWarehouseInventory');
+    const tableBody = document.getElementById('fromWarehouseTableBody');
+    
+    // 선택 상태 초기화
+    document.getElementById('selectedItemDisplay').value = '';
+    document.getElementById('selectedItemId').value = '';
+    document.getElementById('availableStock').textContent = '-';
+    document.getElementById('transferQuantity').value = '';
+
+    if (!fromWhId) {
+        inventoryDiv.style.display = 'none';
+        return;
     }
     
-    // 페이지 크기 변경 이벤트
-    const sizeSelect = document.querySelector('select[name="size"]');
-    if (sizeSelect) {
-        sizeSelect.addEventListener("change", function() {
-            const pageInput = filterForm.querySelector('input[name="page"]');
-            if (pageInput) {
-                pageInput.value = 1;
-            }
-            submitSearchForm();
-        });
-    }
+    inventoryDiv.style.display = 'block';
+    tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="spinner-border spinner-border-sm"></div></td></tr>';
     
-    // "상세 보기" 버튼 클릭 이벤트
-    document.querySelector("#warehouseTable tbody")?.addEventListener("click", function (e) {
-        if (e.target.closest(".detail-btn")) {
-            const btn = e.target.closest(".detail-btn");
-            const whId = btn.dataset.whId;
-            showDetail(whId);
+    try {
+        const response = await fetch(`/inventory-transfer/api/warehouse/${fromWhId}/items`);
+        if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
+        const items = await response.json();
+        
+        tableBody.innerHTML = '';
+        if (items.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">이동 가능한 재고가 없습니다.</td></tr>';
+        } else {
+            items.forEach(item => {
+                const row = document.createElement('tr');
+                const itemJsonString = JSON.stringify(item).replace(/"/g, '&quot;');
+                row.innerHTML = `
+                    <td><input type="radio" name="transferItem" class="form-check-input" onchange="selectTransferItem(${itemJsonString})"></td>
+                    <td>${item.itemCode || '-'}</td>
+                    <td>${item.itemName || '-'}</td>
+                    <td class="text-end fw-bold">${formatNumber(item.availableStock)}</td>
+                    <td>${item.itemUnit || '-'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
         }
-    });
-
-    // Enter 키로 검색
-    const searchInput = document.getElementById("warehouseCodeInput");
-    if (searchInput) {
-        searchInput.addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                submitSearchForm();
-            }
-        });
+    } catch (error) {
+        console.error('Error loading warehouse items:', error);
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">재고를 불러오는 데 실패했습니다.</td></tr>';
     }
-});
+}
 
-// 재고 이동 관련 JavaScript
-let warehouseList = [];
+// 이동할 품목 선택
+function selectTransferItem(item) {
+    document.getElementById('selectedItemId').value = item.itemId;
+    document.getElementById('selectedItemDisplay').value = `[${item.itemCode}] ${item.itemName}`;
+    document.getElementById('availableStock').textContent = formatNumber(item.availableStock);
+    const quantityInput = document.getElementById('transferQuantity');
+    quantityInput.max = item.availableStock;
+    quantityInput.value = '1';
+    quantityInput.focus();
+}
 
-// 재고 이동 모달이 열릴 때 창고 목록 로드
-document.addEventListener('DOMContentLoaded', function() {
-    const transferModal = document.getElementById('inventoryTransferModal');
-    if (transferModal) {
-        transferModal.addEventListener('show.bs.modal', function() {
-            loadWarehouses();
-        });
+// 재고 이동 실행
+async function executeTransfer() {
+    const payload = {
+        itemId: parseInt(document.getElementById('selectedItemId').value) || null,
+        fromWhId: parseInt(document.getElementById('fromWarehouse').value) || null,
+        toWhId: parseInt(document.getElementById('toWarehouse').value) || null,
+        quantity: parseInt(document.getElementById('transferQuantity').value) || null,
+        remark: document.getElementById('transferRemark').value.trim(),
+    };
+
+    // 유효성 검사
+    if (!payload.fromWhId) return alert('출발 창고를 선택해주세요.');
+    if (!payload.toWhId) return alert('목적지 창고를 선택해주세요.');
+    if (payload.fromWhId === payload.toWhId) return alert('출발 창고와 목적지 창고는 같을 수 없습니다.');
+    if (!payload.itemId) return alert('이동할 품목을 선택해주세요.');
+    if (!payload.quantity || payload.quantity <= 0) return alert('이동 수량을 1 이상 입력해주세요.');
+
+    const maxQuantity = parseInt(document.getElementById('transferQuantity').max);
+    if (payload.quantity > maxQuantity) {
+        return alert(`요청 수량이 가용 재고(${formatNumber(maxQuantity)})를 초과할 수 없습니다.`);
     }
-});
 
-// 창고 목록 로드
+    if (!confirm("재고 이동을 요청하시겠습니까?")) return;
+
+    try {
+        const response = await fetch('/inventory-transfer/api/execute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            alert(`재고 이동 요청이 등록되었습니다. (이동번호: ${result.transferNo})`);
+            bootstrap.Modal.getInstance(document.getElementById('inventoryTransferModal')).hide();
+            location.reload();
+        } else {
+            alert(`요청 실패: ${result.message || '알 수 없는 오류가 발생했습니다.'}`);
+        }
+    } catch (error) {
+        console.error('Error during transfer execution:', error);
+        alert('요청 처리 중 오류가 발생했습니다. 관리자에게 문의하세요.');
+    }
+}
+
+// 창고 목록 로드 (재고 이동 모달용)
 function loadWarehouses() {
     const fromSelect = document.getElementById('fromWarehouse');
     const toSelect = document.getElementById('toWarehouse');
@@ -204,7 +300,7 @@ function loadWarehouses() {
     });
 }
 
-// 품목 검색
+// 품목 검색 (키워드 기반)
 async function searchItems() {
     const fromWhId = document.getElementById('fromWarehouse').value;
     const keyword = document.getElementById('itemSearch').value.trim();
@@ -265,7 +361,7 @@ function displaySearchResults(items) {
     resultsDiv.style.display = 'block';
 }
 
-// 품목 선택
+// 품목 선택 (검색 결과에서)
 function selectItem(itemId, itemCode, itemName, availableStock) {
     document.getElementById('selectedItemId').value = itemId;
     document.getElementById('itemSearch').value = `${itemCode} - ${itemName}`;
@@ -274,69 +370,7 @@ function selectItem(itemId, itemCode, itemName, availableStock) {
     document.getElementById('itemSearchResults').style.display = 'none';
 }
 
-// 재고 이동 실행
-async function executeTransfer() {
-    const formData = {
-        itemId: parseInt(document.getElementById('selectedItemId').value),
-        fromWhId: parseInt(document.getElementById('fromWarehouse').value),
-        toWhId: parseInt(document.getElementById('toWarehouse').value),
-        quantity: parseInt(document.getElementById('transferQuantity').value),
-        remark: document.getElementById('transferRemark').value,
-        empId: 1 // 임시값 - 실제로는 세션에서 가져와야 함
-    };
-    
-    // 유효성 검사
-    if (!formData.itemId || !formData.fromWhId || !formData.toWhId || !formData.quantity) {
-        alert('모든 필수 항목을 입력하세요.');
-        return;
-    }
-    
-    if (formData.fromWhId === formData.toWhId) {
-        alert('출발 창고와 목적지 창고가 같을 수 없습니다.');
-        return;
-    }
-    
-    try {
-        // 유효성 검사 API 호출
-        const validateResponse = await fetch('/inventory-transfer/api/validate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        
-        const validateResult = await validateResponse.json();
-        
-        if (!validateResult.success) {
-            alert(validateResult.message);
-            return;
-        }
-        
-        // 이동 실행 API 호출
-        const executeResponse = await fetch('/inventory-transfer/api/execute', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        
-        const executeResult = await executeResponse.json();
-        
-        if (executeResult.success) {
-            alert(`재고 이동이 완료되었습니다.${executeResult.transferNo ? '\n이동번호: ' + executeResult.transferNo : ''}`);
-            
-            // 모달 닫기 및 페이지 새로고침
-            bootstrap.Modal.getInstance(document.getElementById('inventoryTransferModal')).hide();
-            location.reload();
-        } else {
-            alert(executeResult.message);
-        }
-        
-    } catch (error) {
-        console.error('재고 이동 실행 실패:', error);
-        alert('재고 이동 중 오류가 발생했습니다.');
-    }
-}
-
-// 재고 이동 모달 열기 함수
+// 재고 이동 모달 열기
 function openTransferModal(fromWhId = null) {
     const modal = new bootstrap.Modal(document.getElementById('inventoryTransferModal'));
     
@@ -349,3 +383,97 @@ function openTransferModal(fromWhId = null) {
     
     modal.show();
 }
+
+// 페이지 로드 시 이벤트 리스너 등록
+document.addEventListener("DOMContentLoaded", () => {
+    // 검색 버튼 이벤트
+    if (searchBtn) {
+        searchBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            submitSearchForm();
+        });
+    }
+
+    // 폼 제출 이벤트
+    if (filterForm) {
+        filterForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            submitSearchForm();
+        });
+    }
+    
+    // 페이지 크기 변경 이벤트
+    const sizeSelect = document.querySelector('select[name="size"]');
+    if (sizeSelect) {
+        sizeSelect.addEventListener("change", function() {
+            const pageInput = filterForm.querySelector('input[name="page"]');
+            if (pageInput) {
+                pageInput.value = 1;
+            }
+            submitSearchForm();
+        });
+    }
+    
+    // 상세보기 버튼 이벤트
+    document.querySelectorAll('.detail-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const whId = this.getAttribute('data-wh-id');
+            if (whId) {
+                showDetail(whId);
+            }
+        });
+    });
+
+    // 재고 목록 버튼 이벤트
+    document.querySelectorAll('.inventory-list-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const whId = row.dataset.whId;
+            const whName = row.dataset.whName;
+            showInventoryListModal(whId, whName);
+        });
+    });
+
+    // 재고 이동 버튼 이벤트
+    document.querySelectorAll('.transfer-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            targetWhIdForModal = this.closest('tr').dataset.whId;
+            const transferModal = new bootstrap.Modal(document.getElementById('inventoryTransferModal'));
+            transferModal.show();
+        });
+    });
+
+    // Enter 키로 검색
+    const searchInput = document.getElementById("warehouseCodeInput");
+    if (searchInput) {
+        searchInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                submitSearchForm();
+            }
+        });
+    }
+
+    // 재고 이동 모달 이벤트
+    const transferModalEl = document.getElementById('inventoryTransferModal');
+    if (transferModalEl) {
+        // 모달이 열릴 때
+        transferModalEl.addEventListener('show.bs.modal', function () {
+            document.getElementById('transferForm').reset();
+            document.getElementById('fromWarehouseInventory').style.display = 'none';
+
+            if (targetWhIdForModal) {
+                const fromSelect = document.getElementById('fromWarehouse');
+                fromSelect.value = targetWhIdForModal;
+                if (fromSelect.value === targetWhIdForModal) {
+                    loadFromWarehouseItems();
+                }
+            }
+        });
+
+        // 모달이 닫힐 때
+        transferModalEl.addEventListener('hidden.bs.modal', function () {
+            targetWhIdForModal = null;
+        });
+    }
+});
